@@ -10,10 +10,10 @@ const { TextEncoder } = require("node:util");
 
 const projectRoot = path.resolve(__dirname, "../..");
 const scripts = [
-  "js/authorize/config.js",
-  "js/authorize/storage.js",
-  "js/authorize/crypto.js",
-  "js/authorize/auth-service.js",
+  "assets/js/authorize/config.js",
+  "assets/js/authorize/storage.js",
+  "assets/js/authorize/crypto.js",
+  "assets/js/authorize/auth-service.js",
 ];
 
 class MemoryStorage {
@@ -54,7 +54,7 @@ function createHarness() {
     sessionStorage: new MemoryStorage(),
     document: {
       currentScript: {
-        src: "http://127.0.0.1:8000/js/authorize/config.js",
+        src: "http://127.0.0.1:8000/assets/js/authorize/config.js",
       },
       baseURI: "http://127.0.0.1:8000/",
     },

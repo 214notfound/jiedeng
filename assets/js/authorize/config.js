@@ -3,7 +3,7 @@
   "use strict";
 
   const scriptUrl = document.currentScript && document.currentScript.src;
-  const projectRootUrl = new URL("../../", scriptUrl || document.baseURI);
+  const projectRootUrl = new URL("../../../", scriptUrl || document.baseURI);
 
   global.WhiteLamp = global.WhiteLamp || {};
   global.WhiteLamp.authConfig = Object.freeze({
