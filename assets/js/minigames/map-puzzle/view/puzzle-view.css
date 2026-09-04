@@ -1,0 +1,263 @@
+/*
+ * puzzle-view.css — 拼图占位视图样式
+ *
+ * 画风约定：沿用 about 模块的黑灰底 + 等宽/像素感 + 紫强调色。
+ * 本文件是「画风替换点」：后续换正式 UI 时，可整体重写此文件
+ * （或替换 view/puzzle-view.js 的渲染部分），core / adapter 不受影响。
+ *
+ * 无缝关键：槽位（.pz-slot）不画“内框”，只是占位格子；
+ * 每块拼图（.pz-piece）显示“占位原图”的一个切片。
+ * 全部锁定后块与块之间没有边框/间隙，等于还原回一张完整图。
+ *
+ * 命名：pz- 前缀（puzzle），避免与宿主页面样式冲突。
+ */
+
+/* 视觉 token：与 about/css/tokens.css 的取值保持一致 */
+.pz-root {
+  /* 主题变量集中在根节点，方便整组覆盖 */
+  --pz-bg: #0b0d0c;
+  --pz-surface: #111412;
+  --pz-text: #f1f1e9;
+  --pz-text-muted: #a7aaa2;
+  --pz-line: rgba(239, 239, 227, 0.17);
+  --pz-line-soft: rgba(239, 239, 227, 0.10);
+  --pz-accent: #7889ff;
+  --pz-font: "Courier New", "Lucida Console", monospace;
+
+  /* 拼图专用变量（换主题时只需改这里） */
+  --pz-grid-gap: 0px;                    /* 无缝：格间不留间隙 */
+  --pz-cell-size: clamp(64px, 12vmin, 92px);
+  --pz-cell-radius: 0px;                 /* 无缝：切块为直角，不留圆角缝 */
+
+  box-sizing: border-box;
+  width: 100%;
+  font-family: var(--pz-font);
+  color: var(--pz-text);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.pz-root *,
+.pz-root *::before,
+.pz-root *::after {
+  box-sizing: border-box;
+}
+
+/* ---- 整体布局：标题/网格/待放区纵向排布 ---- */
+.pz-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--pz-line-soft);
+}
+
+.pz-header__title {
+  font-size: 15px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.pz-header__hint {
+  color: var(--pz-text-muted);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+}
+
+/* ---- 中央网格槽区：无缝拼图的面板 ---- */
+.pz-board {
+  display: grid;
+  gap: var(--pz-grid-gap);
+  width: max-content;
+  margin: 0 auto;
+  /* 面板带细边；拼块切片填满其内部后即形成无缝整图 */
+  padding: 6px;
+  border: 1px solid var(--pz-line);
+  background: var(--pz-surface);
+  box-shadow: 8px 10px 0 rgba(0, 0, 0, 0.24);
+}
+
+/* 槽位 = 占位格。它不含任何内框；空位时用虚线描出待放入区域。 */
+.pz-slot {
+  position: relative;
+  width: var(--pz-cell-size);
+  height: var(--pz-cell-size);
+  display: grid;
+  place-items: center;
+  background: #0e100f;
+  cursor: crosshair;
+  transition: background-color 0.18s ease;
+}
+
+/* 空槽的“待放入”视觉：虚线外框，仅做提示，不算拼图内容 */
+.pz-slot::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border: 1px dashed rgba(239, 239, 227, 0.22);
+  pointer-events: none;
+}
+
+.pz-slot:hover::after {
+  border-color: rgba(120, 137, 255, 0.5);
+}
+
+/* 空槽中央的序号占位（正式图替换后删除） */
+.pz-slot__hint {
+  position: relative;
+  z-index: 1;
+  color: rgba(240, 240, 229, 0.26);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+}
+
+/* 已放好的槽：去掉虚线提示，让拼块切片直接呈现 */
+.pz-slot--filled::after {
+  display: none;
+}
+
+/* 放错时的轻晃动画：只加给被拒绝的槽 */
+.pz-slot--reject::after {
+  animation: pz-shake 0.32s ease;
+}
+
+@keyframes pz-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  55% { transform: translateX(4px); }
+  80% { transform: translateX(-2px); }
+}
+
+/* ---- 拼块 ----
+ * 每块拼图都是“占位原图”的一个切片（background 由 JS 按坐标注入）。
+ * 拼块本体不画边框 —— 边框只属于“待放区中的散块”，方便识别与抓取；
+ * 一旦锁定进槽，立即清除所有描边/阴影，实现无缝。 */
+.pz-piece {
+  display: block;
+  width: var(--pz-cell-size);
+  height: var(--pz-cell-size);
+  background-color: #1a1d1a;
+  background-repeat: no-repeat;
+  cursor: grab;
+  transition:
+    filter 0.16s ease,
+    transform 0.16s ease,
+    opacity 0.16s ease;
+  touch-action: none;
+}
+
+/* 待放区里的散块：加细边与浮起阴影，使其可辨识、可拖拽 */
+.pz-tray .pz-piece {
+  border: 1px solid rgba(240, 240, 229, 0.28);
+  filter: saturate(1);
+}
+
+.pz-tray .pz-piece:hover {
+  transform: translateY(-3px);
+  filter: saturate(1.15) brightness(1.12);
+  z-index: 5;
+}
+
+/* 拖拽中的拼块：跟手、置顶 */
+.pz-piece--dragging {
+  cursor: grabbing;
+  transform: scale(1.06);
+  filter: brightness(1.2);
+  z-index: 50;
+  border-color: var(--pz-accent) !important;
+}
+
+/* 点击模式：选中态 */
+.pz-piece--selected {
+  outline: 2px solid var(--pz-accent);
+  outline-offset: -2px;
+  filter: brightness(1.15);
+}
+
+/* 放错的拼块弹回动画 */
+.pz-piece--reject {
+  animation: pz-piece-reject 0.34s ease;
+}
+
+@keyframes pz-piece-reject {
+  0%, 100% { transform: translate(0, 0); }
+  30% { transform: translate(16px, -8px); }
+  60% { transform: translate(-12px, 6px); }
+}
+
+/* 已锁定的拼块：清除描边/阴影/圆角，完全贴合槽位 → 无缝拼合 */
+.pz-slot .pz-piece {
+  cursor: default;
+  border: 0;
+  transform: none;
+  filter: none;
+}
+
+.pz-slot .pz-piece:hover {
+  transform: none;
+  filter: none;
+}
+
+/* ---- 待放区 ---- */
+.pz-tray {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+  padding: 14px;
+  min-height: calc(var(--pz-cell-size) + 40px);
+  border-top: 1px solid var(--pz-line-soft);
+}
+
+/* ---- 完成横幅 ---- */
+.pz-done {
+  margin-top: 18px;
+  padding: 12px 16px;
+  border: 1px solid rgba(120, 137, 255, 0.55);
+  background: rgba(120, 137, 255, 0.10);
+  color: var(--pz-text);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-align: center;
+}
+
+/* ---- 取消/放弃按钮(占位文案) ---- */
+.pz-cancel {
+  padding: 6px 10px;
+  border: 1px solid var(--pz-line);
+  background: transparent;
+  color: var(--pz-text-muted);
+  font: inherit;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  cursor: pointer;
+  transition:
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.pz-cancel:hover {
+  color: var(--pz-text);
+  border-color: rgba(120, 137, 255, 0.5);
+}
+
+/* ---- 状态行：显示已锁定数/总数 ---- */
+.pz-status {
+  margin-top: 14px;
+  color: var(--pz-text-muted);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-align: center;
+}
+
+/* 降低动效偏好时关闭晃动用例 */
+@media (prefers-reduced-motion: reduce) {
+  .pz-piece, .pz-slot::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
