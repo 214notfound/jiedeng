@@ -56,7 +56,7 @@ export function mountAchievementsPage({ host, documentRoot = document }) {
 
 // 显式演示入口读取专用记录，不切换正式账户。
 if (typeof window !== "undefined"
-  && window.location.pathname.endsWith("/pages/achievements.html")
+  && window.location.pathname.endsWith("/pages/achievements/achievements.html")
   && new URLSearchParams(window.location.search).get("demo") === "1") {
   import("./achievements-demo.js").catch((error) => {
     const feedback = document.getElementById("achievement-feedback");

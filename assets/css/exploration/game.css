@@ -1,4 +1,8 @@
 /* 游戏页面的外部布局样式，规则限定在 game-page 下。 */
+.game-page #feedback { white-space: pre-line; }
+.game-page #game-story { padding-block: 1rem; }
+.game-page #game-story button { font: inherit; min-height: 44px; padding: .5rem 1rem; cursor: pointer; }
+.game-page .conversation-confirmation { display: flex; flex-wrap: wrap; gap: .5rem; }
 .game-page {
   margin: 0;
   color: #222;

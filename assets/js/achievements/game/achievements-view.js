@@ -1,5 +1,5 @@
 // 成就视图：展示状态并按指定通知方发出一次提示，不修改全局成就。
-import { element, region, createFeedback } from "./view-utils.js";
+import { element, region, createFeedback } from "../../exploration/game/view-utils.js";
 
 // 同一模块实例只允许一个视图承担通知，其他视图仍可展示。
 const notificationOwners = new WeakMap();

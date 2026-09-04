@@ -1,12 +1,12 @@
 // 游戏页面组合层：挂载探索和成就预览，将保存、地图、剧情交给外部接口。
 import { createExploration } from "./exploration.js";
-import { createAchievements } from "./achievements.js";
+import { createAchievements } from "../../achievements/game/achievements.js";
 import { mountExploration } from "./exploration-view.js";
-import { mountAchievements } from "./achievements-view.js";
+import { mountAchievements } from "../../achievements/game/achievements-view.js";
 
 const activePages = new WeakMap();
 export function mountGamePage({
-  host, openMap, onLeave, saveProgress, documentRoot = document
+  host, openMap, saveProgress, documentRoot = document
 }) {
   const sceneRoot = documentRoot.getElementById("game-scene");
   const actionsRoot = documentRoot.getElementById("game-actions");
@@ -34,8 +34,7 @@ export function mountGamePage({
     exploration = createExploration(host);
     removeExploration = mountExploration({
       module: exploration, sceneRoot, actionsRoot, inventoryRoot, showFeedback: notify,
-      openMap: openMap ?? (() => { throw new Error("地图暂不可用，请稍后再试。"); }),
-      onLeave: onLeave ?? (() => { throw new Error("暂时无法前进，请稍后再试。"); })
+      openMap: openMap ?? (() => { throw new Error("地图暂不可用，请稍后再试。"); })
     });
     if (preview) {
       achievements = createAchievements(host);
@@ -95,7 +94,7 @@ export function mountGamePage({
   function restorePage(event) {
     if (!event.persisted) return;
     stop();
-    try { mountGamePage({ host, openMap, onLeave, saveProgress, documentRoot }); }
+    try { mountGamePage({ host, openMap, saveProgress, documentRoot }); }
     catch { /* 初始化函数已显示并记录错误。 */ }
   }
   activePages.set(sceneRoot, stop);
@@ -106,7 +105,7 @@ export function mountGamePage({
 
 // 显式演示模式只使用专用标签页记录；正式入口仍由游戏壳注入宿主。
 if (typeof window !== "undefined"
-  && window.location.pathname.endsWith("/pages/game.html")
+  && window.location.pathname.endsWith("/pages/exploration/game.html")
   && new URLSearchParams(window.location.search).get("demo") === "1") {
   import("./exploration-demo.js").catch((error) => {
     const feedback = document.getElementById("feedback");

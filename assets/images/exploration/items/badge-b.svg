@@ -1,9 +1,0 @@
-<!-- 《借灯》灰度占位素材：烧毁工作证。 -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 200" role="img" aria-labelledby="title">
-  <title id="title">烧毁大半的B姓工作证</title>
-  <rect width="320" height="200" fill="#d8d8d8"/>
-  <path d="M66 38h188v124H66z" fill="#efefef" stroke="#292929" stroke-width="8"/>
-  <path d="m66 38 30 18 22-22 25 23 28-24 30 25 24-20 29 16v108H66z" fill="#efefef"/>
-  <circle cx="112" cy="98" r="25" fill="#777"/>
-  <text x="161" y="116" font-family="serif" font-size="58" fill="#292929">B</text>
-</svg>

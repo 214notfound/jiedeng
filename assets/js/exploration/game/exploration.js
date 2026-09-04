@@ -1,182 +1,160 @@
-// 探索接入服务：读取宿主快照、验证前置条件并提交事件，不直接保存数据。
-import { getScenes, getItems, MAP_ACHIEVEMENT } from "../data/exploration.js";
-import { validateExplorationState } from "./exploration-state.js";
+// 探索与对话服务：接收已提交命令，只向协调器报告事实，不推进 Node、不发放奖励。
+import {TASKS,NODE_SCENES,sceneName,taskFor} from "../data/exploration.js";
+import {ITEMS} from "../data/items.js";
+import {bindHost,requireIds} from "./host-reader.js";
 
-export const EXPLORATION_EVENTS = Object.freeze({
-  OBJECT_INVESTIGATED: "OBJECT_INVESTIGATED",
-  NPC_TALKED: "NPC_TALKED",
-  MAP_PUZZLE_COMPLETED: "MAP_PUZZLE_COMPLETED",
-  ACHIEVEMENT_UNLOCKED: "ACHIEVEMENT_UNLOCKED"
-});
-const STAGE_ORDER = ["prologue", "village", "old-house", "week-one-end"];
-const hasAll = (values, required) => required.every((id) => values.includes(id));
-
-export function createExploration({ getContext, dispatch, subscribe }) {
-  for (const value of [getContext, dispatch, subscribe]) {
-    if (typeof value !== "function") throw new TypeError("需要 getContext、dispatch、subscribe 函数。");
-  }
-  const scope = getContext()?.storageScope;
-  if (typeof scope !== "string" || !/^(guest|account:[^\s]+)$/.test(scope)) {
-    throw new TypeError("storageScope 必须来自有效账户或游客会话。");
-  }
-  const scenes = getScenes();
-  const items = getItems();
-  const subscriptions = new Set();
-  let disposed = false;
-  let submitting = false;
-  let blockedReason = "";
-
-  function readState() {
-    if (disposed) throw new Error("模块已卸载。");
-    if (blockedReason) throw new Error(blockedReason);
-    const context = getContext();
-    if (context?.storageScope !== scope) {
-      blockedReason = "身份已变化，请重新进入游戏。";
-      throw new Error(blockedReason);
+export function validateExplorationContext(context){
+  const state=context.state, checkpoint=state?.storyCheckpoint;
+  for(const field of ["facts","inventory","clues"])requireIds(state?.[field],field);
+  if(!checkpoint||!NODE_SCENES[checkpoint.nodeId]||checkpoint.nodeRevision!==1)throw new Error("剧情检查点不存在或版本不兼容。");
+  for(const field of ["completedMilestoneIds","completedNodeIds","completedStageIds"])requireIds(checkpoint[field],field);
+  if(!Array.isArray(checkpoint.pendingCommands)||!Array.isArray(context.commands))throw new Error("缺少已提交的剧情命令。");
+  requireIds(checkpoint.pendingCommands.map(c=>c.commandId),"pendingCommands");
+  requireIds(context.commands.map(c=>c.commandId),"commands");
+  if(context.commands.length!==checkpoint.pendingCommands.length)throw new Error("检查点与命令不一致。");
+  for(const command of context.commands){
+    const target=command.payload?.explorationId??command.payload?.conversationId??command.payload?.minigameId;
+    const pending=checkpoint.pendingCommands.find(c=>c.commandId===command.commandId);
+    if(!pending||pending.commandType!==command.commandType||pending.targetId!==target)throw new Error("命令尚未提交或已过期。");
+    if(command.commandId!=="cmd-"+checkpoint.nodeId+"-"+target)throw new Error("命令 ID 与 Node 清单不一致。");
+    if(command.commandType==="REQUEST_MINIGAME"){
+      if(target!=="map-puzzle"||command.payload.successFactId!=="map-puzzle-completed")throw new Error("未知小游戏命令。");
+      if(checkpoint.nodeId!=="village-map-and-route"||[1,2,3].some(n=>!state.inventory.includes("map-fragment-"+n)||!state.facts.includes("map-fragment-"+n+"-acquired")))throw new Error("地图任务尚未满足条件。");
+      continue;
     }
-    const state = structuredClone(context.state);
-    validateExplorationState(state);
-    return state;
+    const task=taskFor(command);
+    if(!task||task.node!==checkpoint.nodeId||command.commandType!==("REQUEST_"+(task.type==="exploration"?"EXPLORATION":"CONVERSATION")))throw new Error("未知或不属于当前 Node 的任务。");
+    if(!Array.isArray(command.payload.goals))throw new Error("任务缺少目标。");
+    if(task.type==="conversation"&&(!Array.isArray(command.payload.npcIds)||!command.payload.npcIds.includes(task.npc)))throw new Error("对话参与者不符。");
   }
-  readState();
-
-  function getSceneView(sceneId) {
-    const scene = scenes.find(({ id }) => id === sceneId);
-    if (!scene) throw new Error("未知场景：" + sceneId);
-    const state = readState();
-    const unlocked = STAGE_ORDER.indexOf(sceneId) <= STAGE_ORDER.indexOf(state.stage);
-    return {
-      ...structuredClone(scene), unlocked,
-      interactions: scene.interactions.map((action) => ({
-        ...structuredClone(action),
-        completed: state.investigated.includes(action.id),
-        available: unlocked && hasAll(state.investigated, action.prerequisites.interactionIds)
-          && hasAll(state.inventory, action.prerequisites.itemIds)
-      }))
-    };
+}
+export function createExploration(host){
+  if(typeof host.dispatchExternalEvent!=="function")throw new TypeError("缺少协调器 dispatchExternalEvent。");
+  const bound=bindHost(host,validateExplorationContext);
+  let busy=false, uncertain=false;
+const presented = new Set();
+  const optionalMemoryFact = "x-deflects-memory-question-noticed";
+  function acceptsOptionalMemory(command) {
+    return command.payload.goals.some(goal => goal.goalId === "x-memory-deflection-noticed");
   }
-
-  function getExitStatus(sceneId) {
-    const scene = getSceneView(sceneId);
-    if (!scene.unlocked) return { canLeave: false, message: "当前地点尚未开放。" };
-    const required = new Set(scene.completionInteractionIds);
-    const pending = scene.interactions.filter((action) => required.has(action.id) && !action.completed);
-    if (pending.length) {
-      const labels = pending.filter((action) => action.available).map((action) => action.label);
-      return { canLeave: false, message: labels.length
-        ? "还需完成：" + labels.join("、") + "。"
-        : "请先完成当前可见调查，再继续探索。" };
-    }
-    const state = readState();
-    if (sceneId === "village" && !state.puzzle.mapRestored) {
-      return { canLeave: false, message: "三块碎片已集齐，请先完成手绘地图复原。" };
-    }
-    return { canLeave: true, message: sceneId === "old-house"
-      ? "第一次隔门呼名已结束。第一周内容结束。" : "必要调查已完成。" };
-  }
-
-  function interact(sceneId, interactionId) {
-    if (submitting) return { ok: false, message: "正在处理上一次调查，请稍候。" };
-    let dispatched = false;
-    try {
-      const action = getSceneView(sceneId).interactions.find(({ id }) => id === interactionId);
-      if (!action) return { ok: false, message: "没有这个调查对象。" };
-      if (!action.available) return { ok: false, message: action.lockedText ?? "当前地点尚未开放。" };
-      if (action.completed) return {
-        ok: true, firstTime: false, message: action.repeatText, speaker: action.speaker ?? null
-      };
-      const payload = action.npcId
-        ? { npcId: action.npcId, interactionId: action.id }
-        : { objectId: action.id };
-      if (action.rewardItemId) payload[action.npcId ? "rewardItemId" : "itemId"] = action.rewardItemId;
-      submitting = true;
-      dispatched = true;
-      const result = dispatch({
-        type: action.npcId ? EXPLORATION_EVENTS.NPC_TALKED : EXPLORATION_EVENTS.OBJECT_INVESTIGATED, payload
-      }, { storageScope: scope });
-      if (result && typeof result.then === "function") {
-        Promise.resolve(result).catch((error) => console.error("[exploration] 异步提交失败。", error));
-        throw new Error("状态提交尚未确认，请重新加载。dispatch 必须同步完成。");
-      }
-      if (!result || typeof result.ok !== "boolean") throw new Error("状态接口返回格式无效，请重新加载。");
-      if (!result.ok) {
-        const afterFailure = readState();
-        if (afterFailure.investigated.includes(action.id)) {
-          throw new Error("宿主报告失败但已更改进度，请重新加载检查。");
-        }
-        return { ok: false, message: result.message || "操作未被全局状态接受。" };
-      }
-      const state = readState();
-      if (!state.investigated.includes(action.id) || (action.rewardItemId && !state.inventory.includes(action.rewardItemId))) {
-        throw new Error("全局尚未记录调查或奖励，请检查事件接入。");
-      }
-      return { ok: true, firstTime: true, message: action.firstText, speaker: action.speaker ?? null };
-    } catch (error) {
-      if (dispatched) blockedReason = "状态提交结果不确定，已暂停操作。请重新加载并检查进度。";
-      console.error("[exploration] 调查失败。", error);
-      return { ok: false, message: error instanceof Error ? error.message : "调查失败，请重试。" };
-    } finally {
-      submitting = false;
-    }
-  }
-
-  function listItems(layer) {
-    if (layer !== undefined && !["items", "clues"].includes(layer)) throw new TypeError("未知背包分类。");
-    const state = readState();
-    return items.filter((item) => state.inventory.includes(item.id) && (!layer || item.layer === layer))
-      .map((item) => ({ ...item, obtained: true }));
-  }
-  function listAchievements() {
-    const state = readState();
-    return [{
-      ...MAP_ACHIEVEMENT, unlocked: state.achievements.includes(MAP_ACHIEVEMENT.id),
-      unlockedAt: state.achievementTimes?.[MAP_ACHIEVEMENT.id] ?? null
-    }];
-  }
-  function canStartMapPuzzle() {
-    const state = readState();
-    return !state.puzzle.mapRestored && getSceneView("village").unlocked
-      && hasAll(state.inventory, ["map-fragment-1", "map-fragment-2", "map-fragment-3"])
-      && hasAll(state.investigated, scenes.find(({ id }) => id === "village").completionInteractionIds);
-  }
-
-  function onChange(listener) {
-    if (disposed) throw new Error("模块已卸载。");
-    if (typeof listener !== "function") throw new TypeError("订阅回调必须为函数。");
-    let stopped = false;
-    const unsubscribe = subscribe(() => {
-      if (disposed || stopped) return;
-      try {
-        // 即使切换后又切回同一身份，旧实例也不再恢复工作。
-        if (getContext()?.storageScope !== scope) blockedReason = "身份已变化，请重新进入游戏。";
-      } catch (error) {
-        blockedReason = "无法确认当前身份，已停止读取和操作。";
-        console.error("[exploration] 会话读取失败。", error);
-      }
-      try { listener(); }
-      catch (error) { console.error("[exploration] 订阅回调失败。", error); }
+  const commandFor=(context,task)=>context.commands.find(c=>(c.payload?.explorationId??c.payload?.conversationId)===task.target);
+  function entries(context){
+    const facts=context.state.facts;
+    return TASKS.filter(task=>task.node===context.state.storyCheckpoint.nodeId).flatMap(task=>{
+      const command=commandFor(context,task);
+      return task.actions.filter(action=>command||action.facts.every(f=>facts.includes(f))).map(action=>{
+        const completed=action.facts.every(f=>facts.includes(f));
+        return {...action,task,completed,available:completed||Boolean(command),command};
+      });
     });
-    if (typeof unsubscribe !== "function") throw new TypeError("subscribe 必须返回取消订阅函数。");
-    const stop = () => {
-      if (stopped) return;
-      stopped = true;
-      subscriptions.delete(stop);
-      try { unsubscribe(); } catch (error) { console.error("[exploration] 取消订阅失败。", error); }
-    };
-    subscriptions.add(stop);
-    return stop;
   }
-  function dispose() {
-    if (disposed) return;
-    disposed = true;
-    for (const stop of [...subscriptions]) stop();
+  function getCurrentSceneId(){return NODE_SCENES[bound.read().state.storyCheckpoint.nodeId];}
+  function getSceneView(sceneId){
+    const context=bound.read();
+    if(sceneId!==getCurrentSceneId())throw new Error("地点已经变化。");
+    return {name:sceneName(sceneId),interactions:entries(context)};
   }
-  return Object.freeze({
-    getSceneView, getExitStatus, interact, listItems, listAchievements, canStartMapPuzzle,
-    getCurrentSceneId: () => {
-      const stage = readState().stage;
-      return stage === "week-one-end" ? "old-house" : stage;
-    },
-    subscribe: onChange, dispose
-  });
+  function getLayout(){
+    const context=bound.read();
+    const groups=new Map();
+    for(const action of entries(context)){
+      const id=action.task.type==="conversation"?action.task.target:action.id;
+      if(!groups.has(id))groups.set(id,{
+        id, x:action.x??action.task.x, y:action.y??action.task.y,marker:action.marker??action.task.marker,
+        reveal:"always",interactionIds:[]
+      });
+      groups.get(id).interactionIds.push(action.id);
+    }
+    // 同一人物在同地点的历史谈话仅保留当前任务或最近一段，避免位置重叠。
+    const hotspots=[...groups.values()];
+    const currentTargets=new Set(context.commands.map(c=>c.payload.conversationId));
+    const seen=new Set();
+    const filtered=hotspots.reverse().filter(h=>{
+      const task=TASKS.find(t=>t.target===h.id);
+      if(!task?.npc)return true;
+      if(seen.has(task.npc))return false;
+      if(!currentTargets.has(task.target)&&TASKS.some(t=>t.npc===task.npc&&currentTargets.has(t.target)))return false;
+      seen.add(task.npc);return true;
+    }).reverse();
+    return {playerStart:{x:50,y:92},hotspots:filtered};
+  }
+  function listItems(layer){
+    if(layer!==undefined&&!["items","clues"].includes(layer))throw new Error("未知背包分类。");
+    const {state}=bound.read();
+    const obtained=new Set([...state.inventory,...state.clues]);
+    return ITEMS.filter(item=>obtained.has(item.id)&&(!layer||item.layer===layer)).map(item=>({...item,obtained:true}));
+  }
+  async function send(task,command,action,eventType,facts,payload){
+    if(busy||uncertain)throw new Error("上一操作尚未确认，请等待或重新进入。");
+    busy=true;
+    try{
+      const current=bound.read();
+      if(!commandFor(current,task)||commandFor(current,task).commandId!==command.commandId)throw new Error("任务已结束，请刷新当前任务。");
+      const event={eventId:"evt-"+command.commandId+"-"+action+"-"+eventType.toLowerCase(),
+        eventType,source:task.type,causedByCommandId:command.commandId,resultFactIds:[...facts],payload};
+      const result=await host.dispatchExternalEvent(event,{storageScope:bound.scope});
+      const after=bound.read();
+      if(!result||typeof result.ok!=="boolean"){uncertain=true;throw new Error("操作结果无法确认，请重新进入。");}
+      if(!result.ok)throw new Error(result.message||"操作未提交，请重新进入。");
+      if(!facts.every(f=>after.state.facts.includes(f))){uncertain=true;throw new Error("事实尚未提交，暂时停止后续操作。");}
+      return result;
+    }catch(error){
+      // 宿主抛错或拒绝可能发生在提交后；暂停避免产生另一笔不确定提交。
+      uncertain=true;throw error;
+    }finally{busy=false;}
+  }
+  async function interact(sceneId,actionId,{confirm=false}={}){
+    try{
+      const context=bound.read();
+      if(sceneId!==NODE_SCENES[context.state.storyCheckpoint.nodeId])throw new Error("地点已经变化。");
+      const action=entries(context).find(a=>a.id===actionId);
+      if(!action)throw new Error("当前没有这个调查任务。");
+      if(action.completed)return {ok:true,message:action.text};
+      if(action.task.type==="conversation"){
+        const token=action.command.commandId+"/"+action.id;
+        if(!confirm){
+          presented.add(token);
+          return {ok:true,message:action.text,requiresConfirmation:true,commandId:action.command.commandId};
+        }
+        if(!presented.has(token))throw new Error("请先阅读本段谈话。");
+      }
+      if((action.requiredItems??[]).some(id=>!context.state.inventory.includes(id)))throw new Error("缺少开门所需的旧钥匙。");
+      const {task,command}=action;
+      const payload=task.type==="conversation"?{conversationId:task.target,npcId:task.npc}:{objectId:action.id};
+      // 当前上游版本未允许可选记忆事实；保留对白，只提交命令实际支持的事实。
+      // 后续上游把可选目标加入命令时，才会携带该事实，绝不绕过来源校验。
+      const facts = action.facts.filter(fact => fact !== optionalMemoryFact || acceptsOptionalMemory(command));
+      await send(task,command,action.id,task.type==="conversation"?"NPC_TALKED":"OBJECT_INVESTIGATED",facts,payload);
+      return {ok:true,message:action.text};
+    }catch(error){console.error("[exploration] 操作未完成。",error);return {ok:false,message:error.message};}
+  }
+  async function cancel(commandId,errorCode){
+    const context=bound.read(), command=context.commands.find(c=>c.commandId===commandId), task=command&&taskFor(command);
+    if(!task)throw new Error("取消任务不存在。");
+    if(errorCode!==undefined&&(typeof errorCode!=="string"||!errorCode.trim()))throw new Error("错误码无效。");
+    return send(task,command,errorCode?"failed":"cancelled",errorCode?"EXTERNAL_INTERACTION_FAILED":"EXTERNAL_INTERACTION_CANCELLED",[],
+      {targetId:task.target,...(errorCode?{errorCode}:{})});
+  }
+  async function reportProgress(commandId,factIds){
+    requireIds(factIds,"对话进展事实");
+    const context=bound.read(), command=context.commands.find(c=>c.commandId===commandId), task=command&&taskFor(command);
+    if(task?.type!=="conversation"||!factIds.length||factIds.some(f=>!task.actions.some(a=>a.facts.includes(f))))throw new Error("进展事实不属于当前对话。");
+    if (factIds.includes(optionalMemoryFact) && !acceptsOptionalMemory(command)) {
+      throw new Error("当前剧情版本尚未开放这个可选事实。");
+    }
+    if (task.actions[0].facts.every(fact => context.state.facts.includes(fact) || factIds.includes(fact))) {
+      throw new Error("完整谈话请通过确认完成提交，不能作为中途进展。");
+    }
+    return send(task,command,"progress-"+[...factIds].sort().join("-"),"NPC_TALK_PROGRESS",factIds,{conversationId:task.target,npcId:task.npc});
+  }
+  function getExitStatus(){
+    const context=bound.read(), pending=entries(context).filter(a=>!a.completed);
+    return {canLeave:false,message:pending.length?"还需完成："+[...new Set(pending.map(a=>a.task.label))].join("、")+"。":"本轮调查已完成，请按剧情区的当前操作继续。"};
+  }
+  function getMapCommand(){
+    return bound.read().commands.find(c=>c.commandType==="REQUEST_MINIGAME"&&c.payload.minigameId==="map-puzzle")??null;
+  }
+  return Object.freeze({getCurrentSceneId,getSceneView,getLayout,listItems,interact,cancel,reportProgress,
+    getExitStatus,getMapCommand,canStartMapPuzzle:()=>Boolean(getMapCommand()),
+    subscribe:bound.subscribe,dispose:bound.dispose});
 }

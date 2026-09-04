@@ -1,18 +1,17 @@
 // 探索视图：热点、移动与任务提示；背包和成就由独立视图维护。
-import { getSceneLayout } from "../data/exploration.js";
 import { buildHotspotViews } from "./hotspot-view.js";
 import { findNearestHotspotIndex } from "./exploration-movement.js";
 import { moveHotspotFocus } from "./hotspot-keyboard.js";
 import { element, button, region, createFeedback } from "./view-utils.js";
 import { mountInventory } from "./inventory.js";
-export { mountAchievements } from "./achievements-view.js";
+export { mountAchievements } from "../../achievements/game/achievements-view.js";
 
 const MOVEMENT = {
   ArrowUp: [0, -1], w: [0, -1], ArrowDown: [0, 1], s: [0, 1],
   ArrowLeft: [-1, 0], a: [-1, 0], ArrowRight: [1, 0], d: [1, 0]
 };
 export function mountExploration({
-  module, sceneRoot, actionsRoot, inventoryRoot, showFeedback, openMap, onLeave
+  module, sceneRoot, actionsRoot, inventoryRoot, showFeedback, openMap
 }) {
   if (typeof showFeedback !== "function" || typeof openMap !== "function") {
     throw new TypeError("缺少全局反馈或地图入口。");
@@ -39,6 +38,22 @@ export function mountExploration({
   let currentScene = null;
   let position = { x: 50, y: 90 };
   let active = true;
+
+  function offerConfirmation(result, sceneId, actionId) {
+    if (!result.requiresConfirmation || !active) return;
+    actions.querySelector(".conversation-confirmation")?.remove();
+    const choices = element("div", "conversation-confirmation");
+    choices.append(button("确认交谈完成", async () => {
+      const outcome = await module.interact(sceneId, actionId, {confirm:true});
+      if (active) notify(outcome.message, outcome.ok ? "success" : "warning");
+      choices.remove();
+    }), button("暂不交谈", () => {
+      callExternal(() => module.cancel(result.commandId));
+      choices.remove();
+    }));
+    actions.append(choices);
+    choices.querySelector("button").focus();
+  }
 
   function proximity() {
     const buttons = [...hotspots.querySelectorAll(".scene-hotspot")];
@@ -89,7 +104,7 @@ export function mountExploration({
     try {
       const sceneId = module.getCurrentSceneId();
       const view = module.getSceneView(sceneId);
-      const layout = getSceneLayout(sceneId);
+      const layout = module.getLayout();
       const focused = document.activeElement?.dataset.hotspotId;
       const changedScene = currentScene !== null && currentScene !== sceneId;
       if (currentScene !== sceneId) position = { ...layout.playerStart };
@@ -100,11 +115,15 @@ export function mountExploration({
       const views = buildHotspotViews(view, layout);
       hotspots.replaceChildren(...views.map((hotspot) => {
         const action = hotspot.interaction;
-        const node = button(hotspot.marker + " · " + action.label, () => {
+        const node = button(hotspot.marker + " · " + action.label, async () => {
           if (!active) return;
-          const result = module.interact(sceneId, action.id);
+          node.disabled = true;
+          const result = await module.interact(sceneId, action.id);
+          if (!active) return;
+          node.disabled = false;
           notify(result.speaker ? "【" + result.speaker + "】" + result.message : result.message,
             result.ok ? "success" : "warning");
+          offerConfirmation(result, sceneId, action.id);
         }, "scene-hotspot" + (action.completed ? " is-completed" : "")
           + (!action.available ? " is-disabled" : ""));
         node.style.left = hotspot.x + "%";
@@ -127,17 +146,23 @@ export function mountExploration({
         tasks.append(element("li", "", interaction.label + (interaction.completed ? " · 已完成" : "")));
       }
       actions.append(tasks);
+      for (const alternative of view.interactions.filter(action => action.alternative && !action.completed)) {
+        actions.append(button(alternative.label, async () => {
+          const result = await module.interact(sceneId, alternative.id);
+          if (active) notify(result.message, result.ok ? "success" : "warning");
+          offerConfirmation(result, sceneId, alternative.id);
+        }));
+      }
       actions.append(button("离开当前地点", () => {
         if (!active) return;
         try {
           const status = module.getExitStatus(module.getCurrentSceneId());
           notify(status.message, status.canLeave ? "success" : "warning");
-          if (status.canLeave) callExternal(onLeave, module.getCurrentSceneId());
         } catch (error) { notify(error.message, "error"); }
       }));
       if (module.canStartMapPuzzle()) actions.append(button("复原手绘地图", () => {
         if (!active) return;
-        try { if (module.canStartMapPuzzle()) callExternal(openMap, "map-puzzle"); }
+        try { if (module.canStartMapPuzzle()) callExternal(openMap, module.getMapCommand()); }
         catch (error) { notify(error.message, "error"); }
       }, "button button--primary"));
     } catch (error) {
