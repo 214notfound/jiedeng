@@ -8,14 +8,14 @@ const vm = require("node:vm");
 
 const projectRoot = path.resolve(__dirname, "../..");
 const scripts = [
-  "assets/js/data/story-registry.js",
-  "assets/js/data/prologue.js",
-  "assets/js/data/village.js",
-  "assets/js/data/old-house.js",
-  "assets/js/game/story-validator.js",
-  "assets/js/game/story-runtime.js",
-  "assets/js/game/story-request.js",
-  "assets/js/game/story-engine.js",
+  "assets/js/game-line/data/story-registry.js",
+  "assets/js/game-line/data/prologue.js",
+  "assets/js/game-line/data/village.js",
+  "assets/js/game-line/data/old-house.js",
+  "assets/js/game-line/game/story-validator.js",
+  "assets/js/game-line/game/story-runtime.js",
+  "assets/js/game-line/game/story-request.js",
+  "assets/js/game-line/game/story-engine.js",
 ];
 
 function clone(value) {
