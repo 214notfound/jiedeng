@@ -300,6 +300,7 @@
     }
   }
 
+  // 暴露给外部的可用接口
   global.WhiteLamp.auth = Object.freeze({
     register,
     login,

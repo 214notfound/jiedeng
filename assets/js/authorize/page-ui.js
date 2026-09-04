@@ -58,6 +58,7 @@
     }
   }
 
+  // 所有[data-submit-control]标记元素在此被防止重复提交
   function setFormBusy(form, isBusy) {
     form.setAttribute("aria-busy", String(isBusy));
     for (const control of form.querySelectorAll("[data-submit-control]")) {
