@@ -68,7 +68,7 @@ export function requireStorageScope(storageScope){
 
 
     // 校验游戏内容 ID，例如 key-a、prologue-wake、map-puzzle。
-const GAME_ID_PATTERN =
+export const GAME_ID_PATTERN =
   /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
     // 从事件参数中读取并检查一个游戏 ID。
