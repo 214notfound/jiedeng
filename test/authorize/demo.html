@@ -1,0 +1,86 @@
+<!-- 本文件用于独立验收账户公开接口，不承担正式主菜单功能。 -->
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
+    <title>账户接口测试 | White Lamp</title>
+    <link rel="stylesheet" href="../../assets/css/authorize.css" />
+    <script defer src="../../assets/js/authorize/config.js"></script>
+    <script defer src="../../assets/js/authorize/storage.js"></script>
+    <script defer src="../../assets/js/authorize/crypto.js"></script>
+    <script defer src="../../assets/js/authorize/auth-service.js"></script>
+    <script defer src="../../assets/js/authorize/page-ui.js"></script>
+    <script defer src="../../assets/js/authorize/demo-page.js"></script>
+  </head>
+  <body>
+    <noscript>
+      <p class="noscript-message">此测试页需要 JavaScript 才能读取账户接口。</p>
+    </noscript>
+
+    <div class="auth-layout">
+      <aside class="auth-brand" aria-label="账户模块测试环境">
+        <p class="brand-mark">模块验收环境</p>
+        <div class="brand-copy">
+          <p class="brand-kicker">R02 · R03 · R04</p>
+          <h1 class="brand-title">WHITE<br />LAMP</h1>
+          <p class="brand-description">此页只验证当前公开身份和数据隔离标识，不读取账户内部字段。</p>
+        </div>
+        <p class="brand-meta"><span>AUTH CONTRACT DEMO</span><span>V1</span></p>
+      </aside>
+
+      <main class="auth-main">
+        <section class="auth-panel" aria-labelledby="demo-title">
+          <header class="auth-heading">
+            <p class="auth-eyebrow">TEST / PUBLIC API</p>
+            <h2 id="demo-title">账户接口测试</h2>
+            <p>正式主菜单完成后，登录成功地址将替换为主菜单路径。</p>
+          </header>
+
+          <div id="page-status" class="status" role="status" aria-live="polite" hidden></div>
+          <button
+            id="clear-session-button"
+            class="button button--secondary recovery-action"
+            type="button"
+            hidden
+          >
+            清除异常会话并返回登录
+          </button>
+
+          <section id="public-profile" class="demo-profile" aria-labelledby="profile-title" hidden>
+            <h3 id="profile-title">公开用户信息</h3>
+            <dl class="profile-list">
+              <div class="profile-row">
+                <dt>用户名</dt>
+                <dd id="profile-username"></dd>
+              </div>
+              <div class="profile-row">
+                <dt>身份类型</dt>
+                <dd id="profile-type"></dd>
+              </div>
+              <div class="profile-row">
+                <dt>用户 ID</dt>
+                <dd id="profile-id"></dd>
+              </div>
+              <div class="profile-row">
+                <dt>存储域</dt>
+                <dd id="profile-scope"></dd>
+              </div>
+            </dl>
+            <pre id="profile-json" class="profile-code" aria-label="公开用户对象 JSON"></pre>
+          </section>
+
+          <div class="demo-actions">
+            <button id="logout-button" class="button button--danger" type="button">
+              退出当前会话
+            </button>
+            <a class="button button--secondary" href="../../pages/authorize/login.html">
+              返回登录页
+            </a>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>
