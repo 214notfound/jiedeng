@@ -1,0 +1,85 @@
+/* 独立成就页面布局；所有规则限定在 achievement-page 内。 */
+.achievement-page {
+  margin: 0;
+  min-height: 100vh;
+  color: #222;
+  background: #efefef;
+  font-family: system-ui, sans-serif;
+  line-height: 1.6;
+}
+.achievement-page * {
+  box-sizing: border-box;
+}
+.achievement-page .achievement-header,
+.achievement-page .achievement-main {
+  width: min(100% - 2rem, 960px);
+  margin-inline: auto;
+}
+.achievement-page .achievement-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-block: 1.25rem;
+  border-bottom: 1px solid #999;
+}
+.achievement-page .achievement-brand {
+  margin: 0;
+  font-size: 1.5rem;
+}
+.achievement-page .achievement-navigation {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem;
+}
+.achievement-page .achievement-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: .4rem .75rem;
+  border: 1px solid #555;
+  border-radius: .3rem;
+  color: inherit;
+  background: #fff;
+  text-decoration: none;
+}
+.achievement-page .achievement-link:hover {
+  background: #ddd;
+}
+.achievement-page .achievement-main {
+  padding-block: 2rem;
+}
+.achievement-page .achievement-main h1 {
+  margin-top: 0;
+}
+.achievement-page #achievement-feedback {
+  padding: 1rem;
+  border: 1px solid #777;
+  overflow-wrap: anywhere;
+}
+.achievement-page .achievement-skip {
+  position: absolute;
+  left: .5rem;
+  top: .5rem;
+  padding: .5rem;
+  transform: translateY(-200%);
+  color: #111;
+  background: #fff;
+  z-index: 2;
+}
+.achievement-page .achievement-skip:focus {
+  transform: translateY(0);
+}
+.achievement-page :focus-visible {
+  outline: 3px solid #222;
+  outline-offset: 3px;
+}
+.achievement-page [hidden] {
+  display: none !important;
+}
+@media (max-width: 640px) {
+  .achievement-page .achievement-main {
+    padding-block: 1rem;
+  }
+}

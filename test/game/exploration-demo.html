@@ -1,0 +1,26 @@
+<!-- 《借灯》探索演示：与独立成就演示共享本标签页进度。 -->
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>探索与成就接口演示｜借灯</title>
+  <link rel="stylesheet" href="../../assets/css/exploration.css">
+</head>
+<body>
+  <header>
+    <h1>借灯 · 独立接口演示</h1>
+    <p>演示进度保存在当前标签页，刷新保留。地图完成按钮用于模拟完成事件。</p>
+    <nav aria-label="探索演示导航"><a href="achievements-demo.html">查看成就</a></nav>
+  </header>
+  <main>
+    <section id="game-scene" aria-label="探索"></section>
+    <section id="game-story" aria-label="剧情"></section>
+    <section id="game-actions" aria-label="操作"></section>
+    <aside id="inventory-panel" aria-label="背包"></aside>
+    <section id="achievement-preview" aria-label="成就"></section>
+    <div id="feedback" role="status" aria-live="polite"></div>
+  </main>
+  <script type="module" src="../../assets/js/game/exploration-demo.js"></script>
+</body>
+</html>
