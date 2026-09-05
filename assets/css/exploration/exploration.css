@@ -1,0 +1,136 @@
+/* 探索与成就专用灰度样式：只作用于模块节点，不重定义全站或队友页面。 */
+.exploration-module {
+  box-sizing: border-box;
+  max-width: 100%;
+  padding: 1rem;
+  color: #222;
+  background: #f5f5f5;
+  overflow-wrap: anywhere;
+}
+.exploration-module * {
+  box-sizing: border-box;
+}
+.exploration-module .exploration-title {
+  margin: 0 0 .75rem;
+}
+.exploration-module .exploration-stage {
+  position: relative;
+  height: 420px;
+  background: #e9e9e9;
+  border: 1px solid #888;
+}
+.exploration-module .scene-hotspot {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  max-width: 120px;
+  min-height: 44px;
+  padding: .5rem;
+  font: inherit;
+  background: #fff;
+  color: #222;
+  border: 1px solid #555;
+  border-radius: .4rem;
+  cursor: pointer;
+}
+.exploration-module .scene-hotspot:hover {
+  background: #ddd;
+}
+.exploration-module .is-completed {
+  border-style: dashed;
+}
+.exploration-module .is-disabled {
+  color: #666;
+  background: #ddd;
+}
+.exploration-module .exploration-viewpoint {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  background: #222;
+  color: white;
+  padding: .3rem;
+  border-radius: 50%;
+}
+.exploration-module .exploration-controls {
+  display: flex;
+  gap: .5rem;
+  flex-wrap: wrap;
+}
+.exploration-module button {
+  font: inherit;
+  min-height: 44px;
+  cursor: pointer;
+}
+.exploration-module button[aria-pressed="true"] {
+  outline: 2px solid currentColor;
+}
+.exploration-module :focus-visible {
+  outline: 3px solid #111;
+  outline-offset: 3px;
+}
+.exploration-module .exploration-inventory {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 1rem;
+}
+.exploration-module .content-card {
+  padding: .75rem;
+  border: 1px solid #aaa;
+  margin-top: .5rem;
+  background: white;
+}
+.exploration-module img {
+  object-fit: contain;
+  max-width: 100%;
+}
+.exploration-module .exploration-item-button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: .5rem;
+  width: 100%;
+  text-align: left;
+  border: 0;
+  background: transparent;
+  color: inherit;
+}
+.exploration-module .exploration-item-dialog {
+  width: min(90vw, 560px);
+  max-height: 85vh;
+  overflow: auto;
+  border: 1px solid #555;
+  border-radius: .5rem;
+  padding: 1rem;
+  background: #fff;
+  color: #222;
+}
+.exploration-module .exploration-item-dialog::backdrop {
+  background: rgb(0 0 0 / 55%);
+}
+.exploration-module .exploration-item-dialog img {
+  display: block;
+  margin: 0 auto;
+}
+.exploration-module [hidden] {
+  display: none !important;
+}
+.exploration-module .exploration-viewpoint {
+  font-size: .65rem;
+  padding: .2rem;
+}
+@media (max-width: 640px) {
+  .exploration-module {
+    padding: .5rem;
+  }
+  .exploration-module .exploration-stage {
+    height: 540px;
+  }
+  .exploration-module .scene-hotspot {
+    max-width: 72px;
+    padding: .35rem;
+    font-size: .75rem;
+    line-height: 1.35;
+  }
+}

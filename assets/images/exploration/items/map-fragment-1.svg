@@ -1,0 +1,9 @@
+<!-- 《借灯》灰度原创素材：手绘地图碎片一。 -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 200" role="img" aria-labelledby="title">
+  <title id="title">手绘地图碎片一</title>
+  <rect width="320" height="200" fill="#d8d8d8"/>
+  <path d="M42 37h119l22 37-24 32 18 57H42z" fill="#f1f1f1" stroke="#333" stroke-width="7"/>
+  <path d="M64 139c24-5 22-59 61-68 18-4 31 5 43 17" fill="none" stroke="#696969" stroke-width="8"/>
+  <circle cx="124" cy="71" r="8" fill="#222"/>
+  <text x="58" y="65" font-family="sans-serif" font-size="18" fill="#333">村口</text>
+</svg>
