@@ -1,17 +1,58 @@
+<!-- 本文件展示制作组信息、成员入口与已确认的项目分工。 -->
 <!doctype html>
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>制作组 · 借灯</title>
-  <link rel="stylesheet" href="../../assets/css/about/about.css">
+  <title>制作组介绍</title>
+  <link rel="stylesheet" href="../../assets/css/about/about.css?v=1.5">
 </head>
-<body class="about-page">
-  <header class="about-header"><a class="button button--secondary" href="../menu.html">返回主菜单</a><div class="about-brand">ABOUT / TEAM</div></header>
-  <main class="about-main"><div class="about-grid">
-    <section class="content-card" aria-labelledby="teamTitle"><p class="about-kicker">TEAM ARCHIVE</p><h1 class="about-title" id="teamTitle">制作组</h1><p class="about-copy">五位成员共同完成 V1 的入口、账户、剧情、探索、小游戏、成就和全局接线。</p><ul class="member-list" id="memberList"></ul><div class="about-actions"><a class="button button--secondary" href="../menu.html">返回主菜单</a></div></section>
-    <nav class="about-nav" aria-label="介绍页面导航"><h2>INDEX</h2><ul class="about-nav-list"><li><a href="project.html">项目介绍</a></li><li><a href="team.html" aria-current="page">制作组介绍</a></li></ul></nav>
-  </div></main>
-  <script type="module" src="../../assets/js/about/team.js"></script>
+<body id="team-about" class="about-page">
+  <header class="about-header">
+    <a class="button button--secondary" href="../menu.html">返回主菜单</a>
+    <div class="about-brand">ABOUT US / TEAM</div>
+  </header>
+  <main class="about-main">
+    <div class="about-grid">
+      <section class="content-card team-profile" aria-labelledby="teamTitle">
+        <header class="team-heading" id="teamTop">
+          <p class="about-kicker" id="teamPageLabel">TEAM / WHITE LAMP</p>
+          <h1 class="about-title" id="teamTitle">制作组</h1>
+          <p class="about-copy" id="teamIntroduction"></p>
+          <dl class="team-meta" aria-label="制作组信息">
+            <div><dt>PROJECT</dt><dd>《借灯》</dd></div>
+            <div><dt>VERSION</dt><dd>V1</dd></div>
+            <div><dt>MEMBERS</dt><dd id="teamMemberCount"></dd></div>
+          </dl>
+        </header>
+
+        <section class="team-section" id="teamMembers" aria-labelledby="membersTitle">
+          <p class="section-index">01 / MEMBERS</p>
+          <h2 id="membersTitle">成员档案</h2>
+          <p class="section-description">选择成员查看个人介绍与项目资料。</p>
+          <ul class="member-list" id="memberList"></ul>
+        </section>
+
+        <section class="team-section" id="teamDivisions" aria-labelledby="divisionsTitle" hidden>
+          <p class="section-index">02 / DIVISION</p>
+          <h2 id="divisionsTitle">项目分工</h2>
+          <dl class="division-list" id="divisionList"></dl>
+        </section>
+        <div class="about-actions"><a class="button button--secondary" href="../menu.html">返回主菜单</a></div>
+      </section>
+      <nav class="about-nav" aria-label="介绍页面导航">
+        <h2>EXPLORE / 团队导览</h2>
+        <ul class="about-nav-list">
+          <li><a href="#teamTop" aria-current="location">团队概览</a></li>
+          <li><a href="#teamMembers">成员档案</a></li>
+          <li id="teamDivisionNav" hidden><a href="#teamDivisions">项目分工</a></li>
+        </ul>
+        <h3 class="about-nav__subheading">MEMBERS / 成员</h3>
+        <ul class="about-nav-list about-nav-list--members" id="teamMemberNav"></ul>
+        <div class="about-nav__footer"><a href="project.html">返回项目介绍 →</a></div>
+      </nav>
+    </div>
+  </main>
+  <script type="module" src="../../assets/js/about/team.js?v=1.5"></script>
 </body>
 </html>
