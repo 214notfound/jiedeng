@@ -4,7 +4,7 @@
 
 > **废案，仅供追溯。** 本文件不得作为开发或联调依据；剧情模块以 `docs/剧情模块接口约定.md` 和 `docs/V1剧情运行Node清单.md` 为准。
 
-**版本：** V1.0 草案  
+**版本：** V1.2 草案（已同步账户与全局状态接口）
 **维护人：** 全局与存档负责人  
 **适用范围：** 第一周版本：祠堂醒来 → 村口 → 陈家老宅，以及手绘地图复原、存档和一项成就。
 
@@ -20,19 +20,19 @@
 
 ### 0.1 本版本采用的产品前提（请团队确认）
 
-本文件暂按以下方案写：
+本文件采用以下方案：
 
-- 一台浏览器只保存一份本地身份资料和一份游戏进度；不提供切换多个账号。
+- 同一浏览器可以注册多个本地账户；每个注册账户各自保存一份最近游戏进度，游客另有一份独立进度。
 - 注册/登录只用于本机课程演示；绝不输入真实密码。
-- 玩家可手动保存；刷新后可继续唯一的一份有效进度。
-
-> 注意：这与原 PRD 中“注册用户与游客拥有独立存档”的要求不同。全组若正式采用本方案，必须同步修改 PRD；若不能修改，则需要把下面的单份存档改为“每个用户/游客一份存档”。
+- 账户模块只管理用户身份，游戏状态与存档模块只使用账户模块提供的 `storageScope` 区分存档归属。
+- 游客的 `storageScope` 固定为 `guest`；注册账户的格式为 `account:<userId>`。
+- 玩家可手动保存；刷新页面后可继续当前账户或游客存储域中的最近一份有效进度。
 
 ### 0.2 四条总规则
 
 1. **同一件游戏内容只用一个 ID。** 例如“刻有 A 的钥匙”永远是 `key-a`，不能有人写 `a-key`、有人写 `keyA`。
 2. **只有状态模块能修改游戏状态。** 剧情、探索、拼图、成就模块提出“发生了什么”，不能各自随意改存档。
-3. **只有存档模块读写浏览器本地存储。** 其他模块不得直接使用 `localStorage`。
+3. **只有存档模块读写游戏进度的浏览器本地存储。** 账户模块只读写自己的账户与会话数据；剧情、探索、拼图、背包和成就模块不得直接使用 `localStorage` 保存游戏进度。
 4. **所有关键操作都要有玩家可见反馈。** 成功、缺少条件、保存失败或存档损坏都不能静默。
 
 ### 0.3 队员什么时候需要查这份文档（速查表）
@@ -67,8 +67,8 @@
 | 页面中文名 | 文件路径 | 英文页面名/页面 ID | 涉及模块（PRD 需求） | 从哪里进入 | 可以前往 |
 | --- | --- | --- | --- | --- |
 | 游戏封面 | `index.html` | `cover` | 入口（R01） | 打开网站 | 登录、注册、游客进入 |
-| 注册 | `pages/auth/register.html` | `register` | 账户（R02） | 封面 | 登录、主菜单（成功后） |
-| 登录 | `pages/auth/login.html` | `login` | 账户（R03、R04） | 封面、注册 | 主菜单 |
+| 注册 | `pages/authorize/register.html` | `register` | 账户（R02） | 封面 | 登录 |
+| 登录 | `pages/authorize/login.html` | `login` | 账户（R03、R04） | 封面、注册 | 主菜单 |
 | 主菜单 | `pages/menu.html` | `menu` | 全局/导航（R05）、存档（R06） | 登录或游客进入后 | 新游戏、继续游戏、成就、项目介绍、制作组 |
 | 游戏主界面 | `pages/game.html` | `game` | 全局/状态（R11、R21）、存档（R06、R14、R15）、剧情（R07、R08）、探索/背包（R09、R10、R12）、小游戏（R13） | 主菜单 | 主菜单、背包面板、保存 |
 | 成就 | `pages/achievements.html` | `achievements` | 成就（R16） | 主菜单 | 主菜单 |
@@ -111,10 +111,10 @@
 
 | 模块 | 建议目录/文件 | 负责人交付物 | 交给其他模块的结果 |
 | --- | --- | --- | --- |
-| 全局状态 | `assets/js/core/state.js` | 初始状态、统一状态更新 | 当前剧情、背包、调查、选择、拼图、成就状态 |
-| 存档 | `assets/js/core/storage.js` | 保存、读取、校验、损坏提示 | 一份有效游戏状态，或可理解的错误 |
+| 全局状态 | `assets/js/core/state.js` | 初始状态、统一状态更新、保存 `storageScope` | 当前剧情、背包、调查、选择、拼图、成就状态 |
+| 存档 | `assets/js/core/storage.js` | 按 `storageScope` 保存、读取、校验、损坏提示 | 当前账户/游客的一份有效游戏状态，或可理解的错误 |
 | 页面导航 | `assets/js/core/navigation.js` | 页面保护、返回、安全跳转 | 登录后进入菜单；无存档时禁用继续游戏 |
-| 账户 | `assets/js/auth/auth.js` | 注册、登录、本机身份资料 | “已登录/未登录”状态和昵称 |
+| 账户 | `assets/js/authorize/` | 注册、登录、本机身份资料与 `window.WhiteLamp.auth` 接口 | `username`、`userType`、`userId`、`storageScope` |
 | 剧情 | `assets/js/data/prologue.js`、`assets/js/data/village.js`、`assets/js/data/old-house.js`、`assets/js/game/story-engine.js` | 节点文本、选项、节点推进 | 进入何处、玩家作出了什么选择 |
 | 探索和对话 | `assets/js/game/exploration.js` | 热点、物品调查、村民对话 | 完成调查、获得物品、对话完成 |
 | 背包 | `assets/js/game/inventory.js` | 物品展示与详情面板 | 只读取背包状态，不自行保存 |
@@ -151,7 +151,9 @@
 
 | 中文 | 英文 ID / 名称 | 备注 |
 | --- | --- | --- |
-| 《借灯》项目技术前缀 | `jiedeng` | 即使最终展示名待确认，存储键先统一使用此技术前缀 |
+| 《借灯》项目技术前缀 | `white-lamp` | 与账户模块已经使用的本地存储前缀一致 |
+| 游客存储域 | `guest` | 由账户模块的 `PublicUser.storageScope` 提供 |
+| 注册用户存储域 | `account:<userId>` | `userId` 为账户模块生成的稳定 UUID，不使用用户名作为存档键 |
 | 封面 | `cover` | 页面 ID |
 | 主菜单 | `menu` | 页面 ID |
 | 游戏主界面 | `game` | 页面 ID |
@@ -206,6 +208,8 @@ personal-item-3
 | 玩家行为 | 玩家立刻看到什么 | 英文事件 | 统一携带的信息 | 全局应更新什么 | 后续影响 |
 | --- | --- | --- | --- | --- | --- |
 | 点击“新游戏” | 进入祠堂醒来 | `GAME_STARTED` | 无 | 初始状态、节点、阶段 | 开始剧情 |
+| 剧情进入新节点 | 新叙述或场景出现 | `STORY_NODE_CHANGED` | `nodeId`、`stageId` | 当前节点、当前阶段 | 刷新或读档后回到正确剧情 |
+| 阶段任务完成/取消 | 任务反馈或开放下一步 | `STAGE_PROGRESS_UPDATED` | `progressId`、`completed` | 阶段任务标记 | 作为剧情条件判断依据 |
 | 调查祠堂物品 | 物品说明、获得提示 | `OBJECT_INVESTIGATED` | `objectId`、可选 `itemId` | 已调查对象、背包 | 够三件后可离开 |
 | 首次与村民交谈 | 对话、获得碎片提示 | `NPC_TALKED` | `npcId`、`rewardItemId` | 已对话人物、背包 | 三人均谈完可拼图 |
 | 作出信任/怀疑选择 | 对应的小 X 反馈 | `CHOICE_MADE` | `choiceId` | 选择标记 | 后续对白不同 |
@@ -215,47 +219,92 @@ personal-item-3
 | 点击保存 | 保存成功/失败提示 | `GAME_SAVED` | 无 | 保存时间 | 刷新后可继续 |
 | 点击继续游戏 | 回到最后保存节点 | `GAME_LOADED` | 无 | 恢复全部状态 | 继续剧情 |
 
-### 4.3 代码中怎样使用事件：最小实际示例
+### 4.3 `state.js` 已实现接口（冻结）
 
-以下是**以后由全局/前端负责人实现一次**的通用入口。其他模块只需要按格式调用它，不必每个人自己写存档逻辑。
+文件位置：`assets/js/core/state.js`。本模块已完成第一版；所有游戏模块都必须通过它更新游戏状态。
 
 ```js
-// state.js：负责游戏状态更新。所有源文件开头写中文用途注释。
+import {
+  GAME_EVENTS,
+  applyGameEvent
+} from "../core/state.js";
+```
 
-export function applyGameEvent(gameState, event) {
-  switch (event.type) {
-    case "OBJECT_INVESTIGATED": {
-      const { objectId, itemId } = event.payload;
+#### 4.3.1 状态创建与返回规则
 
-      if (!gameState.investigated.includes(objectId)) {
-        gameState.investigated.push(objectId);
-      }
+- 主菜单新建游戏时，由导航模块调用 `createInitialGameState(storageScope)`。
+- `storageScope` 必须来自账户模块的 `PublicUser.storageScope`，游客为 `guest`，账户为 `account:<userId>`；不得使用用户名代替。
+- `applyGameEvent(gameState, event)` **不会直接修改**传入的旧状态，而是返回一份新状态；调用方必须接住返回值。
 
-      if (itemId && !gameState.inventory.includes(itemId)) {
-        gameState.inventory.push(itemId);
-      }
-      break;
-    }
+```js
+gameState = applyGameEvent(gameState, event);
+```
 
-    case "MAP_PUZZLE_COMPLETED": {
-      gameState.puzzle.mapRestored = true;
+禁止下列写法：
 
-      if (!gameState.inventory.includes("restored-village-map")) {
-        gameState.inventory.push("restored-village-map");
-      }
+```js
+gameState.inventory.push("key-a");
+applyGameEvent(gameState, event); // 没有接住返回值，状态不会更新。
+```
 
-      if (!gameState.achievements.includes("map-restorer")) {
-        gameState.achievements.push("map-restorer");
-      }
+#### 4.3.2 初始状态字段
 
-      gameState.currentNodeId = "old-house-arrival";
-      gameState.stage = "old-house";
-      break;
-    }
-  }
+新游戏生成以下字段。其他模块可以读取，但不得自行删除、改名或修改它们：
 
-  return gameState;
+```js
+{
+  schemaVersion: 1,
+  storageScope: "guest 或 account:<userId>",
+  currentNodeId: "prologue-wake",
+  stage: "prologue",
+  stageProgress: { "prologue-started": true },
+  choices: {},
+  investigated: [],
+  talkedTo: [],
+  inventory: [],
+  puzzle: { mapRestored: false },
+  achievements: [],
+  updatedAt: null
 }
+```
+
+`updatedAt` 只由后续存档模块在保存成功时写入；业务模块不要修改它。
+
+#### 4.3.3 事件参数与实际效果
+
+所有内容 ID 必须是小写 kebab-case，例如 `key-a`、`prologue-wake`；错误 ID 会抛出错误，不会悄悄写入状态。
+
+| 事件常量 | `payload` | 状态变化 |
+| --- | --- | --- |
+| `GAME_STARTED` | 无 | 重建初始状态，保留原 `storageScope` |
+| `STORY_NODE_CHANGED` | `{ nodeId, stageId }` | 修改 `currentNodeId`、`stage` |
+| `STAGE_PROGRESS_UPDATED` | `{ progressId, completed }`，`completed` 必须为布尔值 | 写入 `stageProgress[progressId]` |
+| `OBJECT_INVESTIGATED` | `{ objectId, itemId? }` | 记录调查对象；有 `itemId` 时加入背包 |
+| `NPC_TALKED` | `{ npcId, rewardItemId? }` | 记录人物；有奖励时加入背包 |
+| `CHOICE_MADE` | `{ choiceId }` | 写入 `choices[choiceId] = true` |
+| `ITEM_ACQUIRED` | `{ itemId }` | 将物品加入背包 |
+| `MAP_PUZZLE_COMPLETED` | `{ puzzleId: "map-puzzle" }` | 复原地图、获得完整地图、解锁 `map-restorer`、标记 `village-map-puzzle-completed` 与 `old-house-unlocked` |
+| `ACHIEVEMENT_UNLOCKED` | `{ achievementId }` | 将成就加入 `achievements` |
+
+数组类字段（背包、已调查、已对话、成就）自动去重：重复点击、重复读档或重复发事件不会重复奖励。
+
+### 4.4 代码中怎样使用事件：最小实际示例
+
+其他模块只需要按格式调用，不必自己写存档逻辑。
+
+```js
+import {
+  GAME_EVENTS,
+  applyGameEvent
+} from "../core/state.js";
+
+// 业务模块只发事件，并接住新状态。
+gameState = applyGameEvent(gameState, {
+  type: GAME_EVENTS.ITEM_ACQUIRED,
+  payload: {
+    itemId: "key-a"
+  }
+});
 ```
 
 探索成员调查“刻有 A 的钥匙”时，使用同一个入口：
@@ -264,7 +313,7 @@ export function applyGameEvent(gameState, event) {
 // exploration.js：负责调查交互；不直接写 localStorage。
 
 const nextState = applyGameEvent(currentState, {
-  type: "OBJECT_INVESTIGATED",
+  type: GAME_EVENTS.OBJECT_INVESTIGATED,
   payload: {
     objectId: "old-house-door",
     itemId: "key-a"
@@ -278,7 +327,7 @@ const nextState = applyGameEvent(currentState, {
 // map-puzzle.js：拼图成功后通知全局状态模块。
 
 const nextState = applyGameEvent(currentState, {
-  type: "MAP_PUZZLE_COMPLETED",
+  type: GAME_EVENTS.MAP_PUZZLE_COMPLETED,
   payload: {
     puzzleId: "map-puzzle"
   }
@@ -288,31 +337,35 @@ const nextState = applyGameEvent(currentState, {
 这两个成员都**不应该**各自写：
 
 ```js
-// 禁止：各模块直接写本地存储，容易相互覆盖。
-localStorage.setItem("jiedeng_save", JSON.stringify(currentState));
+// 禁止：各业务模块直接写本地存储，容易相互覆盖或串档。
+localStorage.setItem("white-lamp:save:guest:v1", JSON.stringify(currentState));
 ```
 
 保存应该只由 `storage.js` 完成：
 
 ```js
-// storage.js：负责唯一的本地存储入口。
+// storage.js：负责唯一的游戏进度本地存储入口。
+import { SAVE_SCHEMA_VERSION } from "./state.js";
 
-export function saveGame(gameState) {
-  localStorage.setItem("jiedeng_save", JSON.stringify(gameState));
+export function getSaveKey(storageScope) {
+  return `white-lamp:save:${storageScope}:v${SAVE_SCHEMA_VERSION}`;
+}
+
+export function saveGame(gameState, currentStorageScope) {
+  if (gameState.storageScope !== currentStorageScope) {
+    throw new Error("游戏状态与当前账户的存储域不一致");
+  }
+
+  localStorage.setItem(
+    getSaveKey(currentStorageScope),
+    JSON.stringify(gameState)
+  );
 }
 ```
 
-### 4.4 避免重复奖励的规则
+### 4.5 避免重复奖励的规则
 
-所有“首次获得”都先检查对应 ID 是否已经存在：
-
-```js
-if (!currentState.inventory.includes("key-a")) {
-  // 只在第一次发放钥匙。
-}
-```
-
-所以玩家可以重新阅读物品说明，却不会获得两把钥匙；读取存档后也不会重新触发成就。
+不要在业务模块里自己写“是否已获得”的数组判断。`state.js` 已经在调查、对话、获得物品、地图完成和成就事件中完成去重；所以玩家可以重新阅读说明、重复点击或读取存档，仍不会获得两把钥匙或重复解锁成就。
 
 ---
 
@@ -437,7 +490,7 @@ feature/site-style         公共样式与响应式布局
 
 | 待确认事项 | 为什么必须确认 | 最终结论 | 确认人 |
 | --- | --- | --- | --- |
-| 是否采用单浏览器、单用户、单存档 | 影响原 PRD 的账户/游客验收 | 待确认 | 待填写 |
+| 存档隔离方案 | 影响账户/游客验收与存档键 | 已采用：每个本地账户各一份最近存档，游客一份独立存档；通过 `storageScope` 隔离 | 待填写 |
 | 游戏展示名：`《借灯》` 或其他 | 影响封面、README、介绍页和素材 | 待确认 | 待填写 |
 | 小 X 和三位村民的正式显示名 | 影响剧情文案和人物资料 | 待确认 | 待填写 |
 | 三件随身物品的名称、获得方式和用途 | 决定物品 ID 与祠堂通关条件 | 待确认 | 待填写 |

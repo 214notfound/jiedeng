@@ -60,7 +60,7 @@
 
     const sessionResult = await auth.getSession();
     if (sessionResult.ok && sessionResult.data) {
-      pageUi.setStatus(status, "info", "检测到有效会话，正在进入账户测试页。");
+      pageUi.setStatus(status, "info", "检测到有效会话，正在进入主菜单。");
       global.setTimeout(() => global.location.replace(config.successUrl), 250);
       return;
     }
@@ -89,7 +89,7 @@
         return;
       }
 
-      pageUi.setStatus(status, "success", "登录成功，正在进入账户测试页。");
+      pageUi.setStatus(status, "success", "登录成功，正在进入主菜单。");
       global.setTimeout(() => global.location.assign(config.successUrl), 250);
     });
 
@@ -131,7 +131,7 @@
         }
       }
 
-      pageUi.setStatus(status, "success", "游客会话已建立，正在进入账户测试页。");
+      pageUi.setStatus(status, "success", "游客会话已建立，正在进入主菜单。");
       global.setTimeout(() => global.location.assign(config.successUrl), 250);
     });
   }
