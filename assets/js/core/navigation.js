@@ -3,6 +3,10 @@
 import { createGameFlow } from "./game-flow.js";
 import { createGameView } from "./game-ui.js";
 import { STORY_NOTIFICATION_TYPES } from "./game-contract.js";
+import { createInteractionModule } from "../exploration/integration/game/interaction-module.js";
+import { mountExploration } from "../exploration/game/exploration-view.js";
+import { createMapPuzzleAdapter } from "../minigames/map-puzzle/adapter/map-puzzle-adapter.js";
+import { getAchievementEvents } from "../achievements/game/achievements.js";
 import {
   saveGame,
   loadGame
@@ -113,8 +117,17 @@ function setupMenuPage() {
 
 function setupGamePage() {
   let gameFlow;
+  let interactionModule;
+  let removeExploration;
+  let mapAdapter;
+  let activeCommands = [];
+  const stateListeners = new Set();
   const returnMenuButton = document.getElementById("return-menu-button");
   const saveButton = document.getElementById("save-button");
+  const sceneRoot = document.getElementById("game-scene");
+  const explorationActionsRoot = document.getElementById("exploration-actions");
+  const inventoryRoot = document.getElementById("inventory-panel");
+  const minigameRoot = document.getElementById("minigame-root");
   const query = new URLSearchParams(location.search);
   const mode = query.get("mode");
   const debugMode = query.get("debug") === "1";
@@ -219,7 +232,20 @@ function setupGamePage() {
     gameFlow = createGameFlow({
       storageScope,
       notificationHandlers,
-      onStateChange: gameView.renderState,
+      onStateChange: (state) => {
+        gameView.renderState(state);
+        stateListeners.forEach((listener) => listener());
+      },
+      onCommandsChange: (commands) => {
+        activeCommands = commands;
+      },
+      commandHandlers: {
+        // 探索/对话命令由 interactionModule 根据 pendingCommands 消费。
+        REQUEST_EXPLORATION: () => {},
+        REQUEST_CONVERSATION: () => {},
+        // 地图命令保留在检查点中，玩家点击“复原手绘地图”时再启动视图。
+        REQUEST_MINIGAME: () => {}
+      },
       onStatusChange: (_status, response) => gameView.renderResponse(response),
       onError: (error) => {
         console.error("[white-lamp:game-flow]", error.developerMessage);
@@ -228,6 +254,16 @@ function setupGamePage() {
     });
 
     globalThis.WhiteLamp = globalThis.WhiteLamp || {};
+    async function dispatchExternalEvent(event) {
+      const result = await gameFlow.handleExternalEvent(event);
+      if (result.ok) {
+        getAchievementEvents({state: gameFlow.getState()}).forEach((achievementEvent) => {
+          gameFlow.applyAppEvent(achievementEvent);
+        });
+      }
+      return result;
+    }
+
     function saveCurrentGame() {
       const saveResult = saveGame(gameFlow.getState(), storageScope);
 
@@ -249,7 +285,7 @@ function setupGamePage() {
       getStateSnapshot: gameFlow.getStateSnapshot,
       update: gameFlow.applyAppEvent,
       handleStoryAction: gameFlow.handleStoryAction,
-      handleExternalEvent: gameFlow.handleExternalEvent,
+      handleExternalEvent: dispatchExternalEvent,
       save: saveCurrentGame,
       isFlowLocked: gameFlow.isLocked
     };
@@ -261,6 +297,66 @@ function setupGamePage() {
     if (!startResult.ok) {
       return;
     }
+
+    const host = {
+      getContext() {
+        const state = gameFlow.getState();
+        if (!state?.storyCheckpoint) {
+          throw new Error("游戏状态尚未建立剧情检查点。");
+        }
+        return {
+          storageScope,
+          state,
+          commands: activeCommands.map((command) => ({...command}))
+        };
+      },
+      subscribe(listener) {
+        if (typeof listener !== "function") throw new TypeError("订阅者必须是函数。");
+        stateListeners.add(listener);
+        listener();
+        return () => stateListeners.delete(listener);
+      },
+      dispatchExternalEvent(event) {
+        return dispatchExternalEvent(event);
+      }
+    };
+
+    if (!sceneRoot || !explorationActionsRoot || !inventoryRoot || !minigameRoot) {
+      throw new Error("游戏页面缺少探索或小游戏挂载区域。");
+    }
+
+    mapAdapter = createMapPuzzleAdapter({
+      container: minigameRoot,
+      onEvent: async (event) => {
+        const result = await dispatchExternalEvent(event);
+        if (result.ok && event.eventType === "MAP_PUZZLE_COMPLETED") {
+          mapAdapter.destroy();
+          minigameRoot.hidden = true;
+          minigameRoot.replaceChildren();
+        }
+        return result;
+      }
+    });
+
+    interactionModule = createInteractionModule(host);
+    removeExploration = mountExploration({
+      module: interactionModule,
+      sceneRoot,
+      actionsRoot: explorationActionsRoot,
+      inventoryRoot,
+      showFeedback,
+      openMap: (command) => {
+        minigameRoot.hidden = false;
+        mapAdapter.start(command);
+      }
+    });
+
+    globalThis.addEventListener("pagehide", () => {
+      removeExploration?.();
+      interactionModule?.dispose();
+      mapAdapter?.destroy();
+      stateListeners.clear();
+    }, {once: true});
 
     if (saveButton) {
       saveButton.addEventListener("click", saveCurrentGame);

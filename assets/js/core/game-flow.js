@@ -183,6 +183,7 @@ export function createGameFlow(options = {}) {
     onPresentation,
     onError = defaultErrorHandler,
     onStateChange,
+    onCommandsChange,
     onStatusChange
   } = options;
 
@@ -351,7 +352,15 @@ export function createGameFlow(options = {}) {
         );
       }
 
-      replaceState(committedState);
+      // 先发布完整命令，再通知状态订阅者。检查点只保存命令摘要，
+      // 探索/对话模块还需要响应里的 payload 与 goals 才能安全执行。
+      gameState = committedState;
+      if (typeof onCommandsChange === "function") {
+        onCommandsChange(response.commands.map((command) => ({...command})));
+      }
+      if (typeof onStateChange === "function") {
+        onStateChange(gameState);
+      }
 
       // 状态提交成功后才允许产生对外副作用。
       await dispatchNotifications(response.notifications);

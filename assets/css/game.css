@@ -61,6 +61,8 @@ button { font: inherit; }
 
 .game-layout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 14px; max-width: 1440px; margin: auto; }
 .game-main { display: grid; min-width: 0; gap: 14px; }
+.exploration-actions, .minigame-root { min-width: 0; }
+.minigame-root { padding: 18px; background: var(--panel); border: 1px solid var(--line); }
 .scene-panel { position: relative; min-height: 300px; overflow: hidden; background: linear-gradient(145deg, rgba(13, 18, 27, 0.45), rgba(13, 18, 27, 0.88)); border: 1px solid var(--line); }
 .scene-panel::before { position: absolute; inset: 0; background: radial-gradient(circle at 72% 28%, rgba(225, 217, 192, 0.17), transparent 22%); content: ""; }
 .scene-name { position: absolute; left: 20px; bottom: 18px; z-index: 1; display: grid; gap: 5px; }

@@ -74,13 +74,15 @@ test("引擎快照通过目录级属性关闭换行转换", () => {
   assert.match(attributes, /^\s*#.*\r?\n\*\.js -text\s*$/);
 });
 
-test("生产脚本一级目录只保留探索与成就，成就核心不依赖探索", () => {
+test("生产脚本按正式功能域分目录，成就核心不依赖探索", () => {
   const scriptRoot = new URL("../../assets/js/", import.meta.url);
   const directories = fs.readdirSync(scriptRoot, {withFileTypes: true})
     .filter((entry) => entry.isDirectory())
     .map((entry) => entry.name)
     .sort();
-  assert.deepEqual(directories, ["achievements", "exploration"]);
+  assert.deepEqual(directories, [
+    "about", "achievements", "authorize", "core", "exploration", "game-line", "minigames"
+  ]);
   for (const file of ["achievements.js", "achievements-view.js"]) {
     const source = fs.readFileSync(
       new URL("../../assets/js/achievements/game/" + file, import.meta.url), "utf8"
