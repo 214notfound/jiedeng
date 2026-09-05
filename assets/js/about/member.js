@@ -64,4 +64,3 @@ if (!member) {
     workList.closest("[data-optional-section]").hidden = false;
   }
 }
-

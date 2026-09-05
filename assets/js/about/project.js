@@ -70,4 +70,3 @@ document.getElementById("projectInfo").replaceChildren(...confirmedInfo.map(([ke
   return row;
 }));
 document.getElementById("projectPrivacy").textContent = projectData.privacyNotice;
-

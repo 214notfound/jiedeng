@@ -105,4 +105,3 @@ if (confirmedDivisions.length > 0) {
   document.getElementById("teamDivisions").hidden = false;
   document.getElementById("teamDivisionNav").hidden = false;
 }
-

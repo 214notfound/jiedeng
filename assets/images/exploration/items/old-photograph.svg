@@ -1,0 +1,10 @@
+<!-- 《借灯》灰度原创素材：陈家家庭照片。 -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 200" role="img" aria-labelledby="title">
+  <title id="title">陈家家庭照片</title>
+  <rect width="320" height="200" fill="#d8d8d8"/>
+  <rect x="43" y="22" width="234" height="156" fill="#f3f3f3" stroke="#333" stroke-width="8"/>
+  <circle cx="123" cy="82" r="26" fill="#777"/>
+  <path d="M76 152c7-38 30-54 47-54s40 16 47 54" fill="#999"/>
+  <circle cx="207" cy="95" r="21" fill="#888"/>
+  <path d="M171 152c5-29 22-43 36-43s31 14 36 43" fill="#aaa"/>
+</svg>
