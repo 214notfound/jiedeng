@@ -13,7 +13,7 @@
   <header class="achievement-header">
     <p class="achievement-brand">借灯</p>
     <nav class="achievement-navigation" aria-label="成就页面导航">
-      <a class="achievement-link" href="../exploration/game.html">返回探索</a>
+      <a class="achievement-link" href="../menu.html">返回主菜单</a>
     </nav>
   </header>
   <main class="achievement-main" id="achievement-main">
@@ -23,8 +23,10 @@
     <section id="achievement-list" aria-label="成就列表"></section>
     <p id="achievement-feedback" role="alert">暂时无法读取成就，请从游戏入口重新进入。</p>
   </main>
-  <!-- 游戏壳入口在恢复会话与存档后，导入并调用 mountAchievementsPage。 -->
-  <script defer src="../../assets/js/exploration/game/local-preview-hint.js"></script>
-  <script type="module" src="../../assets/js/achievements/game/achievements-page.js"></script>
+  <script defer src="../../assets/js/authorize/config.js"></script>
+  <script defer src="../../assets/js/authorize/storage.js"></script>
+  <script defer src="../../assets/js/authorize/crypto.js"></script>
+  <script defer src="../../assets/js/authorize/auth-service.js"></script>
+  <script type="module" src="../../assets/js/achievements/game/achievements-entry.js"></script>
 </body>
 </html>

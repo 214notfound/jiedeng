@@ -6,6 +6,8 @@
     <meta name="description" content="《借灯》游戏主界面" />
     <title>借灯 · 游戏</title>
     <link rel="stylesheet" href="../assets/css/game.css" />
+    <link rel="stylesheet" href="../assets/css/exploration/exploration.css" />
+    <link rel="stylesheet" href="../assets/css/exploration/game.css" />
   </head>
   <body data-page="game">
     <noscript>
@@ -33,11 +35,11 @@
       <main class="game-layout">
         <div class="game-main">
           <section id="game-scene" class="scene-panel" aria-label="当前场景" data-scene="loading">
-            <div class="scene-name">
-              <small>SCENE</small>
-              <span>loading</span>
-            </div>
           </section>
+
+          <section id="exploration-actions" class="exploration-actions" aria-label="探索操作"></section>
+
+          <section id="minigame-root" class="minigame-root" aria-label="小游戏" hidden></section>
 
           <section class="story-panel" aria-labelledby="story-heading">
             <h2 id="story-heading">剧情记录</h2>
@@ -49,15 +51,7 @@
         </div>
 
         <aside class="game-sidebar" aria-label="游戏状态">
-          <section id="inventory-panel" class="side-panel" aria-labelledby="inventory-heading">
-            <h2 id="inventory-heading">背包</h2>
-            <ul id="inventory-list"><li class="empty-item">正在读取……</li></ul>
-          </section>
-
-          <section class="side-panel" aria-labelledby="clue-heading">
-            <h2 id="clue-heading">线索</h2>
-            <ul id="clue-list"><li class="empty-item">尚未记录线索</li></ul>
-          </section>
+          <section id="inventory-panel" class="side-panel" aria-label="背包与线索"></section>
 
           <section class="side-panel" aria-labelledby="log-heading">
             <h2 id="log-heading">流程日志</h2>

@@ -1,32 +1,9 @@
 // 游戏主界面的轻量渲染层，只显示已提交状态和剧情响应。
 
-const ITEM_NAMES = Object.freeze({
-  "burned-work-id": "烧毁的工作证",
-  "blue-glass-bead": "蓝玻璃珠",
-  "key-a": "无标记老钥匙",
-  "map-fragment-1": "地图碎片一",
-  "map-fragment-2": "地图碎片二",
-  "map-fragment-3": "地图碎片三",
-  "restored-village-map": "复原的村庄地图"
-});
-
-const CLUE_NAMES = Object.freeze({
-  "old-photograph": "陈家旧照片",
-  "school-uniform": "旧校服",
-  "height-marks": "身高刻痕",
-  "funeral-list": "送葬名单"
-});
-
 const STAGE_NAMES = Object.freeze({
   prologue: "祠堂",
   village: "村口",
   "old-house": "陈家老宅"
-});
-
-const SCENE_IDS_BY_STAGE = Object.freeze({
-  prologue: "shrine",
-  village: "village",
-  "old-house": "old-house"
 });
 
 const COMMAND_LABELS = Object.freeze({
@@ -66,9 +43,6 @@ export function createGameView({
 } = {}) {
   const storyElement = requiredElement("game-story");
   const actionsElement = requiredElement("game-actions");
-  const inventoryElement = requiredElement("inventory-list");
-  const cluesElement = requiredElement("clue-list");
-  const sceneElement = requiredElement("game-scene");
   const stageElement = requiredElement("stage-label");
   const nodeElement = requiredElement("node-label");
   const logElement = requiredElement("story-log");
@@ -93,36 +67,12 @@ export function createGameView({
     }
   }
 
-  function renderCollection(element, ids, names, emptyText) {
-    element.replaceChildren();
-    if (ids.length === 0) {
-      const empty = document.createElement("li");
-      empty.className = "empty-item";
-      empty.textContent = emptyText;
-      element.append(empty);
-      return;
-    }
-
-    ids.forEach((id) => {
-      const item = document.createElement("li");
-      item.textContent = names[id] || id;
-      element.append(item);
-    });
-  }
-
   function renderState(state) {
     if (!state) return;
     const nodeId = state.storyCheckpoint?.nodeId || state.currentNodeId;
     const stageId = stageFromNodeId(nodeId) || state.stage;
-    const sceneId = SCENE_IDS_BY_STAGE[stageId];
     stageElement.textContent = STAGE_NAMES[stageId] || stageId || "初始化";
     nodeElement.textContent = nodeId || "正在建立检查点";
-    if (sceneId) {
-      sceneElement.dataset.scene = sceneId;
-      sceneElement.querySelector("span").textContent = sceneId;
-    }
-    renderCollection(inventoryElement, state.inventory, ITEM_NAMES, "背包为空");
-    renderCollection(cluesElement, state.clues, CLUE_NAMES, "尚未记录线索");
   }
 
   function renderPresentation(presentation, status) {
@@ -137,9 +87,6 @@ export function createGameView({
       storyElement.append(message);
       return;
     }
-
-    sceneElement.dataset.scene = presentation.sceneId;
-    sceneElement.querySelector("span").textContent = presentation.sceneId;
 
     presentation.blocks.forEach((block) => {
       const paragraph = document.createElement("p");
