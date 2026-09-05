@@ -1,10 +1,11 @@
+<!-- 本文件展示《借灯》的项目简介，并提供制作组与主菜单入口。 -->
 <!doctype html>
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>项目介绍</title>
-  <link rel="stylesheet" href="../../assets/css/about/about.css">
+  <link rel="stylesheet" href="../../assets/css/about/about.css?v=1.4">
 </head>
 <body id="project-about" class="about-page">
   <header class="about-header">
@@ -13,25 +14,81 @@
   </header>
   <main class="about-main">
     <div class="about-grid">
-      <article class="content-card">
-        <p class="about-kicker" id="projectSubtitle"></p>
-        <h1 class="about-title" id="projectTitle"></h1>
-        <p class="about-copy" id="projectDescription"></p>
-        <div class="about-tags" id="projectTags" aria-label="项目标签"></div>
+      <article class="content-card project-profile">
+        <header class="project-hero" id="projectTop">
+          <p class="about-kicker" id="projectSubtitle"></p>
+          <h1 class="about-title" id="projectTitle"></h1>
+          <p class="about-copy" id="projectDescription"></p>
+          <div class="about-tags" id="projectTags" aria-label="项目标签"></div>
+        </header>
+
+        <section class="project-section" aria-labelledby="storyTitle">
+          <p class="section-index">01 / STORY</p>
+          <h2 id="storyTitle">故事背景</h2>
+          <div class="project-prose" id="projectStory"></div>
+        </section>
+
+        <section class="project-section project-legend" aria-labelledby="legendTitle">
+          <p class="section-index">02 / LEGEND</p>
+          <h2 id="legendTitle"></h2>
+          <p class="project-prose" id="legendDescription"></p>
+          <ol class="legend-rules" id="legendRules"></ol>
+        </section>
+
+        <section class="project-section" aria-labelledby="gameplayTitle">
+          <p class="section-index">03 / GAMEPLAY</p>
+          <h2 id="gameplayTitle">核心玩法</h2>
+          <div class="project-feature-grid" id="projectGameplay"></div>
+        </section>
+
+        <section class="project-section" aria-labelledby="flowTitle">
+          <p class="section-index">04 / PLAYER FLOW</p>
+          <h2 id="flowTitle">体验流程</h2>
+          <ol class="project-flow" id="projectFlow"></ol>
+        </section>
+
+        <section class="project-section" aria-labelledby="featuresTitle">
+          <p class="section-index">05 / FEATURES</p>
+          <h2 id="featuresTitle">项目特色</h2>
+          <div class="project-feature-grid" id="projectFeatures"></div>
+        </section>
+
+        <section class="project-section" aria-labelledby="versionTitle">
+          <p class="section-index">06 / VERSION</p>
+          <h2 id="versionTitle"></h2>
+          <div class="project-version-grid">
+            <div><h3>已完成</h3><ul id="projectCompleted"></ul></div>
+            <div><h3>进行中</h3><ul id="projectInProgress"></ul></div>
+          </div>
+        </section>
+
+        <section class="project-section" aria-labelledby="infoTitle">
+          <p class="section-index">07 / INFORMATION</p>
+          <h2 id="infoTitle">项目信息</h2>
+          <dl class="project-info" id="projectInfo"></dl>
+          <p class="project-privacy" id="projectPrivacy"></p>
+        </section>
+
         <div class="about-actions">
           <a class="button button--primary" href="team.html">查看制作组</a>
           <a class="button button--secondary" href="../menu.html">返回主菜单</a>
         </div>
       </article>
       <nav class="about-nav" aria-label="介绍页面导航">
-        <h2>INDEX</h2>
+        <h2>EXPLORE / 项目导览</h2>
         <ul class="about-nav-list">
-          <li><a href="project.html" aria-current="page">项目介绍</a></li>
-          <li><a href="team.html">制作组介绍</a></li>
+          <li><a href="#projectTop" aria-current="location">项目概览</a></li>
+          <li><a href="#storyTitle">故事背景</a></li>
+          <li><a href="#legendTitle">借灯禁忌</a></li>
+          <li><a href="#gameplayTitle">核心玩法</a></li>
+          <li><a href="#flowTitle">体验流程</a></li>
+          <li><a href="#featuresTitle">项目特色</a></li>
+          <li><a href="#versionTitle">开发进度</a></li>
         </ul>
+        <div class="about-nav__footer"><a href="team.html">前往制作组 →</a></div>
       </nav>
     </div>
   </main>
-  <script type="module" src="../../assets/js/about/project.js"></script>
+  <script type="module" src="../../assets/js/about/project.js?v=1.3"></script>
 </body>
 </html>
