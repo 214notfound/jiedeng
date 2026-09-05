@@ -16,8 +16,14 @@ test("显示只读取已提交成就，保留其他模块成就",()=>{
  context.state.achievements.push("map-restorer");assert.equal(service.listAchievements()[0].unlocked,true);
  service.dispose();assert.throws(()=>service.listAchievements());
 });
-test("无地图事实的成就和不合法时间被拒绝",()=>{
- assert.throws(()=>getAchievementEvents({state:{facts:[],achievements:["map-restorer"]}}));
- assert.throws(()=>createAchievements({getContext:()=>({storageScope:"guest",state:{facts:[],achievements:[],achievementTimes:{"map-restorer":"invalid"}}}),subscribe:()=>()=>{}}));
+test("单条成就记录异常时降级，不影响成就列表",()=>{
+ const inconsistent={storageScope:"guest",state:{facts:[],achievements:["map-restorer"]}};
+ assert.deepEqual(getAchievementEvents(inconsistent),[]);
+ const service=createAchievements({getContext:()=>inconsistent,subscribe:()=>()=>{}});
+ assert.equal(service.listAchievements()[0].available,false);
+ assert.match(service.listAchievements()[0].warning,/缺少地图完成事实/);
+ const invalidTime={storageScope:"guest",state:{facts:["map-puzzle-completed"],achievements:["map-restorer"],
+   achievementTimes:{"map-restorer":"invalid"}}};
+ const timed=createAchievements({getContext:()=>invalidTime,subscribe:()=>()=>{}});
+ assert.equal(timed.listAchievements()[0].available,false);
 });
-

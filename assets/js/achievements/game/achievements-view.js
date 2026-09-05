@@ -1,5 +1,5 @@
 // 成就视图：展示状态并按指定通知方发出一次提示，不修改全局成就。
-import { element, region, createFeedback } from "../../exploration/game/view-utils.js";
+import { element, region, createFeedback } from "./view-utils.js";
 
 // 同一模块实例只允许一个视图承担通知，其他视图仍可展示。
 const notificationOwners = new WeakMap();
@@ -23,8 +23,12 @@ export function mountAchievements({ module, root, showFeedback, notifyUnlocks = 
       list.replaceChildren(element("h2", "exploration-title", "成就"));
       for (const item of items) {
         const card = element("article", "content-card");
+        const status = item.available === false
+          ? "记录异常，暂不可用"
+          : item.unlocked ? "已解锁" : "未解锁";
         card.append(element("h3", "", item.name), element("p", "", item.description),
-          element("p", "", item.unlocked ? "已解锁" : "未解锁"));
+          element("p", "", status));
+        if (item.warning) card.append(element("p", "achievement-warning", item.warning));
         if (item.unlockedAt) {
           const time = element("time", "", new Date(item.unlockedAt).toLocaleString("zh-CN"));
           time.dateTime = item.unlockedAt;

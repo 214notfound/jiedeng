@@ -1,8 +1,9 @@
 // 真实引擎联调夹具：只模拟全局协调器、状态事务与演示存储，不是正式账户/存档实现。
-import { TASKS, taskFor } from "../../../assets/js/exploration/data/exploration.js";
+import { interactionTaskFor } from "../../../assets/js/exploration/integration/data/tasks.js";
 import { validateExplorationContext } from "../../../assets/js/exploration/game/exploration.js";
+import { validateConversationContext } from "../../../assets/js/exploration/conversation/game/conversation.js";
 import { getAchievementEvents } from "../../../assets/js/achievements/game/achievements.js";
-import { requireIds } from "../../../assets/js/exploration/game/host-reader.js";
+import { requireIds } from "../../../assets/js/exploration/core/host-binding.js";
 
 export const DEMO_KEY = "jiedeng:demo:engine-handoff:v3";
 const clone = value => JSON.parse(JSON.stringify(value));
@@ -85,6 +86,7 @@ export function createEngineHost({ enterStory, storage = null, scope = "guest" }
       add(candidate.onceKeys, event.onceKey);
     }
     validateExplorationContext(contextOf(candidate, output));
+    validateConversationContext(contextOf(candidate, output));
     checkState(candidate);
     return output;
   }
@@ -111,7 +113,7 @@ export function createEngineHost({ enterStory, storage = null, scope = "guest" }
     const command = response.commands.find(item => item.commandId === event.causedByCommandId);
     if (!command) throw new Error("STORY_STALE_EXTERNAL_EVENT");
     requireIds(event.resultFactIds, "resultFactIds");
-    const task = taskFor(command);
+    const task = interactionTaskFor(command);
     const target = command.payload.explorationId ?? command.payload.conversationId ?? command.payload.minigameId;
     if (event.source !== (task?.type ?? "minigame") || !event.payload) throw new Error("事件来源或内容不符。");
     if (["EXTERNAL_INTERACTION_CANCELLED", "EXTERNAL_INTERACTION_FAILED"].includes(event.eventType)) {
@@ -190,4 +192,3 @@ export function createEngineHost({ enterStory, storage = null, scope = "guest" }
     dispose() { disposed = true; listeners.clear(); }
   };
 }
-

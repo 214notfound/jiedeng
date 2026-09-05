@@ -1,21 +1,14 @@
-// R09/R12 探索服务：处理物体调查与背包回读，不处理 NPC 对话。
-import {
-  EXPLORATION_TASKS,
-  explorationTaskFor
-} from "../data/exploration.js";
-import {NODE_SCENES, sceneName} from "../core/story-scenes.js";
-import {ITEMS} from "../data/items.js";
-import {bindHost, requireIds} from "../core/host-binding.js";
+// R10 对话服务：探索板块内独立负责对白回读、确认和事件，不推进剧情 Node。
+import {NODE_SCENES, sceneName} from "../../core/story-scenes.js";
+import {CONVERSATION_TASKS, conversationTaskFor} from "../data/conversations.js";
+import {bindHost, requireIds} from "../../core/host-binding.js";
 
-function validateEnvelope(context) {
+export function validateConversationContext(context) {
   const state = context?.state;
   const checkpoint = state?.storyCheckpoint;
-  for (const field of ["facts", "inventory", "clues"]) requireIds(state?.[field], field);
+  requireIds(state?.facts, "facts");
   if (!checkpoint || !NODE_SCENES[checkpoint.nodeId] || checkpoint.nodeRevision !== 1) {
     throw new Error("剧情检查点不存在或版本不兼容。");
-  }
-  for (const field of ["completedMilestoneIds", "completedNodeIds", "completedStageIds"]) {
-    requireIds(checkpoint[field], field);
   }
   if (!Array.isArray(checkpoint.pendingCommands) || !Array.isArray(context.commands)) {
     throw new Error("缺少已提交的剧情命令。");
@@ -36,58 +29,48 @@ function validateEnvelope(context) {
     if (command.commandId !== "cmd-" + checkpoint.nodeId + "-" + target) {
       throw new Error("命令 ID 与 Node 清单不一致。");
     }
-  }
-  return {state, checkpoint};
-}
-
-export function validateExplorationContext(context) {
-  const {state, checkpoint} = validateEnvelope(context);
-  const overlap = state.inventory.filter((id) => state.clues.includes(id));
-  if (overlap.length) throw new Error("物品与线索状态不能包含同一 ID。");
-  for (const command of context.commands) {
-    if (command.commandType === "REQUEST_EXPLORATION") {
-      const task = explorationTaskFor(command);
-      if (!task || task.node !== checkpoint.nodeId || !Array.isArray(command.payload.goals)) {
-        throw new Error("未知或不属于当前 Node 的探索任务。");
-      }
+    if (command.commandType !== "REQUEST_CONVERSATION") continue;
+    const task = conversationTaskFor(command);
+    if (!task || task.node !== checkpoint.nodeId || !Array.isArray(command.payload.goals)) {
+      throw new Error("未知或不属于当前 Node 的对话任务。");
     }
-    if (command.commandType === "REQUEST_MINIGAME") {
-      if (command.payload?.minigameId !== "map-puzzle"
-        || command.payload.successFactId !== "map-puzzle-completed") {
-        throw new Error("未知小游戏命令。");
-      }
-      if (checkpoint.nodeId !== "village-map-and-route"
-        || [1, 2, 3].some((number) => !state.inventory.includes("map-fragment-" + number)
-          || !state.facts.includes("map-fragment-" + number + "-acquired"))) {
-        throw new Error("地图任务尚未满足条件。");
-      }
+    if (!Array.isArray(command.payload.npcIds) || !command.payload.npcIds.includes(task.npc)) {
+      throw new Error("对话参与者不符。");
     }
   }
 }
 
-export function createExploration(host) {
+export function createConversation(host) {
   if (typeof host.dispatchExternalEvent !== "function") {
     throw new TypeError("缺少协调器 dispatchExternalEvent。");
   }
-  const bound = bindHost(host, validateExplorationContext);
+  const bound = bindHost(host, validateConversationContext);
+  const presented = new Set();
+  const optionalMemoryFact = "x-deflects-memory-question-noticed";
   let busy = false;
   let uncertain = false;
 
   const commandFor = (context, task) => context.commands.find(
-    (command) => command.payload?.explorationId === task.target
+    (command) => command.payload?.conversationId === task.target
+  );
+  const acceptsOptionalMemory = (command) => command.payload.goals.some(
+    (goal) => goal.goalId === "x-memory-deflection-noticed"
   );
 
   function entries(context) {
     const facts = context.state.facts;
-    return EXPLORATION_TASKS
+    return CONVERSATION_TASKS
       .filter((task) => task.node === context.state.storyCheckpoint.nodeId)
       .flatMap((task) => {
         const command = commandFor(context, task);
         return task.actions
           .filter((action) => command || action.facts.every((fact) => facts.includes(fact)))
           .map((action) => {
-            const completed = action.facts.every((fact) => facts.includes(fact));
-            return {...action, task, command, completed, available: completed || Boolean(command)};
+            const supportedFacts = action.facts.filter((fact) =>
+              fact !== optionalMemoryFact || (command && acceptsOptionalMemory(command)));
+            const completed = supportedFacts.every((fact) => facts.includes(fact));
+            return {...action, task, command, supportedFacts,
+              completed, available: completed || Boolean(command)};
           });
       });
   }
@@ -105,31 +88,37 @@ export function createExploration(host) {
   }
 
   function getLayout() {
+    const context = bound.read();
+    const currentTargets = new Set(context.commands.map((command) => command.payload?.conversationId));
+    const candidates = [...CONVERSATION_TASKS]
+      .filter((task) => task.node === context.state.storyCheckpoint.nodeId
+        || task.actions.some((action) => action.facts.every((fact) => context.state.facts.includes(fact))))
+      .reverse();
+    const seenNpcs = new Set();
+    const visibleTargets = new Set(candidates.filter((task) => {
+      if (seenNpcs.has(task.npc)) return false;
+      if (!currentTargets.has(task.target)
+        && candidates.some((other) => other.npc === task.npc && currentTargets.has(other.target))) {
+        return false;
+      }
+      seenNpcs.add(task.npc);
+      return true;
+    }).map((task) => task.target));
     return {
       playerStart: {x: 50, y: 92},
-      hotspots: entries(bound.read()).map((action) => ({
-        id: action.id,
-        x: action.x,
-        y: action.y,
-        marker: action.marker,
-        reveal: "always",
-        interactionIds: [action.id]
-      }))
+      hotspots: entries(context)
+        .filter((action) => visibleTargets.has(action.task.target))
+        .reduce((rows, action) => {
+          let row = rows.find((item) => item.id === action.task.target);
+          if (!row) {
+            row = {id: action.task.target, x: action.task.x, y: action.task.y,
+              marker: action.task.marker, reveal: "always", interactionIds: []};
+            rows.push(row);
+          }
+          row.interactionIds.push(action.id);
+          return rows;
+        }, [])
     };
-  }
-
-  function listItems(layer) {
-    if (layer !== undefined && !["items", "clues"].includes(layer)) {
-      throw new Error("未知背包分类。");
-    }
-    const {state} = bound.read();
-    const inventory = new Set(state.inventory);
-    const clues = new Set(state.clues);
-    return ITEMS.flatMap((item) => {
-      const stateLayer = inventory.has(item.id) ? "items" : clues.has(item.id) ? "clues" : null;
-      if (!stateLayer || (layer && layer !== stateLayer)) return [];
-      return [{...item, layer: stateLayer, obtained: true}];
-    });
   }
 
   async function send(task, command, actionId, eventType, facts, payload) {
@@ -143,7 +132,7 @@ export function createExploration(host) {
       const event = {
         eventId: "evt-" + command.commandId + "-" + actionId + "-" + eventType.toLowerCase(),
         eventType,
-        source: "exploration",
+        source: "conversation",
         causedByCommandId: command.commandId,
         resultFactIds: [...facts],
         payload
@@ -168,23 +157,27 @@ export function createExploration(host) {
     }
   }
 
-  async function interact(sceneId, actionId) {
+  async function interact(sceneId, actionId, {confirm = false} = {}) {
     try {
       const context = bound.read();
       if (sceneId !== NODE_SCENES[context.state.storyCheckpoint.nodeId]) {
         throw new Error("地点已经变化。");
       }
       const action = entries(context).find((item) => item.id === actionId);
-      if (!action) throw new Error("当前没有这个调查任务。");
+      if (!action) throw new Error("当前没有这段谈话。");
       if (action.completed) return {ok: true, message: action.text};
-      if ((action.requiredItems ?? []).some((id) => !context.state.inventory.includes(id))) {
-        throw new Error("缺少开门所需的旧钥匙。");
+      const token = action.command.commandId + "/" + action.id;
+      if (!confirm) {
+        presented.add(token);
+        return {ok: true, message: action.text, requiresConfirmation: true,
+          commandId: action.command.commandId};
       }
-      await send(action.task, action.command, action.id, "OBJECT_INVESTIGATED",
-        action.facts, {objectId: action.id});
+      if (!presented.has(token)) throw new Error("请先阅读本段谈话。");
+      await send(action.task, action.command, action.id, "NPC_TALKED", action.supportedFacts,
+        {conversationId: action.task.target, npcId: action.task.npc});
       return {ok: true, message: action.text};
     } catch (error) {
-      console.error("[exploration] 操作未完成。", error);
+      console.error("[conversation] 操作未完成。", error);
       return {ok: false, message: error.message};
     }
   }
@@ -192,7 +185,7 @@ export function createExploration(host) {
   async function cancel(commandId, errorCode) {
     const context = bound.read();
     const command = context.commands.find((item) => item.commandId === commandId);
-    const task = command && explorationTaskFor(command);
+    const task = command && conversationTaskFor(command);
     if (!task) throw new Error("取消任务不存在。");
     if (errorCode !== undefined && (typeof errorCode !== "string" || !errorCode.trim())) {
       throw new Error("错误码无效。");
@@ -202,27 +195,39 @@ export function createExploration(host) {
       {targetId: task.target, ...(errorCode ? {errorCode} : {})});
   }
 
+  async function reportProgress(commandId, factIds) {
+    requireIds(factIds, "对话进展事实");
+    const context = bound.read();
+    const command = context.commands.find((item) => item.commandId === commandId);
+    const task = command && conversationTaskFor(command);
+    if (!task || !factIds.length
+      || factIds.some((fact) => !task.actions.some((action) => action.facts.includes(fact)))) {
+      throw new Error("进展事实不属于当前对话。");
+    }
+    if (factIds.includes(optionalMemoryFact) && !acceptsOptionalMemory(command)) {
+      throw new Error("当前剧情版本尚未开放这个可选事实。");
+    }
+    if (task.actions[0].facts.every((fact) =>
+      context.state.facts.includes(fact) || factIds.includes(fact))) {
+      throw new Error("完整谈话请通过确认完成提交，不能作为中途进展。");
+    }
+    return send(task, command, "progress-" + [...factIds].sort().join("-"),
+      "NPC_TALK_PROGRESS", factIds, {conversationId: task.target, npcId: task.npc});
+  }
+
   function pendingLabels() {
     return [...new Set(entries(bound.read()).filter((item) => !item.completed)
       .map((item) => item.task.label))];
-  }
-
-  function getMapCommand() {
-    return bound.read().commands.find((command) =>
-      command.commandType === "REQUEST_MINIGAME"
-      && command.payload.minigameId === "map-puzzle") ?? null;
   }
 
   return Object.freeze({
     getCurrentSceneId,
     getSceneView,
     getLayout,
-    listItems,
     interact,
     cancel,
+    reportProgress,
     pendingLabels,
-    getMapCommand,
-    canStartMapPuzzle: () => Boolean(getMapCommand()),
     subscribe: bound.subscribe,
     dispose: bound.dispose
   });

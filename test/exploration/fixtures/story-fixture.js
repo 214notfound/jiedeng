@@ -1,5 +1,5 @@
 // 仅供演示和测试：按 Node 清单产生命令，用于验证外部接口，不是团队剧情引擎。
-import {TASKS} from "../../../assets/js/exploration/data/exploration.js";
+import {INTERACTION_TASKS} from "../../../assets/js/exploration/integration/data/tasks.js";
 export const NODES=[
  {id:"prologue-wake",stage:"prologue",needs:["prologue-wake-context-known","surface-investigation-task-known"],action:"confirm-wake-context",actionFact:"prologue-wake-context-known",label:"确认醒来的处境",text:"暴雨停了。你在祠堂醒来，近期的记忆一片空白。小X自称公司的安全联络员。"},
  {id:"prologue-belongings",stage:"prologue",needs:["burned-work-id-investigated","blue-glass-bead-investigated","key-a-given-by-x"],text:"检查随身的工作证和蓝玻璃珠，再与小X交谈。"},
@@ -27,7 +27,7 @@ const milestoneIds=[
 export function commandsFor(state){
  const node=NODES.find(n=>n.id===state.storyCheckpoint.nodeId);
  if(state.ended)return [];
- const commands=TASKS.filter(t=>t.node===node.id).filter(t=>!has(state,t.type==="exploration"?t.actions.flatMap(a=>a.facts):t.actions[0].facts)).filter(t=>{
+ const commands=INTERACTION_TASKS.filter(t=>t.node===node.id).filter(t=>!has(state,t.type==="exploration"?t.actions.flatMap(a=>a.facts):t.actions[0].facts)).filter(t=>{
    if(t.target==="prologue-briefing")return has(state,["prologue-wake-context-known"]);
    if(t.target==="prologue-key-and-memory")return has(state,["burned-work-id-investigated","blue-glass-bead-investigated"]);
    if(t.target==="prologue-lamp-incident")return has(state,["white-lamp-witnessed"]);

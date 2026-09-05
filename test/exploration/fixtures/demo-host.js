@@ -1,6 +1,7 @@
 // 独立演示宿主：内存事务及专用会话记录，绝不用于正式账户或存档。
-import {TASKS,taskFor} from "../../../assets/js/exploration/data/exploration.js";
+import {interactionTaskFor} from "../../../assets/js/exploration/integration/data/tasks.js";
 import {validateExplorationContext} from "../../../assets/js/exploration/game/exploration.js";
+import {validateConversationContext} from "../../../assets/js/exploration/conversation/game/conversation.js";
 import {getAchievementEvents} from "../../../assets/js/achievements/game/achievements.js";
 import {NODES,commandsFor,storyActions,settle} from "./story-fixture.js";
 export const DEMO_KEY="jiedeng:demo:story-contract:v2";
@@ -21,7 +22,8 @@ export function createDemoHost({storage=null,scope="guest",initial=null}={}){
  const contextOf=state=>({storageScope:scope,state:clone(state),commands:commandsFor(state)});
  function validate(state){
    if(state?.version!==2||state.kind!=="story-contract-demo"||!Array.isArray(state.processedEventIds))throw new Error("演示记录版本不兼容，请保留原数据并重新检查。");
-   validateExplorationContext(contextOf(state));getAchievementEvents(contextOf(state));
+   validateExplorationContext(contextOf(state));validateConversationContext(contextOf(state));
+   getAchievementEvents(contextOf(state));
    const check=clone(state);settle(check);
    if(JSON.stringify(check)!==JSON.stringify(state))throw new Error("演示检查点或奖励记录不一致。");
  }
@@ -44,7 +46,7 @@ export function createDemoHost({storage=null,scope="guest",initial=null}={}){
    const command=commandsFor(current).find(c=>c.commandId===event.causedByCommandId);
    if(!command)throw new Error("STORY_STALE_EXTERNAL_EVENT");
    if(!Array.isArray(event.resultFactIds)||new Set(event.resultFactIds).size!==event.resultFactIds.length)throw new Error("事实列表无效。");
-   const task=taskFor(command), payload=event.payload;
+   const task=interactionTaskFor(command), payload=event.payload;
    if(!payload||typeof payload!=="object")throw new Error("事件载荷无效。");
    if(["EXTERNAL_INTERACTION_CANCELLED","EXTERNAL_INTERACTION_FAILED"].includes(event.eventType)){
      const target=command.payload.explorationId??command.payload.conversationId??command.payload.minigameId;

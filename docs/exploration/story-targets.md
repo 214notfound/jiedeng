@@ -1,6 +1,6 @@
 # 剧情目标与探索事实对照
 
-本表从本包任务目录生成，核对基准为新版 V1 Node 清单。动作 ID 是探索界面内部标识；不是剧情 actionId。正式事件携带收到的 commandId，不重新创建命令。
+本表从探索与对话两个数据目录核对，基准为新版 V1 Node 清单。动作 ID 是界面内部标识，不是剧情 actionId。正式事件携带收到的 commandId，不重新创建命令。OBJECT_INVESTIGATED 由探索模块生产，NPC_TALKED 由独立对话子包生产。
 
 | Node | handoff / 目标 ID | 内部动作 ID | 完成事实 | 事件 |
 | --- | --- | --- | --- | --- |
@@ -23,7 +23,7 @@
 | old-house-clue-confrontation | old-house-clue-confrontation | identity-conflict | old-house-identity-conflict-raised | NPC_TALKED |
 | old-house-call-at-door | old-house-door-call | door-call | door-call-incident-completed | NPC_TALKED |
 
-同一探索 handoff 可以报告多个对象；对话先显示、确认后报告。当前引擎不接受可选记忆事实；追问对白保留，但只报告交钥匙事实。详情见 engine-compatibility.md。
+同一探索 handoff 可以报告多个对象；对话先显示、确认后报告。当前引擎不接受可选记忆事实；追问对白保留，但只报告交钥匙事实。详情见 engine-compatibility.md 和 ../conversation/interface.md。
 
 ## 地图交接
 

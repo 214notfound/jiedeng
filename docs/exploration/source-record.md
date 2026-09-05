@@ -6,4 +6,4 @@
 
 旧内容和协议以 migration.md 为迁移依据。项目课堂过程与个人修改记录由实际参与者如实填写，提交包中的说明只记录当前代码、接口与验证结果。
 
-真实剧情引擎快照来自本地已有 story-line 提交 cbece19ed83f0c63369d7b1cf60cb8775be12861，不代表远程分支一定没有后续提交。八个脚本逐字节保留，SHA-256 来源清单在 test/exploration/vendor/source.json。测试快照保留队友原注释，不归入本模块开发成果；正式接入复用团队原模块。
+真实剧情引擎快照来自本地已有 story-line 提交 cbece19ed83f0c63369d7b1cf60cb8775be12861，不代表远程分支一定没有后续提交。八个脚本逐字节保留，SHA-256 来源清单在 test/exploration/vendor/source.json；目录级 `.gitattributes` 关闭 JavaScript 换行转换。测试快照保留队友原注释，不归入本模块开发成果；正式接入复用团队原模块。

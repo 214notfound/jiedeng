@@ -4,7 +4,7 @@
 
 | 旧版 | 本版 |
 | --- | --- |
-| assets/js/game、assets/js/data | assets/js/exploration/game、data；成就归 assets/js/achievements |
+| assets/js/game、assets/js/data | assets/js 一级只保留 exploration 与 achievements；对话、共用工具和组合适配归 exploration 子目录 |
 | assets/css 下直接放模块文件 | assets/css/exploration 与 assets/css/achievements |
 | assets/images/items | assets/images/exploration/items |
 | docs 根下混放模块说明 | docs/exploration 与 docs/achievements |
@@ -25,7 +25,7 @@
 
 ## 保留的功能
 
-灰度界面、物体/人物分区、方向键与 WASD 位移、近处 E/Enter 调查、可聚焦热点、回读与防重复、具体缺项提示、两类背包、图片详情和关闭焦点恢复、独立成就页、刷新演示恢复、错误反馈、页面清理均保留。新增先展示再确认谈话、可选追问、取消/失败事实回报、成就规则独立判定。
+灰度界面、物体/人物分区、方向键与 WASD 位移、近处 E/Enter 调查、可聚焦热点、回读与防重复、具体缺项提示、两类背包、图片详情和关闭焦点恢复、独立成就页、刷新演示恢复、错误反馈、页面清理均保留。对话改为独立子包，保留先展示再确认、可选追问和取消/失败事实回报；成就仍独立判定。
 
 没有把过时的录音带、A 字钥匙素材和旧阶段推进代码并存进新包。旧包可留作外部备份，但不要同时复制到仓库。本包不提供覆盖团队 assets/js/game-line、authorize、core、minigames、主菜单和首页的文件。真实引擎原样快照只放在测试目录，供验收复现。
 
@@ -47,6 +47,6 @@
 - 当前 pages/exploration/game.html 的 ../assets 路径少一层，本包已改为 ../../assets，并包含资源所属模块目录。
 - 当前 pages/exploration/achievements.html 迁到 pages/achievements/achievements.html，成就 JS/CSS 分别迁到 assets/js/achievements 和 assets/css/achievements。
 - 当前脚本匹配 /pages/game.html 的演示条件也已改成 /pages/exploration/game.html；不再依赖缺失的 test/game/fixtures/demo-session.js。
-- 旧 docs/exploration-achievements-interface.md 中 type/payload、直接推进 stage、地图同时结算成就的约定已失效，由本包两个模块的 interface.md 替代。
+- 旧 docs/exploration-achievements-interface.md 中 type/payload、直接推进 stage、地图同时结算成就的约定已失效，由本包 exploration、conversation、achievements 三份接口说明替代。
 
 手动合并时先在仓库之外备份旧模块，再逐个比较本包文件。确认旧文件没有其他模块引用后，才由仓库维护者移除旧 date、旧成就页面/脚本以及旧接口文档。不要递归删除整个 assets、pages、docs、test，也不要改动 test/authorize 或队友 demo。

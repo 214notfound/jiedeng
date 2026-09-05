@@ -1,34 +1,32 @@
-# 探索与对话模块接口说明
+# 探索模块接口说明
 
-本版依据本地 story-line 分支 docs/game-line 中的四份剧情文档，并使用 cbece19ed83f0c63369d7b1cf60cb8775be12861 的真实引擎验证。新规定优先于旧演示和已废弃公共约定。负责 R09/R10/R12；成就 R16 见 ../achievements/interface.md。只交付文件包，不直接修改仓库。
+## 职责边界
 
-## 模块边界与目录
+探索功能覆盖 R09、R12：场景热点、键盘移动、物体调查、调查结果回读和两层背包。R10 的对白与事件生产位于 `assets/js/exploration/conversation` 子目录，见 `../conversation/interface.md`；页面通过 `assets/js/exploration/integration` 组合二者。这样 `assets/js` 一级只保留 `exploration` 与 `achievements` 两个业务目录。
 
-脚本放在 assets/js/exploration/data 和 assets/js/exploration/game，样式放在 assets/css/exploration，素材在 assets/images/exploration/items，页面为 pages/exploration/game.html。剧情组继续使用 assets/js/game-line。本包不提供同名公共 game/data 文件。
+探索模块不拥有剧情 Node 推进、NPC 对话、账户、存档、成就结算和地图小游戏。正式协调器提供已提交状态与剧情命令，探索只提交外部事件。
 
-探索负责热点、行走、对象调查、具体对白和两类背包。剧情决定 Node、前置和出口；协调器是 enterStory 的唯一调用者；全局状态校验来源并提交；保存由存档模块负责。探索不传 nextNodeId、不改 currentNodeId、不直接调用 enterStory、不直接发奖。物品和线索来自已提交 inventory/clues。
+## 宿主输入
 
-## 宿主输入（需要全局负责人实现）
+`createExploration(host)` 的 `host` 必须提供：
 
-`createExploration(host)` 返回探索服务。host 由协调器注入，不是 window.WhiteLamp.story 本身。
-
-| 方法 | 参数 | 返回与时序 |
+| 字段 | 类型 | 约定 |
 | --- | --- | --- |
-| getContext() | 无 | 同步读取下面的模块投影，失败抛错 |
-| subscribe(listener) | 无参数更新回调 | 返回取消订阅函数；完整提交后及身份变更时通知 |
-| dispatchExternalEvent(event, meta) | 新格式外部事件；meta={storageScope} | 同步或 Promise<{ok:boolean,message?:string}>；必须等外部事实、剧情检查点及效果提交结果确定后返回 |
+| `getContext()` | Function | 同步返回当前已提交投影 |
+| `subscribe(listener)` | Function | 状态变化通知，返回清理函数 |
+| `dispatchExternalEvent(event, meta)` | Function | 可异步，返回 `{ok, message?}` |
 
-getContext 返回：
+`getContext()` 返回：
 
 ```js
 {
   storageScope: "guest", // 或 account:<userId>
   state: {
     facts: [],
-    inventory: ["burned-work-id", "blue-glass-bead"],
+    inventory: [],
     clues: [],
     storyCheckpoint: {
-      nodeId: "prologue-wake",
+      nodeId: "prologue-belongings",
       nodeRevision: 1,
       completedMilestoneIds: [],
       completedNodeIds: [],
@@ -36,78 +34,62 @@ getContext 返回：
       pendingCommands: []
     }
   },
-  commands: [] // 已提交的 StoryResponse.commands；与 pendingCommands 对应
+  commands: []
 }
 ```
 
-这是探索需要的投影，不是完整游戏存档 schema。协调器必须在 StoryResponse.commit 提交成功后提供命令。commands 的 payload 与剧情文档完全一致。对于相同 Node/handoff，commandId 固定为 cmd-{nodeId}-{handoffId}；禁止重建随机 commandId。
+`storageScope` 在模块实例生命周期内不可改变。账户与异步存档恢复必须先完成，再挂载模块；身份切换时卸载旧实例并重新创建。
 
-本模块校验命令、身份、字段和当前目标，不能代替状态模块的事务、事实生产者登记及全存档校验。未知目标或 Node 版本报错，不猜测下一节点。其他模块字段允许保留。
+## 公开接口
 
-## 外部事件
+`createExploration(host)` 返回：
 
-调查发 OBJECT_INVESTIGATED，payload.objectId 是调查目标 ID（如 burned-work-id），不再使用旧 prologue-take-key-a 动作 ID。对话发 NPC_TALKED 或 NPC_TALK_PROGRESS，必须有 conversationId 和 npcId。
+| 方法 | 参数 | 返回 |
+| --- | --- | --- |
+| `getCurrentSceneId()` | 无 | `shrine/village/old-house` |
+| `getSceneView(sceneId)` | 当前地点 ID | 名称及物体交互列表 |
+| `getLayout()` | 无 | 玩家起点和物体热点 |
+| `listItems(layer?)` | `items/clues`，可省略 | 已获得背包条目 |
+| `interact(sceneId, actionId)` | 当前地点和动作 ID | `{ok,message}` |
+| `cancel(commandId,errorCode?)` | 探索命令 ID、可选错误码 | 协调器结果 |
+| `getMapCommand()` | 无 | 地图命令或 `null` |
+| `canStartMapPuzzle()` | 无 | 布尔值 |
+| `subscribe(listener)` | 回调 | 清理函数 |
+| `dispose()` | 无 | 释放订阅并使实例失效 |
+
+背包目录只保存 `id/name/image/description/source`。运行时 `state.inventory` 中的 ID 返回 `layer:"items"`，`state.clues` 中的 ID 返回 `layer:"clues"`；同一 ID 同时出现在两数组会被拒绝。地图碎片和完整地图属于物品，老宅照片、校服、刻痕、名单均由真实状态作为线索提供。
+
+## 探索事件
+
+调查完成事件：
 
 ```js
 {
-  eventId: "evt-cmd-prologue-belongings-shrine-belongings-burned-work-id-object_investigated",
+  eventId: "evt-<commandId>-<actionId>-object_investigated",
   eventType: "OBJECT_INVESTIGATED",
   source: "exploration",
-  causedByCommandId: "cmd-prologue-belongings-shrine-belongings",
-  resultFactIds: ["burned-work-id-investigated"],
-  payload: { objectId: "burned-work-id" }
+  causedByCommandId: "<剧情命令 ID>",
+  resultFactIds: ["<当前目标允许的事实 ID>"],
+  payload: { objectId: "<物体 ID>" }
 }
 ```
 
-source 固定为事实登记表指定的 exploration 或 conversation。事件先交协调器；状态按 eventId 去重、校验当前命令及事实生产者，成功后协调器再调用 enterStory。不可把这里的结果数组直接拼到全局事实中。事件 ID 在同一局同一操作重试时稳定，去重记录必须按存储域和游戏局隔离。
+取消或失败使用 `EXTERNAL_INTERACTION_CANCELLED` / `EXTERNAL_INTERACTION_FAILED`，结果事实必须为空；失败载荷必须包含 `errorCode`。事件不包含下一 Node。协调器按 `eventId`、当前命令、事实生产者和 `storageScope` 校验并原子提交。
 
-同一探索命令允许报告多个对象；报告一个对象后，其余目标未完成时命令必须保留。三名村民同时存在三个命令。取消/失败分别发送 EXTERNAL_INTERACTION_CANCELLED/EXTERNAL_INTERACTION_FAILED，resultFactIds 为空，payload.targetId 对应当前任务；失败还带 errorCode。
+## 页面组合
 
-## 服务方法
+`createInteractionModule(host)` 是页面适配器，组合探索和对话的只读视图并按动作归属路由，不保存业务状态。它向现有 `mountExploration` 提供统一接口，避免页面直接了解两个业务子包。
 
-| 方法 | 参数 | 返回/错误 |
-| --- | --- | --- |
-| getCurrentSceneId() | 无 | shrine/village/old-house；检查点错误抛错 |
-| getSceneView(sceneId) | 当前地点 | {name,interactions}；只列当前 Node 已发出的任务和可回读结果 |
-| getLayout() | 无 | 当前热点坐标、标记和动作；不包含剧情转移 |
-| listItems(layer?) | items 或 clues，可省略 | 已获得目录项，包含 id/name/image/description/source/layer/obtained:true |
-| interact(sceneId, actionId, options?) | options 可为 {confirm:true} | Promise<{ok,message,requiresConfirmation?,commandId?}>；不确定提交后锁定写入 |
-| reportProgress(commandId,factIds) | 当前对话及已向玩家传达的事实 | Promise<提交结果>；只接受该对话拥有的事实，格式或来源错误抛错 |
-| cancel(commandId,errorCode?) | 当前探索/对话命令；可选错误码 | Promise<提交结果>；无错误码为主动取消，否则为执行失败 |
-| getMapCommand() | 无 | 当前完整 REQUEST_MINIGAME 命令或 null |
-| canStartMapPuzzle() | 无 | 是否存在合法地图命令 |
-| getExitStatus() | 无 | {canLeave:false,message}；说明当前缺项或请使用剧情操作，不自行推进 |
-| subscribe(listener) | 更新回调 | 取消函数 |
-| dispose() | 无 | 清理全部订阅，可重复调用 |
+`mountGamePage({host,openMap?,saveProgress?,documentRoot?})` 返回卸载函数。正式模式由游戏壳注入宿主、地图入口和保存函数；不带 `demo=1` 时不会自行创建状态。演示模式使用真实剧情引擎快照及专用 `sessionStorage`，不是正式存档。
 
-对话首次 interact 展示完整目标对应内容，返回 requiresConfirmation:true，不报告完成；玩家确认后再次传 confirm:true 才报告谈话事实。确认标记只在当前视图实例内保存，不写成 Node 的句子序号。读档后可以重放谈话，再确认。可选追问入口单独展示，跳过不阻断交钥匙。
+`openMap(command)` 接收完整 `REQUEST_MINIGAME` 命令。地图成功事件由小游戏模块发送；探索模块不伪造成功事实，也不决定 `go-old-house`。
 
-多轮对话可接入 reportProgress；调用方必须确保事实确已传达。完整谈话的必需事实不能借进展接口提前结算，必须通过确认完成。修改对白轮数不修改事实 ID。内置对白已按《剧情Node推进》补齐 B 工作证、钥匙来源、苏禾身份、旧事故和老宅四类证据。
+## 团队联调
 
-当前上游版本没有把可选 x-memory-deflection-noticed 纳入交钥匙 handoff 的目标，因此拒绝其对应事实。当前界面保留追问对白，只提交 key-a-given-by-x；不伪造可选事实。详见 engine-compatibility.md。上游修复后必须重新联合验收，不可仅在 goalIds 加一项把可选变为必选。
+- 剧情协调器确认正式 Host 函数名、事务结果和错误恢复。
+- 状态负责人提供唯一的 `facts/inventory/clues/storyCheckpoint` 投影。
+- 账户与存档负责人以 `storageScope` 隔离游客和账户，并在挂载前完成恢复。
+- 地图负责人消费完整命令并提交 `MAP_PUZZLE_COMPLETED`。
+- 游戏壳渲染剧情 `presentation.actions`，探索不得接管 Node 推进。
 
-## 页面与界面挂载
-
-`mountGamePage({host,openMap?,saveProgress?,documentRoot?})` 返回卸载函数。页面组合探索、背包和成就预览；不渲染正式 game-story，不代做剧情操作。全局入口在状态恢复后挂载，并自行渲染 StoryResponse.presentation.actions，按 actionId 回传协调器。
-
-openMap 接收完整命令对象，而非旧版字符串 puzzleId。小游戏完成后由小游戏模块提交文档规定的 MAP_PUZZLE_COMPLETED；地图取消不能回报完成。旧 onLeave 参数已移除：leave-shrine/go-old-house 都由剧情 presentation 指定，不能以旧“离开地点”回调跳 Node。
-
-saveProgress() 返回或异步返回 {ok,message?}；未接入时按钮禁用，失败不得显示成功。真实保存由负责人绑定并复核 storageScope；本模块仅做页面前后身份复核。
-
-底层 `mountExploration({module,sceneRoot,actionsRoot,inventoryRoot,showFeedback,openMap})` 返回清理函数；showFeedback(message,kind)，openMap(command)。只创建本模块子容器。背包可单独通过 inventory.js 的 `mountInventory({module,root,showFeedback})` 挂载；module 仅需 listItems 和 subscribe。
-
-页面公共区仍保留 game-scene、game-story、game-actions、inventory-panel、feedback、save-button。合并到团队 pages/game.html 时只整合所需区域与导入，不整页覆盖。当前模块独立页面与成就页可双向导航。
-
-## 账户及生命周期
-
-账户脚本仍按 config、storage、crypto、auth-service 顺序加载；await window.WhiteLamp.auth.getSession() 后判断 ok 和 data。失败显示 message；data:null 走登录。按 storageScope 读取存档，异步加载期间身份变化则丢弃旧结果；得到有效投影后挂载。
-
-退出先停止旧界面及旧写入，logout 成功才去登录页；失败可见。退出不删除存档。两个独立页面都要重新恢复会话，不能假定跨页保留上一页变量。账户示例 white-lamp:save:<scope>:v1 不是已确认保存 API，本包不创建或迁移该键。
-
-## 正式接入仍需确认
-
-协调器的实际函数名及事件事务结果、全局 clues 投影、成就提交时序、会话切换通知、失败后的重试/返回菜单操作由各负责人协商。本包 dispatchExternalEvent 是适配输入约定，不宣称团队已经实现。
-
-本包已经用真实 game-line 引擎完成流程验证；其原样快照仅在 test/exploration/vendor/game-line，正式接入使用团队 assets/js/game-line。engine-host.js 仅模拟全局状态、协调器与演示保存，不允许当作正式 core 直接上线。
-
-新游戏由协调器先以 context={facts:[],storyCheckpoint:null} 调用 enterStory，提交首次响应后再挂载探索。本文 getContext 示例是首次提交后的投影，不是 new-game 请求体。引擎 payload.goals[].goalId 是里程碑 ID，不等于 resultFactIds 中的事实 ID，不能直接相互复制。
+测试夹具和 `demo=1` 只能用于独立验收。正式接入完成前不得删除队友页面、演示、账户、剧情或小游戏文件。

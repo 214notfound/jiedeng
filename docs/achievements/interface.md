@@ -1,10 +1,12 @@
 # 成就模块接口说明
 
-R16 由 assets/js/achievements 独立维护规则和页面，页面为 pages/achievements/achievements.html。使用 assets/css/achievements/achievements.css，并复用探索模块基础卡片样式。
+## 职责边界
 
-## 输入与规则
+R16 位于 `assets/js/achievements`，独立页面为 `pages/achievements/achievements.html`。成就模块只根据已提交事实生成待提交事件，并显示已提交成就；不推进剧情、不完成地图、不写账户存档。
 
-`getAchievementEvents(context)` 从已提交 context.state.facts 与 achievements 判断，返回待提交事件数组。出现 map-puzzle-completed 且尚无 map-restorer 时返回：
+## 规则接口
+
+`getAchievementEvents(context)` 读取 `state.facts` 和 `state.achievements`。存在 `map-puzzle-completed` 且尚未提交 `map-restorer` 时返回：
 
 ```js
 {
@@ -15,25 +17,20 @@ R16 由 assets/js/achievements 独立维护规则和页面，页面为 pages/ach
 }
 ```
 
-状态模块按局和 storageScope、onceKey 幂等提交。协调器在外部/剧情事务提交成功后调用此规则，将返回事件提交到状态模块，再通知视图。剧情不得自己发 ACHIEVEMENT_UNLOCKED。重复调用返回同一待提交事件；已提交解锁后返回空数组。
-
-通知不是唯一依据：即使错过 STORY_MILESTONE_REACHED 等通知，下次从已提交 facts 重算也能找出待解锁项。失败时不把返回的待提交事件当成成功。正式成就规则事件须加入公共登记表并明确 producer 为成就模块。
+状态模块按游戏局、`storageScope` 和 `onceKey` 幂等提交。规则返回事件不等于解锁成功；只有状态提交后，页面才显示已解锁。
 
 ## 展示接口
 
-`createAchievements({getContext,subscribe})` 返回 listAchievements、subscribe、dispose。只需要：
-- storageScope 为 guest 或 account:<userId>；
-- state.facts 和 state.achievements 为唯一字符串数组；
-- state.achievementTimes 可选，用 ISO 时间字符串记录已解锁成就。
+`createAchievements({getContext,subscribe})` 返回 `listAchievements/subscribe/dispose`。输入要求：
 
-不需要探索 Node、inventory、commands 或写接口。map-restorer 没有地图事实时视为不一致并报错；地图事实已成立但解锁事件待提交时仍显示未解锁，不假装写入成功。
+- `storageScope` 为 `guest` 或 `account:<userId>`；
+- `state.facts`、`state.achievements` 为无重复字符串数组；
+- `state.achievementTimes` 可选，值为 ISO 时间字符串。
 
-`mountAchievements({module,root,showFeedback,notifyUnlocks=true})` 显示列表，返回卸载函数。showFeedback(message,kind)。同一个 service 实例只选一个视图发新解锁提示；初始已解锁不重播。多实例整合时协调器必须指定唯一提示方，其余传 false。
+`listAchievements()` 每项包含 `id/name/description/image/unlocked/unlockedAt/available/warning`。单条记录缺少地图事实或时间无效时，该条返回 `available:false` 和说明，页面显示“记录异常，暂不可用”；其他卡片及页面生命周期不受影响。
 
-`mountAchievementsPage({host,documentRoot=document})` 挂载独立页面并返回清理函数，关闭历史解锁通知。页面往返、身份切换时清理并重建。成就服务引用 exploration/game/host-reader.js 的通用身份订阅辅助，视图引用 view-utils.js；不依赖探索业务服务或 Node 数据。提交包须保留这些基础依赖。
+`mountAchievements({module,root,showFeedback,notifyUnlocks=true})` 返回卸载函数。同一服务实例只允许一个视图负责新解锁提示。`mountAchievementsPage({host,documentRoot?})` 挂载独立页面，跨页或身份切换时应销毁旧实例。
 
-## 验收边界
+## 联调边界
 
-新档锁定，真实地图完成事实提交后由本模块判断并请求解锁；存档按身份保存已提交状态。独立演示跨页和刷新已验证；真实账户、真实地图和正式存档仍待各负责人联合验收。账户与退出顺序见 ../exploration/interface.md。
-
-本轮地图完成事件已交给原样的真实剧情引擎验证，背包与成就展示使用提交后的状态；小游戏成功输入由测试入口模拟，不代表已验收地图玩法。测试存储按 guest/account:a/account:b 隔离，不代表已经实现团队账户和正式存档。
+地图模块提交 `map-puzzle-completed`；状态/协调器调用规则并提交成就；账户和存档负责人保存对应 `storageScope` 的结果。演示跨页刷新已验证，正式账户、正式存档和真实地图仍需团队联合验收。

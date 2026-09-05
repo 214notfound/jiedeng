@@ -27,7 +27,7 @@
 
 1. 新游戏：协调器传入 contractVersion=1.0、唯一 requestId、source=game-shell、input.type=new-game，以及 context={facts:[],storyCheckpoint:null}。
 2. 首次剧情提交成功：把 response.commit.checkpoint 和效果提交到状态模块，再将 response.commands 及状态投影交给探索 host。
-3. 玩家操作：探索调用 host.dispatchExternalEvent(event,{storageScope})。事件包含 eventId/eventType/source/causedByCommandId/resultFactIds/payload，不包含下一 Node。
+3. 玩家操作：探索或对话服务调用 host.dispatchExternalEvent(event,{storageScope})。事件包含 eventId/eventType/source/causedByCommandId/resultFactIds/payload，不包含下一 Node。
 4. 协调器先提交外部事实，再把 input={type:external-event,event} 和已提交 facts/checkpoint 交给引擎。
 5. 把剧情 commit 的检查点与效果作为一个事务提交；失败不得发布命令、成功通知或新展示。
 6. 已提交事实交给成就规则 getAchievementEvents，成就事件由状态模块提交，界面只显示已提交解锁。
@@ -59,6 +59,10 @@ goals[].goalId 是里程碑 ID，resultFactIds 是事实 ID，例如 burned-work
 
 因此：必需主线和两个模块展示已兼容当前引擎；可选追问的事实持久化尚受上游限制，不能宣称该项完全通过。
 
+## 快照检出稳定性
+
+来源清单按文件原始字节计算 SHA-256。快照目录内的 `.gitattributes` 使用 `*.js -text`，防止 Git 在不同平台检出时转换换行并使哈希失效。提交前必须在一次干净的 Git 重新检出后再次运行哈希测试。
+
 ## 演示与正式系统的区别
 
 - demo=1：加载原样真实剧情引擎；engine-host.js 模拟协调器、状态提交和 sessionStorage。旧 story-fixture.js 只用于隔离单元测试，不驱动当前浏览器演示。
@@ -66,4 +70,3 @@ goals[].goalId 是里程碑 ID，resultFactIds 是事实 ID，例如 burned-work
 - 演示保存键是 jiedeng:demo:engine-handoff:v3:<storageScope>，不读写正式账户存档。刷新恢复调用真实 resume。
 - 不带 demo=1：等待正式宿主。未注入时不可游玩，不能当作已接入账户/存档。
 - 正式接入后才可移除演示脚本和其测试依赖；删除前确认页面不会加载它们，不删除队友 demo。
-

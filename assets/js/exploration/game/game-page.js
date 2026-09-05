@@ -1,5 +1,5 @@
 // 游戏页面组合层：挂载探索和成就预览，将保存、地图、剧情交给外部接口。
-import { createExploration } from "./exploration.js";
+import { createInteractionModule } from "../integration/game/interaction-module.js";
 import { createAchievements } from "../../achievements/game/achievements.js";
 import { mountExploration } from "./exploration-view.js";
 import { mountAchievements } from "../../achievements/game/achievements-view.js";
@@ -31,7 +31,7 @@ export function mountGamePage({
     feedback.dataset.kind = kind;
   };
   try {
-    exploration = createExploration(host);
+    exploration = createInteractionModule(host);
     removeExploration = mountExploration({
       module: exploration, sceneRoot, actionsRoot, inventoryRoot, showFeedback: notify,
       openMap: openMap ?? (() => { throw new Error("地图暂不可用，请稍后再试。"); })

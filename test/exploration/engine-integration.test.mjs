@@ -5,7 +5,7 @@ import fs from "node:fs";
 import vm from "node:vm";
 import crypto from "node:crypto";
 import { createEngineHost, DEMO_KEY } from "./fixtures/engine-host.js";
-import { createExploration } from "../../assets/js/exploration/game/exploration.js";
+import { createInteractionModule } from "../../assets/js/exploration/integration/game/interaction-module.js";
 import { createAchievements } from "../../assets/js/achievements/game/achievements.js";
 
 const scripts = ["data/story-registry.js","data/prologue.js","data/village.js","data/old-house.js",
@@ -22,7 +22,7 @@ function engine() {
 }
 function setup(options = {}) {
   const host = createEngineHost({ enterStory: engine(), ...options });
-  return { host, exploration: createExploration(host) };
+  return { host, exploration: createInteractionModule(host) };
 }
 function memoryStorage() {
   const rows = new Map();
@@ -64,6 +64,28 @@ test("上游八个脚本逐字节匹配来源清单", () => {
     const file = item.source.replace("assets/js/", "./vendor/");
     const bytes = fs.readFileSync(new URL(file, import.meta.url));
     assert.equal(crypto.createHash("sha256").update(bytes).digest("hex"), item.sha256);
+  }
+});
+
+test("引擎快照通过目录级属性关闭换行转换", () => {
+  const attributes = fs.readFileSync(
+    new URL("./vendor/game-line/.gitattributes", import.meta.url), "utf8"
+  );
+  assert.match(attributes, /^\s*#.*\r?\n\*\.js -text\s*$/);
+});
+
+test("生产脚本一级目录只保留探索与成就，成就核心不依赖探索", () => {
+  const scriptRoot = new URL("../../assets/js/", import.meta.url);
+  const directories = fs.readdirSync(scriptRoot, {withFileTypes: true})
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name)
+    .sort();
+  assert.deepEqual(directories, ["achievements", "exploration"]);
+  for (const file of ["achievements.js", "achievements-view.js"]) {
+    const source = fs.readFileSync(
+      new URL("../../assets/js/achievements/game/" + file, import.meta.url), "utf8"
+    );
+    assert.doesNotMatch(source, /assets\/js\/exploration|\.\.\/\.\.\/exploration/);
   }
 });
 
