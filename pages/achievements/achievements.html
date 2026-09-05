@@ -1,0 +1,30 @@
+<!-- R16 成就页面：由正式游戏入口恢复当前身份状态后挂载。 -->
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>成就｜借灯</title>
+  <link rel="stylesheet" href="../../assets/css/exploration/exploration.css">
+  <link rel="stylesheet" href="../../assets/css/achievements/achievements.css">
+</head>
+<body class="achievement-page">
+  <a class="achievement-skip" href="#achievement-main">跳到成就列表</a>
+  <header class="achievement-header">
+    <p class="achievement-brand">借灯</p>
+    <nav class="achievement-navigation" aria-label="成就页面导航">
+      <a class="achievement-link" href="../exploration/game.html">返回探索</a>
+    </nav>
+  </header>
+  <main class="achievement-main" id="achievement-main">
+    <h1>成就</h1>
+    <p id="demo-notice" hidden></p>
+    <p>记录你在村庄中留下的足迹。</p>
+    <section id="achievement-list" aria-label="成就列表"></section>
+    <p id="achievement-feedback" role="alert">暂时无法读取成就，请从游戏入口重新进入。</p>
+  </main>
+  <!-- 游戏壳入口在恢复会话与存档后，导入并调用 mountAchievementsPage。 -->
+  <script defer src="../../assets/js/exploration/game/local-preview-hint.js"></script>
+  <script type="module" src="../../assets/js/achievements/game/achievements-page.js"></script>
+</body>
+</html>

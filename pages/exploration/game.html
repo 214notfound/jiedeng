@@ -1,0 +1,42 @@
+<!-- R09/R10/R12 游戏页面：承载探索、对白、背包，并提供成就入口。 -->
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>探索｜借灯</title>
+  <link rel="stylesheet" href="../../assets/css/exploration/exploration.css">
+  <link rel="stylesheet" href="../../assets/css/exploration/game.css">
+</head>
+<body class="game-page">
+  <a class="game-skip" href="#game-main">跳到探索内容</a>
+  <header class="game-header">
+    <p class="game-brand">借灯</p>
+    <nav class="game-navigation" aria-label="游戏功能">
+      <a class="game-link" href="achievements.html" id="achievements-link">查看成就</a>
+      <button class="game-link" id="save-button" type="button" disabled>保存进度</button>
+    </nav>
+  </header>
+  <main id="game-main" class="game-main">
+    <h1>探索</h1>
+    <p id="demo-notice" class="game-notice" hidden></p>
+    <div id="feedback" class="game-feedback" role="status" aria-live="polite">暂时无法读取游戏进度，请从游戏入口重新进入。</div>
+    <div class="game-columns">
+      <div>
+        <section id="game-scene" aria-label="当前场景"></section>
+        <section id="game-story" aria-label="剧情内容"></section>
+        <section id="game-actions" aria-label="当前任务与操作"></section>
+      </div>
+      <aside>
+        <section id="inventory-panel" aria-label="背包"></section>
+        <details class="game-achievement-preview">
+          <summary>成就进度</summary>
+          <div id="achievement-preview"></div>
+        </details>
+      </aside>
+    </div>
+  </main>
+  <script defer src="../../assets/js/exploration/game/local-preview-hint.js"></script>
+  <script type="module" src="../../assets/js/exploration/game/game-page.js"></script>
+</body>
+</html>
