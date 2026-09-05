@@ -1,84 +1,129 @@
+// 全局游戏状态：创建初始状态、校验事实来源，并以不可变方式提交事件与剧情事务。
 
-// 1.定义变量层
-    // 定义初始游戏状态
-export const SAVE_SCHEMA_VERSION = 1;
+import {
+  APP_EVENT_TYPES,
+  EXTERNAL_EVENT_TYPES,
+  GAME_EVENTS,
+  STORY_FACT_DEFINITIONS,
+  STORY_STATE_EVENT_TYPES
+} from "./game-contract.js";
 
-    //确定全局事件
-export const GAME_EVENTS = Object.freeze({
-    GAME_STARTED:"GAME_STARTED",
-    STORY_NODE_CHANGED:"STORY_NODE_CHANGED", // 玩家正在看哪一段剧情
-    STAGE_PROGRESS_UPDATED: "STAGE_PROGRESS_UPDATED", //玩家已经完成了哪些阶段性任务
-    OBJECT_INVESTIGATED: "OBJECT_INVESTIGATED",
-    NPC_TALKED: "NPC_TALKED",
-    CHOICE_MADE: "CHOICE_MADE",
-    ITEM_ACQUIRED: "ITEM_ACQUIRED",
-    MAP_PUZZLE_COMPLETED: "MAP_PUZZLE_COMPLETED",
-    ACHIEVEMENT_UNLOCKED: "ACHIEVEMENT_UNLOCKED"
+export { GAME_EVENTS };
 
+// schema 2 加入 facts、storyCheckpoint 和幂等记录；旧 schema 1 不可直接恢复。
+export const SAVE_SCHEMA_VERSION = 2;
+
+const STORAGE_SCOPE_PATTERN = /^(guest|account:[A-Za-z0-9-]+)$/;
+export const GAME_ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+const FACT_BY_ID = new Map(
+  STORY_FACT_DEFINITIONS.map((definition) => [definition.id, definition])
+);
+
+const EXTERNAL_EVENTS_BY_SOURCE = Object.freeze({
+  exploration: [EXTERNAL_EVENT_TYPES.OBJECT_INVESTIGATED],
+  conversation: [
+    EXTERNAL_EVENT_TYPES.NPC_TALK_PROGRESS,
+    EXTERNAL_EVENT_TYPES.NPC_TALKED
+  ],
+  minigame: [EXTERNAL_EVENT_TYPES.MAP_PUZZLE_COMPLETED]
 });
 
-// 2.初始化游戏层：
-    // 定义初始化游戏函数
-export function createInitialGameState(storageScope){
-    const validStorageScope = requireStorageScope(storageScope);
+const COMMAND_TYPE_BY_SOURCE = Object.freeze({
+  exploration: "REQUEST_EXPLORATION",
+  conversation: "REQUEST_CONVERSATION",
+  minigame: "REQUEST_MINIGAME"
+});
 
-    return{
-        schemaVersion: SAVE_SCHEMA_VERSION,
-        storageScope: validStorageScope,
+// 定义初始状态
+export function createInitialGameState(storageScope) {
+  return {
+    schemaVersion: SAVE_SCHEMA_VERSION,
+    storageScope: requireStorageScope(storageScope),
+    updatedAt: null,
 
-        currentNodeId: "prologue-wake",
-        stage: "prologue",
+    facts: [],
+    storyCheckpoint: null,
+    processedRequestIds: [],
+    processedExternalEventIds: [],
+    appliedOnceKeys: [],
 
-        stageProgress: {
-            "prologue-started": true
-        },
+    // 兼容现有 storage.js；剧情位置仍以 storyCheckpoint 为唯一可信来源。
+    currentNodeId: "prologue-wake",
+    stage: "prologue",
+    stageProgress: { "prologue-started": true },
 
-        choices: {},
-        investigated: [],
-        talkedTo: [],
-        inventory: [],
+    investigated: [],
+    explorationState: {},
+    talkedTo: [],
+    conversationState: {},
 
-        puzzle: {
-            mapRestored: false
-        },
+    inventory: ["burned-work-id", "blue-glass-bead"],
+    clues: [],
+    unlockedLocations: [],
 
-        achievements: [],
-        updatedAt: null
-    };
+    puzzle: { mapRestored: false },
+    minigameState: {},
+
+    choices: {},
+    achievements: []
+  };
 }
 
+export function requireStorageScope(storageScope) {
+  if (
+    typeof storageScope !== "string" ||
+    !STORAGE_SCOPE_PATTERN.test(storageScope)
+  ) {
+    throw new TypeError("storageScope 必须是 guest 或 account:<用户UUID>");
+  }
 
-// 3.辅助检查工具的提前布局：
-    //定义账户storagescope格式
-const STORAGE_SCOPE_PATTERN =
-  /^(guest|account:[A-Za-z0-9-]+)$/;
+  return storageScope;
+}
 
-    //校验真实的storagescope,以后用storagescope来替代ownerId
-export function requireStorageScope(storageScope){
-    if(
-        typeof storageScope !== "string" || !STORAGE_SCOPE_PATTERN.test(storageScope)
-    ){
-        throw new TypeError(
-            "storageScope 必须是 guest或account:<用户UUID>"
-        );
+function isPlainObject(value) {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function requireState(gameState) {
+  if (!isPlainObject(gameState)) {
+    throw new TypeError("缺少有效的 gameState");
+  }
+
+  const arrayFields = [
+    "facts",
+    "processedRequestIds",
+    "processedExternalEventIds",
+    "appliedOnceKeys",
+    "investigated",
+    "talkedTo",
+    "inventory",
+    "clues",
+    "unlockedLocations",
+    "achievements"
+  ];
+
+  for (const field of arrayFields) {
+    if (!Array.isArray(gameState[field])) {
+      throw new TypeError(`gameState.${field} 必须是数组`);
     }
+  }
 
-    return storageScope;
+  return gameState;
 }
 
+function requireText(value, fieldName) {
+  if (typeof value !== "string" || value.trim() === "") {
+    throw new TypeError(`${fieldName} 必须是非空字符串`);
+  }
 
-    // 校验游戏内容 ID，例如 key-a、prologue-wake、map-puzzle。
-export const GAME_ID_PATTERN =
-  /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+  return value;
+}
 
-    // 从事件参数中读取并检查一个游戏 ID。
 function requireGameId(payload, fieldName, eventType) {
   const value = payload[fieldName];
 
-  if (
-    typeof value !== "string" ||
-    !GAME_ID_PATTERN.test(value)
-  ) {
+  if (typeof value !== "string" || !GAME_ID_PATTERN.test(value)) {
     throw new TypeError(
       `${eventType} 的 ${fieldName} 必须是有效的 kebab-case ID`
     );
@@ -87,241 +132,348 @@ function requireGameId(payload, fieldName, eventType) {
   return value;
 }
 
-    // 向数组添加内容；如果已经存在，就保持原数组不重复添加。
 function addUnique(list, value) {
-  if (list.includes(value)) {
-    return list;
-  }
-
-  return [...list, value];
+  return list.includes(value) ? list : [...list, value];
 }
 
-    // 检查事件本身是否具备 type，并保证 payload 至少是空对象。
-function checkEvent(event) {
-  if (!event || typeof event !== "object") {
-    throw new TypeError("游戏事件必须是一个对象");
-  }
-
-  if (typeof event.type !== "string") {
-    throw new TypeError("游戏事件缺少 type");
-  }
-
-  return event.payload ?? {};
+function addUniqueMany(list, values) {
+  return values.reduce(addUnique, list);
 }
 
-// 4.更新状态层：
-    // 接收一个旧状态和一个游戏事件，返回更新后的新状态。
-    // 注意：本函数不直接修改旧状态。
-export function applyGameEvent(gameState, event){
-    //还是先检验gamestate合不合规
-    if (!gameState || typeof gameState !== "object") {
-        throw new TypeError(
-            "applyGameEvent 缺少有效的 gameState"
-        );
+function eventTypeOf(event) {
+  if (!isPlainObject(event)) {
+    throw new TypeError("游戏事件必须是对象");
+  }
+
+  return requireText(event.eventType ?? event.type, "游戏事件类型");
+}
+
+function payloadOf(event) {
+  if (event.payload === undefined) {
+    return {};
+  }
+
+  if (!isPlainObject(event.payload)) {
+    throw new TypeError("游戏事件 payload 必须是对象");
+  }
+
+  return event.payload;
+}
+
+function targetIdOf(eventType, payload) {
+  switch (eventType) {
+    case STORY_STATE_EVENT_TYPES.STORY_FACT_RECORDED:
+      return requireGameId(payload, "factId", eventType);
+    case STORY_STATE_EVENT_TYPES.CHOICE_MADE:
+      return requireGameId(payload, "choiceId", eventType);
+    case STORY_STATE_EVENT_TYPES.ITEM_ACQUIRED:
+      return requireGameId(payload, "itemId", eventType);
+    case STORY_STATE_EVENT_TYPES.CLUE_RECORDED:
+      return requireGameId(payload, "clueId", eventType);
+    case STORY_STATE_EVENT_TYPES.LOCATION_UNLOCKED:
+      return requireGameId(payload, "locationId", eventType);
+    default:
+      throw new Error(`state.js 不支持剧情状态事件：${eventType}`);
+  }
+}
+
+function deriveFacts(facts, eventType, targetId) {
+  const derivedFactIds = STORY_FACT_DEFINITIONS
+    .filter(
+      (definition) =>
+        definition.producer === "state" &&
+        definition.derivedFrom?.eventType === eventType &&
+        definition.derivedFrom?.targetId === targetId
+    )
+    .map((definition) => definition.id);
+
+  return addUniqueMany(facts, derivedFactIds);
+}
+
+function validateCheckpoint(checkpoint) {
+  if (!isPlainObject(checkpoint)) {
+    throw new TypeError("剧情事务缺少有效的 checkpoint");
+  }
+
+  if (!GAME_ID_PATTERN.test(checkpoint.nodeId)) {
+    throw new TypeError("checkpoint.nodeId 必须是有效的游戏 ID");
+  }
+
+  if (!Number.isInteger(checkpoint.nodeRevision) || checkpoint.nodeRevision < 1) {
+    throw new TypeError("checkpoint.nodeRevision 必须是正整数");
+  }
+
+  for (const field of [
+    "completedMilestoneIds",
+    "completedNodeIds",
+    "completedStageIds"
+  ]) {
+    if (
+      !Array.isArray(checkpoint[field]) ||
+      checkpoint[field].some((id) => !GAME_ID_PATTERN.test(id)) ||
+      new Set(checkpoint[field]).size !== checkpoint[field].length
+    ) {
+      throw new TypeError(`checkpoint.${field} 必须是无重复的游戏 ID 数组`);
     }
-    const payload = checkEvent(event);
+  }
 
-    switch (event.type) {
-        // 游戏内重新开始时，保留当前账户/游客的存储域。
-        case GAME_EVENTS.GAME_STARTED:{
-            return createInitialGameState(
-              gameState.storageScope
-            );
-        }
+  if (!Array.isArray(checkpoint.pendingCommands)) {
+    throw new TypeError("checkpoint.pendingCommands 必须是数组");
+  }
 
-        // 剧情组切换到指定剧情节点。
-        case GAME_EVENTS.STORY_NODE_CHANGED:{
-            //下面两个代码块表示检查一下nodeId和stageId的格式，正确就把它写入新的游戏状态
-            const nodeId = requireGameId(
-                payload,
-                "nodeId",
-                event.type
-            )
-            const stageId = requireGameId(
-                payload,
-                "stageId",
-                event.type
-            )
-            return {
-                ...gameState,
-                currentNodeId: nodeId,
-                stage: stageId
-            };
-        }
-
-        //更新某个阶段性任务状态 
-        case GAME_EVENTS.STAGE_PROGRESS_UPDATED:{
-            const progressId = requireGameId(
-                payload,
-                "progressId",
-                event.type
-            );
-            if (typeof payload.completed !== "boolean") {
-                throw new TypeError(
-                `${event.type} 的 completed 必须是 true 或 false`
-                );
-            }
-
-            return {
-                ...gameState,
-                stageProgress: {
-                ...gameState.stageProgress,
-                [progressId]: payload.completed
-                }
-            };
-        }
-        
-        //更新物品状态（调查物品后）
-        case GAME_EVENTS.OBJECT_INVESTIGATED:{
-            const objectId = requireGameId(
-                payload,
-                "objectId",
-                event.type
-            );
-
-            const nextInventory = payload.itemId
-              ? addUnique(
-                    gameState.inventory,
-                    requireGameId(
-                        payload,
-                        "itemId",
-                        event.type
-                    )
-              )
-              :gameState.inventory;
-            return {
-                ...gameState,
-                investigated: addUnique(
-                gameState.investigated,
-                objectId
-                ),
-                inventory: nextInventory
-            };
-        }
-
-        // 首次与人物交谈；可选地获得奖励物品。
-        case GAME_EVENTS.NPC_TALKED: {
-            const npcId = requireGameId(
-                payload,
-                "npcId",
-                event.type
-            );
-
-            const nextInventory = payload.rewardItemId
-                ? addUnique(
-                    gameState.inventory,
-                    requireGameId(
-                    payload,
-                    "rewardItemId",
-                    event.type
-                    )
-                )
-                : gameState.inventory;
-
-            return {
-                ...gameState,
-                talkedTo: addUnique(
-                gameState.talkedTo,
-                npcId
-                ),
-                inventory: nextInventory
-            };
-        } 
-        
-         // 记录一个已经发生过的选择。
-        case GAME_EVENTS.CHOICE_MADE: {
-            const choiceId = requireGameId(
-                payload,
-                "choiceId",
-                event.type
-            );
-
-            return {
-                ...gameState,
-                choices: {
-                ...gameState.choices,
-                [choiceId]: true
-                }
-            };
-        }
-
-        // 单独获得物品。
-        case GAME_EVENTS.ITEM_ACQUIRED: {
-            const itemId = requireGameId(
-                payload,
-                "itemId",
-                event.type
-            );
-
-            return {
-                ...gameState,
-                inventory: addUnique(
-                gameState.inventory,
-                itemId
-                )
-            };
-        }
-
-        // V1 唯一小游戏：地图复原。
-        case GAME_EVENTS.MAP_PUZZLE_COMPLETED: {
-        const puzzleId = requireGameId(
-            payload,
-            "puzzleId",
-            event.type
-        );
-
-        if (puzzleId !== "map-puzzle") {
-            throw new Error(
-            `未知的拼图 ID：${puzzleId}`
-            );
-        }
-
-        return {
-            ...gameState,
-
-            puzzle: {
-            ...gameState.puzzle,
-            mapRestored: true
-            },
-
-            inventory: addUnique(
-            gameState.inventory,
-            "restored-village-map"
-            ),
-
-            achievements: addUnique(
-            gameState.achievements,
-            "map-restorer"
-            ),
-
-            stageProgress: {
-            ...gameState.stageProgress,
-            "village-map-puzzle-completed": true,
-            "old-house-unlocked": true
-            }
-        };
-        }
-
-        // 解锁一项成就。
-        case GAME_EVENTS.ACHIEVEMENT_UNLOCKED: {
-            const achievementId = requireGameId(
-                payload,
-                "achievementId",
-                event.type
-            );
-
-            return {
-                ...gameState,
-                achievements: addUnique(
-                    gameState.achievements,
-                    achievementId
-                )
-            };
-        }
-
-        default:
-            throw new Error(`state.js 不支持事件：${event.type}`);
-
-
+  const commandIds = [];
+  for (const command of checkpoint.pendingCommands) {
+    if (
+      !isPlainObject(command) ||
+      !GAME_ID_PATTERN.test(command.commandId) ||
+      typeof command.commandType !== "string" ||
+      !GAME_ID_PATTERN.test(command.targetId)
+    ) {
+      throw new TypeError("pendingCommands 中存在无效命令");
     }
+    commandIds.push(command.commandId);
+  }
+
+  if (new Set(commandIds).size !== commandIds.length) {
+    throw new TypeError("pendingCommands 中的 commandId 不能重复");
+  }
+}
+
+function applyStoryStateEvent(gameState, event) {
+  const eventType = eventTypeOf(event);
+  const payload = payloadOf(event);
+  requireText(event.eventId, `${eventType}.eventId`);
+  const onceKey = requireText(event.onceKey, `${eventType}.onceKey`);
+
+  if (gameState.appliedOnceKeys.includes(onceKey)) {
+    return gameState;
+  }
+
+  const targetId = targetIdOf(eventType, payload);
+  let nextState = gameState;
+
+  switch (eventType) {
+    case STORY_STATE_EVENT_TYPES.STORY_FACT_RECORDED: {
+      const definition = FACT_BY_ID.get(targetId);
+      if (!definition || definition.producer !== "story") {
+        throw new Error(`剧情无权记录事实：${targetId}`);
+      }
+      nextState = { ...gameState, facts: addUnique(gameState.facts, targetId) };
+      break;
+    }
+
+    case STORY_STATE_EVENT_TYPES.CHOICE_MADE:
+      nextState = {
+        ...gameState,
+        choices: { ...gameState.choices, [targetId]: true }
+      };
+      break;
+
+    case STORY_STATE_EVENT_TYPES.ITEM_ACQUIRED:
+      nextState = {
+        ...gameState,
+        inventory: addUnique(gameState.inventory, targetId)
+      };
+      break;
+
+    case STORY_STATE_EVENT_TYPES.CLUE_RECORDED:
+      nextState = {
+        ...gameState,
+        clues: addUnique(gameState.clues, targetId)
+      };
+      break;
+
+    case STORY_STATE_EVENT_TYPES.LOCATION_UNLOCKED:
+      nextState = {
+        ...gameState,
+        unlockedLocations: addUnique(gameState.unlockedLocations, targetId)
+      };
+      break;
+  }
+
+  return {
+    ...nextState,
+    facts: deriveFacts(nextState.facts, eventType, targetId),
+    appliedOnceKeys: addUnique(nextState.appliedOnceKeys, onceKey)
+  };
+}
+
+// 提交探索、对话或小游戏产生的外部事件。
+// 本函数只记录已经发生的事实，不决定下一剧情 Node。
+export function applyExternalEvent(gameState, event) {
+  requireState(gameState);
+
+  const eventType = eventTypeOf(event);
+  const eventId = requireText(event.eventId, `${eventType}.eventId`);
+  const source = requireText(event.source, `${eventType}.source`);
+  const payload = payloadOf(event);
+
+  if (gameState.processedExternalEventIds.includes(eventId)) {
+    return gameState;
+  }
+
+  if (!Array.isArray(event.resultFactIds)) {
+    throw new TypeError(`${eventType}.resultFactIds 必须是数组`);
+  }
+
+  if (new Set(event.resultFactIds).size !== event.resultFactIds.length) {
+    throw new TypeError(`${eventType}.resultFactIds 不能包含重复事实`);
+  }
+
+  const isCancelled =
+    eventType === EXTERNAL_EVENT_TYPES.EXTERNAL_INTERACTION_CANCELLED;
+  const isFailed =
+    eventType === EXTERNAL_EVENT_TYPES.EXTERNAL_INTERACTION_FAILED;
+  const sourceCommandType = COMMAND_TYPE_BY_SOURCE[source];
+
+  if (!sourceCommandType) {
+    throw new Error(`未登记的外部事件来源：${source}`);
+  }
+
+  if ((isCancelled || isFailed) && event.resultFactIds.length !== 0) {
+    throw new Error(`${eventType} 的 resultFactIds 必须为空`);
+  }
+
+  if (!isCancelled && !isFailed) {
+    const allowedTypes = EXTERNAL_EVENTS_BY_SOURCE[source];
+    if (!allowedTypes.includes(eventType)) {
+      throw new Error(`${source} 无权产生事件：${eventType}`);
+    }
+  }
+
+  const checkpoint = gameState.storyCheckpoint;
+  if (!checkpoint) {
+    throw new Error("当前没有可接收外部结果的剧情检查点");
+  }
+
+  const causedByCommandId = requireText(
+    event.causedByCommandId,
+    `${eventType}.causedByCommandId`
+  );
+  const pendingCommand = checkpoint.pendingCommands.find(
+    (command) => command.commandId === causedByCommandId
+  );
+
+  if (!pendingCommand) {
+    throw new Error(`外部事件对应的剧情命令已失效：${causedByCommandId}`);
+  }
+
+  if (pendingCommand.commandType !== sourceCommandType) {
+    throw new Error(`${source} 与等待中的命令类型不匹配`);
+  }
+
+  for (const factId of event.resultFactIds) {
+    const definition = FACT_BY_ID.get(factId);
+    if (!definition) {
+      throw new Error(`外部事件声明了未登记事实：${factId}`);
+    }
+    if (definition.producer !== source) {
+      throw new Error(`${source} 无权产生事实：${factId}`);
+    }
+  }
+
+  let nextState = {
+    ...gameState,
+    facts: addUniqueMany(gameState.facts, event.resultFactIds),
+    processedExternalEventIds: addUnique(
+      gameState.processedExternalEventIds,
+      eventId
+    )
+  };
+
+  if (eventType === EXTERNAL_EVENT_TYPES.OBJECT_INVESTIGATED) {
+    nextState = {
+      ...nextState,
+      investigated: addUnique(
+        nextState.investigated,
+        requireGameId(payload, "objectId", eventType)
+      )
+    };
+  }
+
+  if (eventType === EXTERNAL_EVENT_TYPES.NPC_TALKED) {
+    nextState = {
+      ...nextState,
+      talkedTo: addUnique(
+        nextState.talkedTo,
+        requireGameId(payload, "npcId", eventType)
+      )
+    };
+  }
+
+  if (eventType === EXTERNAL_EVENT_TYPES.MAP_PUZZLE_COMPLETED) {
+    const puzzleId = requireGameId(payload, "puzzleId", eventType);
+    if (puzzleId !== "map-puzzle") {
+      throw new Error(`未知的拼图 ID：${puzzleId}`);
+    }
+    nextState = {
+      ...nextState,
+      puzzle: { ...nextState.puzzle, mapRestored: true }
+    };
+  }
+
+  return nextState;
+}
+
+// 原子提交剧情返回的检查点和状态事件：任意一步抛错时，旧状态不会被修改。
+export function commitStoryTransaction(gameState, requestId, commit) {
+  requireState(gameState);
+  requireText(requestId, "requestId");
+
+  if (gameState.processedRequestIds.includes(requestId)) {
+    return gameState;
+  }
+
+  if (!isPlainObject(commit) || !Array.isArray(commit.events)) {
+    throw new TypeError("剧情响应缺少有效的 commit.events");
+  }
+
+  validateCheckpoint(commit.checkpoint);
+
+  let draft = gameState;
+  for (const event of commit.events) {
+    draft = applyStoryStateEvent(draft, event);
+  }
+
+  return {
+    ...draft,
+    // 临时同步旧字段，避免 storage.js 完成升级前无法保存新状态。
+    currentNodeId: commit.checkpoint.nodeId,
+    storyCheckpoint: {
+      ...commit.checkpoint,
+      completedMilestoneIds: [...commit.checkpoint.completedMilestoneIds],
+      completedNodeIds: [...commit.checkpoint.completedNodeIds],
+      completedStageIds: [...commit.checkpoint.completedStageIds],
+      pendingCommands: commit.checkpoint.pendingCommands.map((command) => ({
+        ...command
+      }))
+    },
+    processedRequestIds: addUnique(draft.processedRequestIds, requestId)
+  };
+}
+
+// 处理不经过剧情的应用内部事件；剧情状态事件应通过 commitStoryTransaction 提交。
+export function applyGameEvent(gameState, event) {
+  requireState(gameState);
+  const eventType = eventTypeOf(event);
+  const payload = payloadOf(event);
+
+  switch (eventType) {
+    case APP_EVENT_TYPES.GAME_STARTED:
+      return createInitialGameState(gameState.storageScope);
+
+    case APP_EVENT_TYPES.ACHIEVEMENT_UNLOCKED: {
+      const achievementId = requireGameId(payload, "achievementId", eventType);
+      return {
+        ...gameState,
+        achievements: addUnique(gameState.achievements, achievementId)
+      };
+    }
+
+    default:
+      if (Object.values(STORY_STATE_EVENT_TYPES).includes(eventType)) {
+        return applyStoryStateEvent(gameState, event);
+      }
+      throw new Error(`state.js 不支持事件：${eventType}`);
+  }
 }

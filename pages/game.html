@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="《借灯》游戏主界面" />
+    <title>借灯 · 游戏</title>
+    <link rel="stylesheet" href="../assets/css/game.css" />
+  </head>
+  <body data-page="game">
+    <noscript>
+      <p>此页面需要 JavaScript 才能运行剧情和存档。</p>
+    </noscript>
+
+    <div class="game-shell">
+      <header class="game-header">
+        <div class="game-header__title">
+          <strong>借灯</strong>
+          <small>WHITE LAMP · INTERACTIVE STORY</small>
+        </div>
+        <button id="return-menu-button" class="button" type="button">返回菜单</button>
+        <button id="save-button" class="button button--primary" type="button">保存进度</button>
+      </header>
+
+      <div class="game-statusbar" aria-label="当前剧情状态">
+        <span>阶段：<strong id="stage-label">初始化</strong></span>
+        <span>节点：<strong id="node-label">正在建立检查点</strong></span>
+        <span id="debug-badge" class="debug-badge" hidden>联调模式</span>
+      </div>
+
+      <div id="feedback" class="feedback" role="status" aria-live="polite" hidden></div>
+
+      <main class="game-layout">
+        <div class="game-main">
+          <section id="game-scene" class="scene-panel" aria-label="当前场景" data-scene="loading">
+            <div class="scene-name">
+              <small>SCENE</small>
+              <span>loading</span>
+            </div>
+          </section>
+
+          <section class="story-panel" aria-labelledby="story-heading">
+            <h2 id="story-heading">剧情记录</h2>
+            <div id="game-story" aria-live="polite">
+              <p class="story-placeholder">雨声中，剧情正在加载……</p>
+            </div>
+            <div id="game-actions" class="game-actions" aria-label="可执行操作"></div>
+          </section>
+        </div>
+
+        <aside class="game-sidebar" aria-label="游戏状态">
+          <section id="inventory-panel" class="side-panel" aria-labelledby="inventory-heading">
+            <h2 id="inventory-heading">背包</h2>
+            <ul id="inventory-list"><li class="empty-item">正在读取……</li></ul>
+          </section>
+
+          <section class="side-panel" aria-labelledby="clue-heading">
+            <h2 id="clue-heading">线索</h2>
+            <ul id="clue-list"><li class="empty-item">尚未记录线索</li></ul>
+          </section>
+
+          <section class="side-panel" aria-labelledby="log-heading">
+            <h2 id="log-heading">流程日志</h2>
+            <ul id="story-log" class="story-log"><li class="empty-item">等待剧情通知</li></ul>
+          </section>
+        </aside>
+      </main>
+    </div>
+
+    <script defer src="../assets/js/authorize/config.js"></script>
+    <script defer src="../assets/js/authorize/storage.js"></script>
+    <script defer src="../assets/js/authorize/crypto.js"></script>
+    <script defer src="../assets/js/authorize/auth-service.js"></script>
+
+    <!-- 剧情内核必须严格按此顺序加载。 -->
+    <script src="../assets/js/game-line/data/story-registry.js"></script>
+    <script src="../assets/js/game-line/data/prologue.js"></script>
+    <script src="../assets/js/game-line/data/village.js"></script>
+    <script src="../assets/js/game-line/data/old-house.js"></script>
+    <script src="../assets/js/game-line/game/story-validator.js"></script>
+    <script src="../assets/js/game-line/game/story-runtime.js"></script>
+    <script src="../assets/js/game-line/game/story-request.js"></script>
+    <script src="../assets/js/game-line/game/story-engine.js"></script>
+
+    <script type="module" src="../assets/js/core/navigation.js"></script>
+  </body>
+</html>

@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="《借灯》主菜单" />
+    <title>借灯 · 主菜单</title>
+    <link rel="stylesheet" href="../assets/css/menu.css" />
+    <script defer src="../assets/js/authorize/config.js"></script>
+    <script defer src="../assets/js/authorize/storage.js"></script>
+    <script defer src="../assets/js/authorize/crypto.js"></script>
+    <script defer src="../assets/js/authorize/auth-service.js"></script>
+    <script type="module" src="../assets/js/core/navigation.js"></script>
+  </head>
+  <body data-page="menu">
+    <noscript>
+      <p class="noscript-message">此页面需要 JavaScript 才能读取账户和存档。</p>
+    </noscript>
+
+    <main class="menu-shell">
+      <div class="menu-atmosphere" aria-hidden="true"></div>
+
+      <section class="menu-panel" aria-labelledby="menu-title">
+        <header class="menu-heading">
+          <p class="menu-kicker">石涧村 · 雨夜</p>
+          <h1 id="menu-title">借灯</h1>
+          <p class="menu-subtitle">一盏白灯照见来路，也照见被雨声掩住的名字。</p>
+        </header>
+
+        <p id="player-name" class="player-name" aria-live="polite">正在读取身份……</p>
+        <div id="feedback" class="feedback" role="status" aria-live="polite" hidden></div>
+
+        <nav class="menu-actions" aria-label="游戏主菜单">
+          <button id="new-game-button" class="menu-button menu-button--primary" type="button">
+            <span>开始新游戏</span>
+            <small>从祠堂的雨夜醒来</small>
+          </button>
+
+          <button id="continue-button" class="menu-button" type="button" disabled>
+            <span>继续游戏</span>
+            <small id="continue-hint">正在检查存档……</small>
+          </button>
+
+          <div class="menu-link-grid">
+            <a class="menu-link" href="achievements.html">成就</a>
+            <a class="menu-link" href="about/project.html">项目介绍</a>
+            <a class="menu-link" href="about/team.html">制作组</a>
+          </div>
+        </nav>
+
+        <footer class="menu-footer">
+          <button id="logout-button" class="quiet-button" type="button">退出当前身份</button>
+          <span>V1 · 本地存档</span>
+        </footer>
+      </section>
+    </main>
+  </body>
+</html>

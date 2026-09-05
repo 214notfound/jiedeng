@@ -11,7 +11,7 @@
     schemaVersion: 1,
     accountStorageKey: "white-lamp:auth:accounts:v1",
     sessionStorageKey: "white-lamp:auth:session:v1",
-    successUrl: new URL("test/authorize/demo.html", projectRootUrl).href,
+    successUrl: new URL("pages/menu.html", projectRootUrl).href,
     loginUrl: new URL("pages/authorize/login.html", projectRootUrl).href,
     registerUrl: new URL("pages/authorize/register.html", projectRootUrl).href,
   });
