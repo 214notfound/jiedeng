@@ -1,4 +1,4 @@
-// 《借灯》页面导航：连接账户、游戏流程和存档按钮。
+// 页面宿主指挥：组装身份、剧情与执行模块，统一汇报、成就结算及展示；存档仅由宿主调用。
 
 import { createGameFlow } from "./game-flow.js";
 import { createGameView } from "./game-ui.js";
@@ -133,6 +133,43 @@ function setupGamePage() {
   const debugMode = query.get("debug") === "1";
   let debugEventSequence = 0;
   let gameView;
+  let pendingDispatches = 0;
+  const pendingViews = new Map();
+
+  // 外部结果与成就均登记后再刷新展示，展示端不参与状态决策。
+  function updateView(key, render) {
+    if (pendingDispatches) pendingViews.set(key, render);
+    else render();
+  }
+
+  async function dispatchExternalEvent(event) {
+    pendingDispatches += 1;
+    let result;
+    try {
+      result = await gameFlow.handleExternalEvent(event);
+      if (result.ok) {
+        for (const achievementEvent of getAchievementEvents({state: gameFlow.getState()})) {
+          gameFlow.applyAppEvent(achievementEvent);
+        }
+        result.state = gameFlow.getState();
+      }
+      return result;
+    } finally {
+      pendingDispatches -= 1;
+      if (!pendingDispatches) {
+        const views = [...pendingViews.values()];
+        pendingViews.clear();
+        for (const render of views) {
+          try {
+            render();
+          } catch (error) {
+            console.error("[white-lamp:view] 已提交进度的展示更新失败", error);
+            showFeedback("游戏进度已更新，但界面更新失败，请保存进度后重新进入。", "error");
+          }
+        }
+      }
+    }
+  }
 
   function createDebugExternalEvent(command) {
     const storyData = globalThis.WhiteLampStoryInternal?.storyData;
@@ -199,7 +236,7 @@ function setupGamePage() {
     onStoryAction: (actionId) => gameFlow.handleStoryAction(actionId),
     onDebugCommand: async (command) => {
       try {
-        await gameFlow.handleExternalEvent(createDebugExternalEvent(command));
+        return await dispatchExternalEvent(createDebugExternalEvent(command));
       } catch (error) {
         console.error("[white-lamp:debug-flow]", error);
         showFeedback("联调事件生成失败，请检查控制台。", "error");
@@ -222,20 +259,21 @@ function setupGamePage() {
     }
 
     const storageScope = user.storageScope;
+    console.info("[white-lamp:game]", { page: location.pathname, mode, debugMode, storageScope });
     const notificationHandlers = Object.fromEntries(
       Object.values(STORY_NOTIFICATION_TYPES).map((eventType) => [
         eventType,
-        (notification) => gameView.recordNotification(notification)
+        (notification) => updateView(notification.eventId, () => gameView.recordNotification(notification))
       ])
     );
 
     gameFlow = createGameFlow({
       storageScope,
       notificationHandlers,
-      onStateChange: (state) => {
-        gameView.renderState(state);
+      onStateChange: () => updateView("state", () => {
+        gameView.renderState(gameFlow.getState());
         stateListeners.forEach((listener) => listener());
-      },
+      }),
       onCommandsChange: (commands) => {
         activeCommands = commands;
       },
@@ -246,7 +284,7 @@ function setupGamePage() {
         // 地图命令保留在检查点中，玩家点击“复原手绘地图”时再启动视图。
         REQUEST_MINIGAME: () => {}
       },
-      onStatusChange: (_status, response) => gameView.renderResponse(response),
+      onStatusChange: (_status, response) => updateView("response", () => gameView.renderResponse(response)),
       onError: (error) => {
         console.error("[white-lamp:game-flow]", error.developerMessage);
         showFeedback(error.userMessage, "error");
@@ -254,16 +292,6 @@ function setupGamePage() {
     });
 
     globalThis.WhiteLamp = globalThis.WhiteLamp || {};
-    async function dispatchExternalEvent(event) {
-      const result = await gameFlow.handleExternalEvent(event);
-      if (result.ok) {
-        getAchievementEvents({state: gameFlow.getState()}).forEach((achievementEvent) => {
-          gameFlow.applyAppEvent(achievementEvent);
-        });
-      }
-      return result;
-    }
-
     function saveCurrentGame() {
       const saveResult = saveGame(gameFlow.getState(), storageScope);
 
@@ -283,6 +311,7 @@ function setupGamePage() {
     globalThis.WhiteLamp.game = {
       getState: gameFlow.getState,
       getStateSnapshot: gameFlow.getStateSnapshot,
+      // 保留旧宿主接口兼容性；业务模块须使用 handleExternalEvent，不能直接登记结果。
       update: gameFlow.applyAppEvent,
       handleStoryAction: gameFlow.handleStoryAction,
       handleExternalEvent: dispatchExternalEvent,
