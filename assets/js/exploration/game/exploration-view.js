@@ -1,4 +1,4 @@
-// 探索视图：热点、移动与任务提示；背包和成就由独立视图维护。
+// 探索视图：渲染当前场景与调查状态；不离开场景，也不推进剧情 Node。
 import { buildHotspotViews } from "./hotspot-view.js";
 import { findNearestHotspotIndex } from "./exploration-movement.js";
 import { moveHotspotFocus } from "./hotspot-keyboard.js";
@@ -153,7 +153,7 @@ export function mountExploration({
           offerConfirmation(result, sceneId, alternative.id);
         }));
       }
-      actions.append(button("离开当前地点", () => {
+      actions.append(button("查看当前调查状态", () => {
         if (!active) return;
         try {
           const status = module.getExitStatus(module.getCurrentSceneId());
