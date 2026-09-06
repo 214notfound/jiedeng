@@ -26,13 +26,21 @@
 
   /* 拼图专用变量（换主题时只需改这里） */
   --pz-grid-gap: 0px;                    /* 无缝：格间不留间隙 */
-  --pz-cell-size: clamp(64px, 12vmin, 92px);
+  --pz-cell-size: clamp(76px, 14vmin, 132px);
   --pz-cell-radius: 0px;                 /* 无缝：切块为直角，不留圆角缝 */
 
   box-sizing: border-box;
+  position: relative;
+  display: flex;
+  min-height: 100vh;
   width: 100%;
+  padding: clamp(76px, 10vh, 112px) clamp(16px, 4vw, 48px) clamp(28px, 5vh, 56px);
+  overflow: auto;
   font-family: var(--pz-font);
   color: var(--pz-text);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   user-select: none;
   -webkit-user-select: none;
 }
@@ -43,27 +51,12 @@
   box-sizing: border-box;
 }
 
-/* ---- 整体布局：标题/网格/待放区纵向排布 ---- */
+/* ---- 左上角返回入口：脱离主体排版，不挤压居中的拼图 ---- */
 .pz-header {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 18px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--pz-line-soft);
-}
-
-.pz-header__title {
-  font-size: 15px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-}
-
-.pz-header__hint {
-  color: var(--pz-text-muted);
-  font-size: 11px;
-  letter-spacing: 0.1em;
+  position: absolute;
+  top: clamp(18px, 3vw, 32px);
+  left: clamp(16px, 3vw, 36px);
+  z-index: 20;
 }
 
 /* ---- 中央网格槽区：无缝拼图的面板 ---- */
@@ -209,6 +202,7 @@
   margin-top: 20px;
   padding: 14px;
   min-height: calc(var(--pz-cell-size) + 40px);
+  width: min(100%, calc(var(--pz-cell-size) * 5 + 72px));
   border-top: 1px solid var(--pz-line-soft);
 }
 
@@ -224,15 +218,19 @@
   text-align: center;
 }
 
-/* ---- 取消/放弃按钮(占位文案) ---- */
+/* ---- 返回按钮：箭头式轻量入口，行为仍是取消小游戏 ---- */
 .pz-cancel {
-  padding: 6px 10px;
-  border: 1px solid var(--pz-line);
+  display: inline-flex;
+  min-height: 40px;
+  padding: 8px 12px 8px 8px;
+  border: 0;
   background: transparent;
   color: var(--pz-text-muted);
   font: inherit;
-  font-size: 10px;
-  letter-spacing: 0.14em;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  align-items: center;
+  gap: 8px;
   cursor: pointer;
   transition:
     color 0.2s ease,
@@ -241,7 +239,27 @@
 
 .pz-cancel:hover {
   color: var(--pz-text);
-  border-color: rgba(120, 137, 255, 0.5);
+}
+
+.pz-cancel:focus-visible {
+  outline: 1px solid var(--pz-accent);
+  outline-offset: 3px;
+}
+
+.pz-cancel__arrow {
+  display: inline-grid;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--pz-line);
+  place-items: center;
+  font-size: 18px;
+  line-height: 1;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.pz-cancel:hover .pz-cancel__arrow {
+  border-color: rgba(120, 137, 255, 0.6);
+  transform: translateX(-3px);
 }
 
 /* ---- 状态行：显示已锁定数/总数 ---- */
@@ -255,9 +273,19 @@
 
 /* 降低动效偏好时关闭晃动用例 */
 @media (prefers-reduced-motion: reduce) {
-  .pz-piece, .pz-slot::after {
+  .pz-piece, .pz-slot::after, .pz-cancel__arrow {
     animation: none !important;
     transition: none !important;
   }
 }
 
+@media (max-width: 560px) {
+  .pz-root {
+    --pz-cell-size: clamp(68px, 25vw, 104px);
+    justify-content: flex-start;
+  }
+
+  .pz-tray {
+    width: 100%;
+  }
+}
