@@ -3,6 +3,7 @@ import { createInteractionModule } from "../integration/game/interaction-module.
 import { createAchievements } from "../../achievements/game/achievements.js";
 import { mountExploration } from "./exploration-view.js";
 import { mountAchievements } from "../../achievements/game/achievements-view.js";
+import { playerMessage } from "./view-utils.js";
 
 const activePages = new WeakMap();
 export function mountGamePage({
@@ -46,7 +47,7 @@ export function mountGamePage({
     removeAchievements?.();
     exploration?.dispose();
     achievements?.dispose();
-    notify("暂时无法读取游戏进度，请重新进入。");
+    notify(playerMessage(error.message, "暂时无法读取游戏进度，请重新进入。"));
     console.error("[game-page] 页面初始化失败。", error);
     throw error;
   }
@@ -64,7 +65,7 @@ export function mountGamePage({
       if (!result || typeof result.ok !== "boolean") throw new Error("保存结果无法确认，请检查后重试。");
       notify(result.message || (result.ok ? "保存成功。" : "保存失败。"), result.ok ? "success" : "error");
     } catch (error) {
-      notify("保存未完成，请检查当前进度后重试。");
+      notify(playerMessage(error.message, "保存未完成，请检查当前进度后重试。"));
       console.error("[game-page] 保存失败。", error);
     } finally {
       saving = false;

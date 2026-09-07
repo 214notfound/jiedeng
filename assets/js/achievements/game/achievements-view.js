@@ -1,5 +1,5 @@
 // 成就视图：展示状态并按指定通知方发出一次提示，不修改全局成就。
-import { element, region, createFeedback } from "./view-utils.js";
+import { element, region, createFeedback, playerMessage } from "./view-utils.js";
 
 // 同一模块实例只允许一个视图承担通知，其他视图仍可展示。
 const notificationOwners = new WeakMap();
@@ -28,7 +28,8 @@ export function mountAchievements({ module, root, showFeedback, notifyUnlocks = 
           : item.unlocked ? "已解锁" : "未解锁";
         card.append(element("h3", "", item.name), element("p", "", item.description),
           element("p", "", status));
-        if (item.warning) card.append(element("p", "achievement-warning", item.warning));
+        if (item.warning) card.append(element("p", "achievement-warning",
+          playerMessage(item.warning, "这项成就暂时无法确认。")));
         if (item.unlockedAt) {
           const time = element("time", "", new Date(item.unlockedAt).toLocaleString("zh-CN"));
           time.dateTime = item.unlockedAt;
@@ -43,7 +44,7 @@ export function mountAchievements({ module, root, showFeedback, notifyUnlocks = 
       }
     } catch (error) {
       list.replaceChildren();
-      notify(error.message, "error");
+      notify(playerMessage(error.message, "成就暂时无法读取，请返回游戏重试。"), "error");
     }
   }
   let unsubscribe;
