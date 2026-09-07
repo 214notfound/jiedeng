@@ -1,4 +1,4 @@
-// 探索板块组合适配器：组合物体调查与对话接口，不拥有剧情状态。
+// 探索交互组合适配器：合并调查与对话视图；不拥有剧情状态，也不切换剧情 Node。
 import {createExploration} from "../../game/exploration.js";
 import {createConversation} from "../../conversation/game/conversation.js";
 
@@ -43,6 +43,7 @@ export function createInteractionModule(host) {
   }
 
   function getExitStatus() {
+    // 仅报告当前调查是否还有待办项；离场与 Node 推进由剧情模块负责。
     const labels = [...new Set([
       ...exploration.pendingLabels(),
       ...conversation.pendingLabels()

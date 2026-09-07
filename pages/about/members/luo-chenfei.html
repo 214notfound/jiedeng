@@ -1,1 +1,76 @@
-<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>制作组 · 罗晨菲</title><link rel="stylesheet" href="../../../assets/css/about/about.css"></head><body class="about-page" data-page-id="member-luo-chenfei"><header class="about-header"><a class="button button--secondary" href="../team.html">返回制作组</a><div class="about-brand">ABOUT / MEMBER</div></header><main class="about-main"><article class="content-card" aria-labelledby="memberName"><div class="member-mark" id="memberMark" aria-hidden="true"></div><p class="about-kicker" id="memberRole"></p><h1 class="about-title" id="memberName"></h1><p class="about-copy" id="memberDescription"></p><p class="feedback feedback--error" id="feedback" role="alert" hidden></p><div class="about-actions"><a class="button button--secondary" href="../team.html">返回制作组</a></div></article></main><script type="module" src="../../../assets/js/about/member.js"></script></body></html>
+<!-- 本文件提供罗晨菲的独立成员介绍页，具体资料由成员数据模块渲染。 -->
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>制作组 · 罗晨菲</title>
+  <link rel="stylesheet" href="../../../assets/css/about/about.css?v=1.8">
+</head>
+<body id="member-luo-chenfei" class="about-page member-page" data-page-id="member-luo-chenfei">
+  <header class="about-header">
+    <a class="button button--secondary" href="../team.html">返回制作组</a>
+    <div class="about-brand">ABOUT US / MEMBER</div>
+  </header>
+  <main class="about-main">
+    <article class="content-card member-profile" aria-labelledby="memberName">
+      <aside class="member-profile__aside" aria-label="成员身份信息">
+        <p class="member-profile__role" id="memberRole" data-optional-section hidden></p>
+      </aside>
+
+      <div class="member-profile__content">
+        <header class="member-identity">
+          <div class="member-profile__portrait">
+            <span class="member-profile__fallback" id="memberMark" aria-hidden="true"></span>
+            <img id="memberPortrait" alt="">
+          </div>
+          <div class="member-identity__heading">
+            <p class="about-kicker">PERSON ARCHIVE</p>
+            <p class="member-profile__archive" id="memberArchiveNumber"></p>
+            <h1 class="about-title" id="memberName"></h1>
+          </div>
+        </header>
+
+        <section class="member-section member-section--lead" data-optional-section hidden>
+          <p class="member-tagline" id="memberTagline"></p>
+        </section>
+
+        <section class="member-section" data-optional-section hidden aria-labelledby="factsTitle">
+          <p class="section-index">00 / BASIC INFO</p>
+          <h2 id="factsTitle">个人信息</h2>
+          <ul class="member-modules" id="memberFacts"></ul>
+        </section>
+
+        <section class="member-section" data-optional-section hidden aria-labelledby="modulesTitle">
+          <p class="section-index">01 / ROLE</p>
+          <h2 id="modulesTitle">负责模块</h2>
+          <ul class="member-modules" id="memberModules"></ul>
+        </section>
+
+        <section class="member-section" data-optional-section hidden aria-labelledby="biographyTitle">
+          <p class="section-index">02 / PROFILE</p>
+          <h2 id="biographyTitle">个人简介</h2>
+          <p class="member-biography" id="memberBiography"></p>
+        </section>
+
+        <section class="member-section" data-optional-section hidden aria-labelledby="workTitle">
+          <p class="section-index">03 / CONTRIBUTIONS</p>
+          <h2 id="workTitle">完成内容</h2>
+          <ol class="member-contributions" id="memberCompletedWork"></ol>
+        </section>
+
+        <blockquote class="member-quote" data-optional-section hidden>
+          <p class="section-index">NOTE / MEMBER'S WORDS</p>
+          <p id="memberQuote"></p>
+        </blockquote>
+
+        <p class="feedback feedback--error" id="feedback" role="alert" hidden></p>
+        <div class="about-actions">
+          <a class="button button--secondary" href="../team.html">返回制作组</a>
+        </div>
+      </div>
+    </article>
+  </main>
+  <script type="module" src="../../../assets/js/about/member.js?v=1.3"></script>
+</body>
+</html>

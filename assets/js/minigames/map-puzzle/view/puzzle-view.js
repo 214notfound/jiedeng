@@ -17,6 +17,10 @@
 
 /** 占位原图的每格边长(px)。只决定画布清晰度，与屏幕显示尺寸无关。 */
 const ART_CELL = 240;
+const DEFAULT_ARTWORK_URL = new URL(
+  "../../../../images/minigames/map-puzzle-village.png",
+  import.meta.url
+).href;
 
 /**
  * 生成一张「占位地图原图」。
@@ -152,7 +156,7 @@ export function mountPuzzle(container, options) {
 
   const { rows, cols } = level;
   // 整图切片背景：每个槽/拼块共用同一张原图，只是裁切位置不同
-  const artwork = artworkUrl ?? makeArtwork(cols, rows);
+  const artwork = artworkUrl ?? DEFAULT_ARTWORK_URL;
 
   // 取某格背景样式：把原图按 rows*cols 等分后，显示第 row/col 片
   const pieceStyleFor = (row, col) => ({
@@ -166,12 +170,14 @@ export function mountPuzzle(container, options) {
   const root = document.createElement("div");
   root.className = "pz-root";
 
-  // 标题行：拼图名称(占位) + 放弃按钮
+  // 左上角返回入口：保留取消语义，但不再占用拼图主体布局。
   const header = document.createElement("div");
   header.className = "pz-header";
   header.innerHTML = `
-    <div class="pz-header__title">RECONSTRUCT / MAP PUZZLE</div>
-    <button type="button" class="pz-cancel" data-action="cancel">GIVE UP</button>
+    <button type="button" class="pz-cancel" data-action="cancel" aria-label="返回上一页">
+      <span class="pz-cancel__arrow" aria-hidden="true">←</span>
+      <span>返回</span>
+    </button>
   `;
 
   // 中央网格槽区：槽本身不占拼图内容，只是“放置格”
@@ -279,7 +285,7 @@ export function mountPuzzle(container, options) {
   function showDone() {
     const done = document.createElement("div");
     done.className = "pz-done";
-    done.textContent = "PUZZLE RESTORED // 地图已复原";
+    done.textContent = "恭喜您解锁XX剧情";
     root.insertBefore(done, tray);
   }
 
@@ -464,4 +470,3 @@ export function mountPuzzle(container, options) {
     }
   };
 }
-

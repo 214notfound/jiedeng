@@ -1,4 +1,4 @@
-// 游戏流程协调器：连接全局状态、存档、剧情入口和各外部功能模块。
+// 游戏流程指挥：校验候选结果后统一提交状态，再发布命令与展示；剧情负责决策。
 
 import {
   STORY_CONTRACT_VERSION,
@@ -200,6 +200,7 @@ export function createGameFlow(options = {}) {
     return { ok: false, code: error.errorCode, error };
   }
 
+  // 仅宿主初始化、恢复与保存使用；执行模块必须通过 handleExternalEvent 汇报。
   function replaceState(nextState) {
     gameState = nextState;
     if (typeof onStateChange === "function") {
@@ -227,6 +228,7 @@ export function createGameFlow(options = {}) {
     };
   }
 
+  // 仅宿主登记成就等内部应用事件；剧情奖励由 commitStoryTransaction 登记。
   function applyAppEvent(event) {
     if (!gameState) {
       throw new Error("游戏状态尚未初始化");
@@ -305,9 +307,10 @@ export function createGameFlow(options = {}) {
         return { ok: true, duplicate: true, state: gameState };
       }
 
-      if (input.type === "external-event") {
-        replaceState(applyExternalEvent(gameState, input.event));
-      }
+      // 外部结果尚未被剧情认可，只能进入候选状态，不能发布给订阅者。
+      const candidateState = input.type === "external-event"
+        ? applyExternalEvent(gameState, input.event)
+        : gameState;
 
       const storyEntry = story?.enterStory;
       if (typeof storyEntry !== "function") {
@@ -320,11 +323,11 @@ export function createGameFlow(options = {}) {
         source: "game-shell",
         input,
         context: {
-          facts: [...gameState.facts],
+          facts: [...candidateState.facts],
           storyCheckpoint:
             input.type === "new-game"
               ? null
-              : copyCheckpoint(gameState.storyCheckpoint)
+              : copyCheckpoint(candidateState.storyCheckpoint)
         }
       };
 
@@ -338,7 +341,7 @@ export function createGameFlow(options = {}) {
       let committedState;
       try {
         committedState = commitStoryTransaction(
-          gameState,
+          candidateState,
           requestId,
           response.commit
         );
@@ -355,27 +358,40 @@ export function createGameFlow(options = {}) {
       // 先发布完整命令，再通知状态订阅者。检查点只保存命令摘要，
       // 探索/对话模块还需要响应里的 payload 与 goals 才能安全执行。
       gameState = committedState;
-      if (typeof onCommandsChange === "function") {
-        onCommandsChange(response.commands.map((command) => ({...command})));
-      }
-      if (typeof onStateChange === "function") {
-        onStateChange(gameState);
-      }
+      let warning;
+      try {
+        if (typeof onCommandsChange === "function") {
+          onCommandsChange(response.commands.map((command) => ({...command})));
+        }
+        if (typeof onStateChange === "function") {
+          onStateChange(gameState);
+        }
 
-      // 状态提交成功后才允许产生对外副作用。
-      await dispatchNotifications(response.notifications);
-      await dispatchCommands(response.commands);
-      await renderPresentation(response.presentation);
+        // 状态提交成功后才允许产生对外副作用。
+        await dispatchNotifications(response.notifications);
+        await dispatchCommands(response.commands);
+        await renderPresentation(response.presentation);
 
-      if (typeof onStatusChange === "function") {
-        onStatusChange(response.status, response);
+        if (typeof onStatusChange === "function") {
+          onStatusChange(response.status, response);
+        }
+      } catch (error) {
+        // 已确认的进度不能因展示或通知失败被当作未提交，避免执行方重复领奖。
+        warning = normalizeFlowError(
+          "FLOW_EFFECT_FAILED",
+          "游戏进度已更新，但界面或通知更新失败，请返回主菜单前保存进度。",
+          error
+        );
+        warning.recoveryActions = ["save", "return-menu"];
+        onError(warning);
       }
 
       return {
         ok: true,
         status: response.status,
         response,
-        state: gameState
+        state: gameState,
+        ...(warning ? { warning } : {})
       };
     } catch (error) {
       return reportError(
