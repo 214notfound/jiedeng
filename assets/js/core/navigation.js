@@ -2,7 +2,6 @@
 
 import { createGameFlow } from "./game-flow.js";
 import { createGameView } from "./game-ui.js";
-import { STORY_NOTIFICATION_TYPES } from "./game-contract.js";
 import { createInteractionModule } from "../exploration/integration/game/interaction-module.js";
 import { mountExploration } from "../exploration/game/exploration-view.js";
 import { createMapPuzzleAdapter } from "../minigames/map-puzzle/adapter/map-puzzle-adapter.js";
@@ -16,15 +15,29 @@ const auth = globalThis.WhiteLamp?.auth;
 const page = document.body?.dataset.page ||
   (location.pathname.endsWith("/game.html") ? "game" : "menu");
 
+const TECHNICAL_FEEDBACK_PATTERN = /(?:\b(?:Node|command|event|payload|source|state|localStorage|storageScope|schemaVersion|storyCheckpoint|pendingCommands|resultFactIds)\b|[A-Z]{2,}(?:_[A-Z0-9]+)+|\b[a-z]+(?:-[a-z0-9]+){2,}\b|模块|接口|挂载|订阅|存储域|结构不正确|检查点与命令|格式无效|无权产生)/;
+
+function playerFacingFeedback(message, type) {
+  if (typeof message !== "string" || !message.trim()) {
+    return "操作没有完成，请重试；仍无法继续时请返回主菜单。";
+  }
+  if (["error", "warning"].includes(type) && TECHNICAL_FEEDBACK_PATTERN.test(message)) {
+    console.error("[white-lamp:player-feedback] 已隐藏内部错误详情", message);
+    return "操作没有完成，请重试；仍无法继续时请返回主菜单。";
+  }
+  return message;
+}
+
 function showFeedback(message, type = "info") {
   const element = document.getElementById("feedback");
+  const visibleMessage = playerFacingFeedback(message, type);
 
   if (!element) {
-    console.log(`[white-lamp:${type}] ${message}`);
+    console.log(`[white-lamp:${type}] ${visibleMessage}`);
     return;
   }
 
-  element.textContent = message;
+  element.textContent = visibleMessage;
   element.className = `feedback feedback--${type}`;
   element.hidden = false;
 }
@@ -260,16 +273,9 @@ function setupGamePage() {
 
     const storageScope = user.storageScope;
     console.info("[white-lamp:game]", { page: location.pathname, mode, debugMode, storageScope });
-    const notificationHandlers = Object.fromEntries(
-      Object.values(STORY_NOTIFICATION_TYPES).map((eventType) => [
-        eventType,
-        (notification) => updateView(notification.eventId, () => gameView.recordNotification(notification))
-      ])
-    );
-
     gameFlow = createGameFlow({
       storageScope,
-      notificationHandlers,
+      notificationHandlers: {},
       onStateChange: () => updateView("state", () => {
         gameView.renderState(gameFlow.getState());
         stateListeners.forEach((listener) => listener());
@@ -301,10 +307,7 @@ function setupGamePage() {
       }
 
       gameFlow.replaceState(saveResult.data.state);
-      showFeedback(
-        `保存成功：${new Date(saveResult.data.savedAt).toLocaleString()}`,
-        "success"
-      );
+      showFeedback("进度已保存。", "success");
       return saveResult;
     }
 

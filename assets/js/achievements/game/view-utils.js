@@ -30,3 +30,12 @@ export function createFeedback(root, showFeedback) {
     }
   };
 }
+
+const TECHNICAL_MESSAGE = /(?:\b(?:Node|command|event|payload|source|state|storageScope|storyCheckpoint|pendingCommands|resultFactIds)\b|[A-Z]{2,}(?:_[A-Z0-9]+)+|命令 ID|错误码|检查点|事实|模块|接口|挂载|订阅|格式无效|无权产生)/;
+
+export function playerMessage(message, fallback) {
+  if (typeof message !== "string" || !message.trim() || TECHNICAL_MESSAGE.test(message)) {
+    return fallback;
+  }
+  return message;
+}

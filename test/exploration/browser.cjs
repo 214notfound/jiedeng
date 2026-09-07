@@ -1,4 +1,4 @@
-// Edge 浏览器回归：新 Node 流程、键盘、背包、跨页及错误清理。
+// Edge 浏览器回归：新 Node 流程、鼠标热点、背包、跨页及错误清理。
 const fs=require("node:fs"),path=require("node:path"),http=require("node:http"),assert=require("node:assert/strict");
 const {chromium}=require(process.env.PLAYWRIGHT_MODULE_PATH||"playwright");
 const root=path.resolve(__dirname,"../..");
@@ -37,14 +37,8 @@ const out=fs.mkdtempSync(path.join(require("node:os").tmpdir(),"jiedeng-story-")
   }
   await page.locator('[data-story-action="confirm-wake-context"]').click();await layout();
   assert.equal(await page.evaluate(() => typeof window.WhiteLamp?.story?.enterStory), "function");
-  await page.locator(".exploration-stage").focus();
-  const before=await page.locator(".exploration-viewpoint").evaluate(n=>n.style.left);
-  await page.keyboard.press("ArrowLeft");
-  assert.notEqual(await page.locator(".exploration-viewpoint").evaluate(n=>n.style.left),before);
-  for(let i=0;i<6;i++)await page.keyboard.press("ArrowLeft");
-  for(let i=0;i<9;i++)await page.keyboard.press("ArrowUp");
-  await page.keyboard.press("e");
-  assert.match(await page.locator("#feedback").textContent(),/广播和脚印/);
+  await page.getByRole("button",{name:/查看烧毁的工作证/}).click();
+  assert.match(await page.locator("#feedback").textContent(),/工作证/);
   await click("确认交谈完成");
   await layout();await page.screenshot({path:out+"/belongings-1280.png",fullPage:true});
   await click("查看烧毁的工作证");
@@ -91,7 +85,7 @@ const out=fs.mkdtempSync(path.join(require("node:os").tmpdir(),"jiedeng-story-")
   });
   assert.deepEqual(cleanup,{count:1,kept:true,listeners:0});
   assert.deepEqual(errors,[]);assert.deepEqual(missing,[]);
-  console.log("PASS Edge: 11 Nodes, keyboard, dialogue confirmation, images, six viewport/scene checks, inventory, map cancel, achievement refresh, cleanup.");
+  console.log("PASS Edge: 11 Nodes, mouse hotspots, dialogue confirmation, images, six viewport/scene checks, inventory, map cancel, achievement refresh, cleanup.");
   console.log("Screenshots: "+out);
  }finally{if(browser)await browser.close();server.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

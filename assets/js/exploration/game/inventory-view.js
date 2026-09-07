@@ -1,5 +1,5 @@
 // 背包视图：两类物品列表、详情弹窗与焦点恢复，独立订阅状态。
-import { element, button, region, createFeedback } from "./view-utils.js";
+import { element, button, region, createFeedback, playerMessage } from "./view-utils.js";
 
 let nextDialogId = 0;
 export function mountInventory({ module, root, showFeedback }) {
@@ -47,7 +47,7 @@ export function mountInventory({ module, root, showFeedback }) {
       source.textContent = "来源：" + item.source + " · 已获得";
       if (!dialog.open) dialog.showModal();
       close.focus();
-    } catch (error) { notify(error.message, "error"); }
+    } catch (error) { notify(playerMessage(error.message, "暂时无法查看这项内容，请重试。"), "error"); }
   }
   function render() {
     if (!active) return;
@@ -98,7 +98,7 @@ export function mountInventory({ module, root, showFeedback }) {
       selectedId = null;
       if (dialog.open) dialog.close();
       browser.replaceChildren();
-      notify(error.message, "error");
+      notify(playerMessage(error.message, "背包暂时无法读取，请重试。"), "error");
     }
   }
   let unsubscribe;

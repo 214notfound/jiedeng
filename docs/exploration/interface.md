@@ -4,7 +4,7 @@
 
 ## 职责边界
 
-探索功能覆盖 R09、R12：场景热点、键盘移动、物体调查、调查结果回读和两层背包。R10 的对白与事件生产位于 `assets/js/exploration/conversation` 子目录，见 `../conversation/interface.md`；页面通过 `assets/js/exploration/integration` 组合二者。这样 `assets/js` 一级只保留 `exploration` 与 `achievements` 两个业务目录。
+探索功能覆盖 R09、R12：场景发光热点、鼠标点击调查、调查结果回读和两层背包。R10 的对白与事件生产位于 `assets/js/exploration/conversation` 子目录，见 `../conversation/interface.md`；页面通过 `assets/js/exploration/integration` 组合二者。这样 `assets/js` 一级只保留 `exploration` 与 `achievements` 两个业务目录。
 
 探索模块不拥有剧情 Node 推进、NPC 对话、账户、存档、成就结算和地图小游戏。正式协调器提供已提交状态与剧情命令，探索只提交外部事件。
 

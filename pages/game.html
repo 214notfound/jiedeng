@@ -24,12 +24,6 @@
         <button id="save-button" class="button button--primary" type="button">保存进度</button>
       </header>
 
-      <div class="game-statusbar" aria-label="当前剧情状态">
-        <span>阶段：<strong id="stage-label">初始化</strong></span>
-        <span>节点：<strong id="node-label">正在建立检查点</strong></span>
-        <span id="debug-badge" class="debug-badge" hidden>联调模式</span>
-      </div>
-
       <div id="feedback" class="feedback" role="status" aria-live="polite" hidden></div>
 
       <main class="game-layout">
@@ -50,13 +44,8 @@
           </section>
         </div>
 
-        <aside class="game-sidebar" aria-label="游戏状态">
+        <aside class="game-sidebar" aria-label="背包与线索">
           <section id="inventory-panel" class="side-panel" aria-label="背包与线索"></section>
-
-          <section class="side-panel" aria-labelledby="log-heading">
-            <h2 id="log-heading">流程日志</h2>
-            <ul id="story-log" class="story-log"><li class="empty-item">等待剧情通知</li></ul>
-          </section>
         </aside>
       </main>
     </div>

@@ -190,11 +190,6 @@ export function mountPuzzle(container, options) {
     const slot = document.createElement("div");
     slot.className = "pz-slot";
     slot.dataset.slotId = slotId;
-    // 空位提示序号(正式画风替换时删除)
-    const hint = document.createElement("span");
-    hint.className = "pz-slot__hint";
-    hint.textContent = `${row * cols + col + 1}`;
-    slot.appendChild(hint);
     board.appendChild(slot);
     slotEls.set(slotId, slot);
   });
@@ -210,7 +205,6 @@ export function mountPuzzle(container, options) {
     piece.className = "pz-piece";
     piece.dataset.pieceId = pieceId;
     Object.assign(piece.style, pieceStyleFor(row, col));
-    piece.title = `piece: ${row + 1}x${col + 1}`; // 悬停可核对坐标(调试用)
     return piece;
   };
 
@@ -235,7 +229,7 @@ export function mountPuzzle(container, options) {
   let suppressNextClick = false; // pointerup 已把“点击”消费掉，阻止 click 二次触发
 
   const syncStatus = () => {
-    status.textContent = `LOCKED ${lockedCount} / ${level.pieceIds.length}`;
+    status.textContent = `已拼好 ${lockedCount} / ${level.pieceIds.length} 块`;
   };
 
   // 已有锁定(读档恢复场景)：直接把拼块放进对应槽
@@ -251,10 +245,20 @@ export function mountPuzzle(container, options) {
   /* ---------- 放置逻辑(点击与拖拽共用) ---------- */
   function attemptPlace(pieceId, slotId) {
     if (completed) return;
-    const result = onPlace(pieceId, slotId);
+    let result;
+    try {
+      result = onPlace(pieceId, slotId);
+    } catch (error) {
+      console.error("[map-puzzle] 拼图操作失败。", error);
+      status.textContent = "拼图暂时无法继续，请重新尝试。";
+      return;
+    }
     const pieceEl = pieceEls.get(pieceId);
     const slotEl = slotEls.get(slotId);
-    if (!pieceEl || !slotEl) return;
+    if (!pieceEl || !slotEl) {
+      status.textContent = "这次操作无效，请重新选择拼图。";
+      return;
+    }
 
     if (result && result.ok && result.locked) {
       // 正确：把块从托盘移到槽内锁定，此时无边框 → 与相邻块无缝
@@ -269,10 +273,12 @@ export function mountPuzzle(container, options) {
         onSolved?.();
       }
     } else if (result && result.ok && !result.locked) {
-      // 错误：拼块回弹一次
+      // 位置不对：拼块回弹并给出玩家可理解的提示。
       bouncePieceBack(pieceEl);
+      status.textContent = "这块拼图位置不对，再试试。";
+    } else {
+      status.textContent = "这次操作没有完成，请重新选择拼图。";
     }
-    // result.ok === false：非法目标，静默忽略(debug 可 console.warn)
   }
 
   function settlePieceIntoSlot(pieceEl, slotEl) {
@@ -285,7 +291,7 @@ export function mountPuzzle(container, options) {
   function showDone() {
     const done = document.createElement("div");
     done.className = "pz-done";
-    done.textContent = "恭喜您解锁XX剧情";
+    done.textContent = "地图已经复原，可以继续调查了。";
     root.insertBefore(done, tray);
   }
 

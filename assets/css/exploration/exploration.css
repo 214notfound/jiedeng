@@ -42,15 +42,6 @@
   color: #666;
   background: #ddd;
 }
-.exploration-module .exploration-viewpoint {
-  position: absolute;
-  transform: translate(-50%, -50%);
-  pointer-events: none;
-  background: #222;
-  color: white;
-  padding: .3rem;
-  border-radius: 50%;
-}
 .exploration-module .exploration-controls {
   display: flex;
   gap: .5rem;
@@ -115,10 +106,6 @@
 }
 .exploration-module [hidden] {
   display: none !important;
-}
-.exploration-module .exploration-viewpoint {
-  font-size: .65rem;
-  padding: .2rem;
 }
 @media (max-width: 640px) {
   .exploration-module {
