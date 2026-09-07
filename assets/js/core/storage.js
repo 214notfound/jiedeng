@@ -4,6 +4,7 @@ import { STORY_FACT_DEFINITIONS } from "./game-contract.js";
 import {
   GAME_ID_PATTERN,
   SAVE_SCHEMA_VERSION,
+  createStoryCompatibilityProjection,
   requireStorageScope
 } from "./state.js";
 
@@ -135,6 +136,22 @@ export function validateGameState(value) {
     (value.storyCheckpoint === null ||
       value.currentNodeId === value.storyCheckpoint.nodeId);
 
+  let compatibilityMatchesCheckpoint = false;
+  try {
+    const compatibility = createStoryCompatibilityProjection(value.storyCheckpoint);
+    compatibilityMatchesCheckpoint =
+      value.currentNodeId === compatibility.currentNodeId &&
+      value.stage === compatibility.stage &&
+      isPlainObject(value.stageProgress) &&
+      Object.keys(value.stageProgress).length ===
+        Object.keys(compatibility.stageProgress).length &&
+      Object.entries(compatibility.stageProgress).every(
+        ([key, completed]) => value.stageProgress[key] === completed
+      );
+  } catch {
+    compatibilityMatchesCheckpoint = false;
+  }
+
   return (
     value.schemaVersion === SAVE_SCHEMA_VERSION &&
     factsAreValid &&
@@ -148,6 +165,7 @@ export function validateGameState(value) {
     isGameId(value.stage) &&
     hasBooleanRecord(value.stageProgress) &&
     checkpointMatchesLegacyView &&
+    compatibilityMatchesCheckpoint &&
 
     hasGameIdArray(value.investigated) &&
     isPlainObject(value.explorationState) &&
@@ -336,6 +354,19 @@ export function loadGame(storageScope) {
       "SAVE_VERSION_UNSUPPORTED",
       "存档版本与当前游戏不兼容，原存档已保留。"
     );
+  }
+
+  // schema 2 的早期存档没有持续同步兼容字段。读档时只根据已经校验过
+  // 基础形状的 storyCheckpoint 重建投影，不让旧字段覆盖真实剧情进度。
+  if (validateStoryCheckpoint(parsed.storyCheckpoint)) {
+    try {
+      Object.assign(
+        parsed,
+        createStoryCompatibilityProjection(parsed.storyCheckpoint)
+      );
+    } catch {
+      // 未知 Node 交给下面的完整状态校验拒绝。
+    }
   }
 
   if (!validateGameState(parsed)) {

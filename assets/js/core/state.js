@@ -35,8 +35,41 @@ const COMMAND_TYPE_BY_SOURCE = Object.freeze({
   minigame: "REQUEST_MINIGAME"
 });
 
+const V1_STAGE_IDS = Object.freeze(["prologue", "village", "old-house"]);
+
+export function getStageIdForNode(nodeId) {
+  requireText(nodeId, "nodeId");
+
+  if (nodeId.startsWith("prologue-")) return "prologue";
+  if (nodeId.startsWith("village-")) return "village";
+  if (nodeId.startsWith("old-house-") || nodeId === "week-one-end") {
+    return "old-house";
+  }
+
+  throw new Error(`无法从剧情 Node 推导阶段：${nodeId}`);
+}
+
+// currentNodeId、stage 和 stageProgress 只用于兼容旧页面。
+// storyCheckpoint 才是剧情进度的唯一可信来源，兼容字段必须由它统一生成。
+export function createStoryCompatibilityProjection(checkpoint) {
+  const nodeId = checkpoint?.nodeId ?? "prologue-wake";
+  const stage = getStageIdForNode(nodeId);
+  const completedStageIds = checkpoint?.completedStageIds ?? [];
+  const currentStageIndex = V1_STAGE_IDS.indexOf(stage);
+  const stageProgress = {};
+
+  for (const [index, stageId] of V1_STAGE_IDS.entries()) {
+    stageProgress[`${stageId}-started`] =
+      index <= currentStageIndex || completedStageIds.includes(stageId);
+    stageProgress[`${stageId}-completed`] = completedStageIds.includes(stageId);
+  }
+
+  return { currentNodeId: nodeId, stage, stageProgress };
+}
+
 // 定义初始状态
 export function createInitialGameState(storageScope) {
+  const compatibility = createStoryCompatibilityProjection(null);
   return {
     schemaVersion: SAVE_SCHEMA_VERSION,
     storageScope: requireStorageScope(storageScope),
@@ -48,10 +81,7 @@ export function createInitialGameState(storageScope) {
     processedExternalEventIds: [],
     appliedOnceKeys: [],
 
-    // 兼容现有 storage.js；剧情位置仍以 storyCheckpoint 为唯一可信来源。
-    currentNodeId: "prologue-wake",
-    stage: "prologue",
-    stageProgress: { "prologue-started": true },
+    ...compatibility,
 
     investigated: [],
     explorationState: {},
@@ -437,8 +467,7 @@ export function commitStoryTransaction(gameState, requestId, commit) {
 
   return {
     ...draft,
-    // 临时同步旧字段，避免 storage.js 完成升级前无法保存新状态。
-    currentNodeId: commit.checkpoint.nodeId,
+    ...createStoryCompatibilityProjection(commit.checkpoint),
     storyCheckpoint: {
       ...commit.checkpoint,
       completedMilestoneIds: [...commit.checkpoint.completedMilestoneIds],
