@@ -189,7 +189,7 @@ test("提交后 presentation 抛错不回滚，返回副作用警告", async () 
   assert.equal(harness.flow.getState().storyCheckpoint.nodeId, "prologue-wake");
 });
 
-// 仅替代浏览器视图与交互设备；导航、剧情、状态和成就规则均运行生产代码。
+// 仅替代浏览器视图与交互设备；游戏页控制器、剧情、状态和成就规则均运行生产代码。
 for (const entry of ["formal", "debug"]) {
   test(`${entry} 地图入口统一结算成就，再发布展示，重复事件不重复解锁`, async () => {
     const context = createContext();
@@ -200,14 +200,37 @@ for (const entry of ["formal", "debug"]) {
     context.URLSearchParams = URLSearchParams;
     context.location = { pathname: "/pages/game.html", search: "?mode=new&debug=1" };
     context.addEventListener = () => {};
+    const storyPanel = {
+      hidden: false,
+      classList: { toggle() {} },
+      toggleAttribute() {},
+      querySelector() { return null; },
+      focus() {}
+    };
     context.document = {
       body: { dataset: { page: "game" } },
+      activeElement: { focus() {} },
       getElementById(id) {
-        if (!elements.has(id)) elements.set(id, { addEventListener() {}, replaceChildren() {} });
+        if (!elements.has(id)) elements.set(id, {
+          hidden: false,
+          disabled: false,
+          dataset: {},
+          classList: { toggle() {} },
+          toggleAttribute() {},
+          addEventListener() {},
+          removeEventListener() {},
+          replaceChildren() {},
+          querySelector() { return null; },
+          closest(selector) { return id === "game-story" && selector === ".story-panel" ? storyPanel : null; },
+          focus() {}
+        });
         return elements.get(id);
       }
     };
-    context.WhiteLamp.auth = { getSession: async () => ({ ok: true, data: { storageScope: "guest" } }) };
+    cache.set("assets/js/core/navigation.js", {
+      getCurrentUser: async () => ({ storageScope: "guest" }),
+      goToMenu() {}
+    });
     cache.set("assets/js/core/game-ui.js", {
       createGameView(options) {
         controls = options;
@@ -225,9 +248,9 @@ for (const entry of ["formal", "debug"]) {
     cache.set("assets/js/minigames/map-puzzle/adapter/map-puzzle-adapter.js", {
       createMapPuzzleAdapter(options) { mapEvents = options; return { destroy() {}, start() {} }; }
     });
-    loadCoreModule(context, "assets/js/core/navigation.js", cache);
+    loadCoreModule(context, "assets/js/core/game-page-controller.js", cache);
     await new Promise(setImmediate);
-    assert.ok(response, "正式导航必须完成初始化");
+    assert.ok(response, "正式游戏页控制器必须完成初始化");
 
     // 沿真实节点推进到地图任务，使用同一页面的联调按钮完成此前的交互。
     for (let step = 0; step < 40 && !response.commands.some(c => c.commandType === "REQUEST_MINIGAME"); step++) {
