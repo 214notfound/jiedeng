@@ -137,21 +137,30 @@ export function createConversation(host) {
         resultFactIds: [...facts],
         payload
       };
-      const result = await host.dispatchExternalEvent(event, {storageScope: bound.scope});
-      const after = bound.read();
+      let result;
+      try {
+        result = await host.dispatchExternalEvent(event, {storageScope: bound.scope});
+      } catch (error) {
+        uncertain = true;
+        throw error;
+      }
       if (!result || typeof result.ok !== "boolean") {
         uncertain = true;
         throw new Error("操作结果无法确认，请重新进入。");
       }
-      if (!result.ok) throw new Error(result.message || "操作未提交，请重新进入。");
+      if (!result.ok) throw new Error(result.message || "操作未提交，请重试。");
+      let after;
+      try {
+        after = bound.read();
+      } catch (error) {
+        uncertain = true;
+        throw error;
+      }
       if (!facts.every((fact) => after.state.facts.includes(fact))) {
         uncertain = true;
         throw new Error("事实尚未提交，暂时停止后续操作。");
       }
       return result;
-    } catch (error) {
-      uncertain = true;
-      throw error;
     } finally {
       busy = false;
     }
