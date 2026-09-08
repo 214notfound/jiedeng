@@ -8,6 +8,7 @@ import { mountExploration } from "../exploration/game/exploration-view.js";
 import { createMapPuzzleAdapter } from "../minigames/map-puzzle/adapter/map-puzzle-adapter.js";
 import { getAchievementEvents } from "../achievements/game/achievements.js";
 import { saveGame } from "./storage.js";
+import { STORY_FACT_DEFINITIONS } from "./game-contract.js";
 
 export const VIEW_STATES = Object.freeze({
   READING: "reading",
@@ -230,6 +231,7 @@ export function setupGamePage() {
   let mapAdapter;
   let activeCommands = [];
   let preserveViewDuringMapExit = false;
+  let failNextExternalEventForDebug = false;
   const stateListeners = new Set();
   const returnMenuButton = requireElement("return-menu-button");
   const saveButton = requireElement("save-button");
@@ -295,6 +297,16 @@ export function setupGamePage() {
   }
 
   async function dispatchExternalEvent(event) {
+    if (debugMode && failNextExternalEventForDebug) {
+      failNextExternalEventForDebug = false;
+      console.warn("[white-lamp:debug-flow] 已按测试要求拒绝本次外部事件", event);
+      return {
+        ok: false,
+        code: "DEBUG_FORCED_FAILURE",
+        message: "测试失败已触发，本次操作没有提交；请再次点击重试。"
+      };
+    }
+
     pendingDispatches += 1;
     let result;
     try {
@@ -363,13 +375,21 @@ export function setupGamePage() {
     }
 
     if (command.commandType === "REQUEST_EXPLORATION") {
+      const committedFacts = new Set(gameFlow.getState().facts);
+      const nextFactId = resultFactIds.find((factId) => !committedFacts.has(factId));
+      const factDefinition = STORY_FACT_DEFINITIONS.find(
+        (definition) => definition.id === nextFactId
+      );
+      if (!nextFactId || !factDefinition?.externalTargetId) {
+        throw new Error("无法从探索命令确定下一项调试目标。");
+      }
       return {
         eventId,
         eventType: "OBJECT_INVESTIGATED",
         source: "exploration",
         causedByCommandId: command.commandId,
-        resultFactIds,
-        payload: {objectId: command.payload.explorationId}
+        resultFactIds: [nextFactId],
+        payload: {objectId: factDefinition.externalTargetId}
       };
     }
 
@@ -498,7 +518,7 @@ export function setupGamePage() {
       isFlowLocked: gameFlow.isLocked
     };
 
-    globalThis.WhiteLamp.gamePage = {
+    const gamePageApi = {
       getViewState: viewCoordinator.getState,
       getReturnState: viewCoordinator.getReturnState,
       openInventory: handleOpenInventory,
@@ -512,6 +532,13 @@ export function setupGamePage() {
       closeOverlay: viewCoordinator.closeOverlay,
       openMinigame: handleOpenMinigame
     };
+    if (debugMode) {
+      gamePageApi.failNextExternalEvent = () => {
+        failNextExternalEventForDebug = true;
+        return {ok: true, message: "下一次热点、对话或小游戏提交将模拟失败。"};
+      };
+    }
+    globalThis.WhiteLamp.gamePage = Object.freeze(gamePageApi);
 
     const startResult = mode === "new"
       ? await gameFlow.startNewGame()

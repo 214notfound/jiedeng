@@ -51,7 +51,7 @@ button { font: inherit; }
 .button--primary, .story-action { color: #11151c; background: var(--paper); border-color: var(--paper); font-weight: 700; }
 .button:disabled, .story-action:disabled { cursor: wait; opacity: 0.5; }
 
-.feedback { position: relative; z-index: 100; max-width: 1440px; margin: 0 auto 14px; padding: 11px 14px; background: var(--panel); border-left: 4px solid var(--accent); font-size: 13px; }
+.feedback { position: relative; z-index: 100; max-width: 1440px; margin: 0 auto 14px; padding: 11px 14px; background: var(--panel); border-left: 4px solid var(--accent); font-size: 13px; pointer-events: none; }
 .feedback--error { border-color: var(--danger); }
 .feedback--success { border-color: #91ad95; }
 .feedback--warning { border-color: #c5a36d; }
