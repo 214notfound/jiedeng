@@ -139,7 +139,7 @@ export function createViewCoordinator({
   function render() {
     const visible = visibleStates();
     setLayerState(sceneRoot, {
-      visible: visible.has(VIEW_STATES.EXPLORATION),
+      visible: visible.has(VIEW_STATES.EXPLORATION) || currentView === VIEW_STATES.READING,
       interactive: currentView === VIEW_STATES.EXPLORATION
     });
     setLayerState(explorationActionsRoot, {
@@ -244,6 +244,7 @@ export function setupGamePage() {
   const explorationActionsRoot = requireElement("exploration-actions");
   const storyRoot = requireElement("game-story");
   const storyPanel = storyRoot.closest(".story-panel");
+  const gameMain = sceneRoot.closest(".game-main");
   const inventoryRoot = requireElement("inventory-panel");
   const detailRoot = requireElement("detail-root");
   const minigameRoot = requireElement("minigame-root");
@@ -263,6 +264,7 @@ export function setupGamePage() {
 
   function syncTopBar(currentView) {
     const baseViewActive = BASE_VIEW_STATES.has(currentView);
+    gameMain?.setAttribute("data-view-state", currentView);
     openInventoryButton.disabled = !baseViewActive;
     openMinigameButton.disabled = !baseViewActive || !getMapCommand();
   }
@@ -431,6 +433,13 @@ export function setupGamePage() {
     }
     openMap(command);
   };
+  const handleOpenDetail = (targetId) => {
+    if (typeof targetId !== "string" || !targetId.trim()) {
+      return {ok: false, message: "缺少要查看的线索。"};
+    }
+    detailRoot.dataset.targetId = targetId;
+    return viewCoordinator.openOverlay(VIEW_STATES.DETAIL);
+  };
 
   returnMenuButton.addEventListener("click", handleReturnMenu);
   openInventoryButton.addEventListener("click", handleOpenInventory);
@@ -523,11 +532,7 @@ export function setupGamePage() {
       getReturnState: viewCoordinator.getReturnState,
       openInventory: handleOpenInventory,
       openDetail(targetId) {
-        if (typeof targetId !== "string" || !targetId.trim()) {
-          return {ok: false, message: "缺少要查看的线索。"};
-        }
-        detailRoot.dataset.targetId = targetId;
-        return viewCoordinator.openOverlay(VIEW_STATES.DETAIL);
+        return handleOpenDetail(targetId);
       },
       closeOverlay: viewCoordinator.closeOverlay,
       openMinigame: handleOpenMinigame
@@ -602,8 +607,31 @@ export function setupGamePage() {
       sceneRoot,
       actionsRoot: explorationActionsRoot,
       inventoryRoot,
+      detailRoot,
       showFeedback,
-      openMap
+      openMap,
+      openDetail: handleOpenDetail,
+      openConversation(input, callbacks = {}) {
+        viewCoordinator.showBase(VIEW_STATES.READING);
+        gameView.openConversation(input, {
+          onComplete: async (result) => {
+            try {
+              const outcome = await callbacks.onComplete?.(result);
+              if (outcome && outcome.ok === false) {
+                callbacks.onFailure?.(outcome);
+              }
+              return outcome;
+            } catch (error) {
+              callbacks.onFailure?.(error);
+              throw error;
+            }
+          },
+          onClose: () => {
+            callbacks.onClose?.();
+            viewCoordinator.showBase(VIEW_STATES.EXPLORATION);
+          }
+        });
+      }
     });
 
     const handleSave = () => saveCurrentGame();
