@@ -7,6 +7,7 @@
     throw new Error("[white-lamp:story] story-registry.js 未先加载");
   }
 
+  // 传入stageId和Node数组，目前有三个固定Node
   internal.registerStoryStage("prologue", [
     {
       id: "prologue-wake",
