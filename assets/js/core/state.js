@@ -355,6 +355,9 @@ export function applyExternalEvent(gameState, event) {
   const isFailed =
     eventType === EXTERNAL_EVENT_TYPES.EXTERNAL_INTERACTION_FAILED;
   const sourceCommandType = COMMAND_TYPE_BY_SOURCE[source];
+  const investigatedObjectId = eventType === EXTERNAL_EVENT_TYPES.OBJECT_INVESTIGATED
+    ? requireGameId(payload, "objectId", eventType)
+    : null;
 
   if (!sourceCommandType) {
     throw new Error(`未登记的外部事件来源：${source}`);
@@ -400,6 +403,14 @@ export function applyExternalEvent(gameState, event) {
     if (definition.producer !== source) {
       throw new Error(`${source} 无权产生事实：${factId}`);
     }
+    if (
+      investigatedObjectId &&
+      definition.externalTargetId !== investigatedObjectId
+    ) {
+      throw new Error(
+        `调查对象 ${investigatedObjectId} 与结果事实 ${factId} 不匹配`
+      );
+    }
   }
 
   let nextState = {
@@ -416,7 +427,7 @@ export function applyExternalEvent(gameState, event) {
       ...nextState,
       investigated: addUnique(
         nextState.investigated,
-        requireGameId(payload, "objectId", eventType)
+        investigatedObjectId
       )
     };
   }

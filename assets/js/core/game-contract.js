@@ -50,8 +50,16 @@ export const GAME_EVENTS = Object.freeze({
 export const STORY_FACT_DEFINITIONS = Object.freeze([
   { id: "prologue-wake-context-known", producer: "story" },
   { id: "surface-investigation-task-known", producer: "conversation" },
-  { id: "burned-work-id-investigated", producer: "exploration" },
-  { id: "blue-glass-bead-investigated", producer: "exploration" },
+  {
+    id: "burned-work-id-investigated",
+    producer: "exploration",
+    externalTargetId: "burned-work-id"
+  },
+  {
+    id: "blue-glass-bead-investigated",
+    producer: "exploration",
+    externalTargetId: "blue-glass-bead"
+  },
   { id: "key-a-given-by-x", producer: "conversation" },
   { id: "x-deflects-memory-question-noticed", producer: "conversation" },
   {
@@ -62,8 +70,16 @@ export const STORY_FACT_DEFINITIONS = Object.freeze([
   { id: "white-lamp-witnessed", producer: "story" },
   { id: "prologue-lamp-incident-understood", producer: "conversation" },
   { id: "leave-shrine-chosen", producer: "story" },
-  { id: "village-decline-observed", producer: "exploration" },
-  { id: "su-he-missing-notice-observed", producer: "exploration" },
+  {
+    id: "village-decline-observed",
+    producer: "exploration",
+    externalTargetId: "village-decline"
+  },
+  {
+    id: "su-he-missing-notice-observed",
+    producer: "exploration",
+    externalTargetId: "su-he-notice"
+  },
   { id: "shopkeeper-inquiry-completed", producer: "conversation" },
   { id: "holdout-inquiry-completed", producer: "conversation" },
   { id: "elder-inquiry-completed", producer: "conversation" },
@@ -97,11 +113,31 @@ export const STORY_FACT_DEFINITIONS = Object.freeze([
     derivedFrom: { eventType: "LOCATION_UNLOCKED", targetId: "old-house" }
   },
   { id: "old-house-route-chosen", producer: "story" },
-  { id: "old-house-door-opened", producer: "exploration" },
-  { id: "old-photograph-clue-known", producer: "exploration" },
-  { id: "school-uniform-clue-known", producer: "exploration" },
-  { id: "height-marks-clue-known", producer: "exploration" },
-  { id: "funeral-list-clue-known", producer: "exploration" },
+  {
+    id: "old-house-door-opened",
+    producer: "exploration",
+    externalTargetId: "old-house-door"
+  },
+  {
+    id: "old-photograph-clue-known",
+    producer: "exploration",
+    externalTargetId: "old-photograph"
+  },
+  {
+    id: "school-uniform-clue-known",
+    producer: "exploration",
+    externalTargetId: "school-uniform"
+  },
+  {
+    id: "height-marks-clue-known",
+    producer: "exploration",
+    externalTargetId: "height-marks"
+  },
+  {
+    id: "funeral-list-clue-known",
+    producer: "exploration",
+    externalTargetId: "funeral-list"
+  },
   { id: "old-house-identity-conflict-raised", producer: "conversation" },
   { id: "door-call-incident-completed", producer: "conversation" },
   { id: "week-one-end-acknowledged", producer: "story" }
