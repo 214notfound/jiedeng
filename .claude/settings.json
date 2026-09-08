@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(sed -i 's#\\\\.\\\\./\\\\.\\\\./js/authorize/#../../assets/js/authorize/#g; s#\\\\.\\\\./\\\\.\\\\./css/authorize\\\\.css#../../assets/css/authorize.css#g' test/authorize/demo.html)",
+      "Bash(sed -i 's#js/authorize/#assets/js/authorize/#g' test/authorize/auth-service.test.js)",
+      "Bash(sed -i 's#new URL\\(\"\\\\.\\\\./\\\\.\\\\./\", scriptUrl\\)#new URL\\(\"../../../\", scriptUrl\\)#' assets/js/authorize/config.js)",
+      "Bash(node test/authorize/auth-service.test.js)",
+      "Bash(node -e \"console.log\\('../../../ + /assets/js/authorize/config.js =>', new URL\\('../../../','http://127.0.0.1:8000/assets/js/authorize/config.js'\\).href\\); console.log\\('../../ + /js/authorize/config.js\\(旧\\) =>', new URL\\('../../','http://127.0.0.1:8000/js/authorize/config.js'\\).href\\);\")",
+      "Bash(git config *)",
+      "Bash(git symbolic-ref *)"
+    ]
+  }
+}

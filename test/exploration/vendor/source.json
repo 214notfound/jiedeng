@@ -1,0 +1,38 @@
+{
+  "revision": "cbece19ed83f0c63369d7b1cf60cb8775be12861",
+  "ref": "story-line",
+  "files": [
+    {
+      "source": "assets/js/game-line/data/story-registry.js",
+      "sha256": "a857cad4da8bed8a1b0ef3d2ca667d4eb2f9c146b312cbce1b5411bded43d2bc"
+    },
+    {
+      "source": "assets/js/game-line/data/prologue.js",
+      "sha256": "8c93f63dec2de5d713d8d23bc1abc5ede4b77d4d7719de85f500313377a54c12"
+    },
+    {
+      "source": "assets/js/game-line/data/village.js",
+      "sha256": "d22075561d9cd2e71a917d021960bb30d8a2785fc6c4a35ff5435d10761bacd1"
+    },
+    {
+      "source": "assets/js/game-line/data/old-house.js",
+      "sha256": "12851566c18287ab2e15176f845c34265f73ae955e9215181d4680a6b7b46d1e"
+    },
+    {
+      "source": "assets/js/game-line/game/story-validator.js",
+      "sha256": "a7f957126e05c28aa927a1865aa47d5f8163cdfc08bb3949f2395fde99d1b12a"
+    },
+    {
+      "source": "assets/js/game-line/game/story-runtime.js",
+      "sha256": "72bd4020f1cb76399984407054412fbb44ea15789924f48284d648cc6c2456e1"
+    },
+    {
+      "source": "assets/js/game-line/game/story-request.js",
+      "sha256": "559aee287b463c7bdf95f4fb4ab0d17f6aa25513ec813cb151d7198d49530689"
+    },
+    {
+      "source": "assets/js/game-line/game/story-engine.js",
+      "sha256": "740ba982340bccb30b51267febd3044cd8377e0685d631ed259909807a432270"
+    }
+  ]
+}

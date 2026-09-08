@@ -1,0 +1,9 @@
+<!-- 《借灯》灰度原创素材：手绘地图碎片二。 -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 200" role="img" aria-labelledby="title">
+  <title id="title">手绘地图碎片二</title>
+  <rect width="320" height="200" fill="#d8d8d8"/>
+  <path d="m94 31 132 9 25 52-28 29 20 48H111l-21-45 24-38z" fill="#f1f1f1" stroke="#333" stroke-width="7"/>
+  <path d="M119 143c35-19 19-61 64-72 20-5 35 5 51 20" fill="none" stroke="#696969" stroke-width="8"/>
+  <path d="m171 111 22-19 22 19v30h-44z" fill="#888" stroke="#333" stroke-width="5"/>
+  <text x="154" y="63" font-family="sans-serif" font-size="18" fill="#333">旧路</text>
+</svg>

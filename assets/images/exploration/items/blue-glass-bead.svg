@@ -1,0 +1,6 @@
+<!-- 蓝玻璃珠的灰度占位图，颜色描述以物品文字为准。 -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 200" role="img" aria-labelledby="title">
+<title id="title">蓝玻璃珠</title><rect width="320" height="200" fill="#d8d8d8"/>
+<circle cx="160" cy="100" r="65" fill="#888" stroke="#292929" stroke-width="5"/>
+<ellipse cx="142" cy="74" rx="24" ry="15" fill="#eee"/><path d="M115 121q35 37 77 8" fill="none" stroke="#444" stroke-width="8"/>
+</svg>

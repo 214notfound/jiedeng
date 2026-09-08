@@ -1,0 +1,8 @@
+<!-- 《借灯》灰度原创素材：妹妹的旧校服。 -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 200" role="img" aria-labelledby="title">
+  <title id="title">妹妹的旧校服</title>
+  <rect width="320" height="200" fill="#d8d8d8"/>
+  <path d="m111 38 49 22 49-22 50 45-30 35-20-17v70H111v-70l-20 17-30-35z" fill="#ededed" stroke="#333" stroke-width="7"/>
+  <path d="m139 52 21 25 21-25M160 77v94" fill="none" stroke="#777" stroke-width="6"/>
+  <circle cx="188" cy="92" r="14" fill="#777"/>
+</svg>

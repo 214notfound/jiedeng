@@ -1,0 +1,9 @@
+<!-- 《借灯》灰度原创素材：墙面身高刻痕记录。 -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 200" role="img" aria-labelledby="title">
+  <title id="title">A与妹妹的身高刻痕</title>
+  <rect width="320" height="200" fill="#d8d8d8"/>
+  <path d="M63 23v154M257 23v154" stroke="#444" stroke-width="5"/>
+  <path d="M63 52h72M63 83h58M63 119h82M63 151h94M183 73h74M195 105h62M207 139h50" stroke="#777" stroke-width="7"/>
+  <text x="76" y="46" font-family="serif" font-size="24" fill="#222">A · 17</text>
+  <text x="190" y="66" font-family="serif" font-size="20" fill="#222">妹妹</text>
+</svg>
