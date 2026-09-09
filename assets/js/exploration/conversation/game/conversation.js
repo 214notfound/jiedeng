@@ -156,6 +156,17 @@ export function createConversation(host) {
     });
   }
 
+  function validateReadingCompletion(input, result) {
+    const metadata = result?.metadata;
+    if (result?.mode !== "conversation"
+      || result.finalItemId !== input.items.at(-1)?.id
+      || metadata?.conversationId !== input.metadata.conversationId
+      || metadata?.npcId !== input.metadata.npcId
+      || metadata?.actionId !== input.metadata.actionId
+      || metadata?.commandId !== input.metadata.commandId) {
+      throw new Error("阅读完成信息不一致，请重新打开本段对话。");
+    }
+  }
   async function send(task, command, actionId, eventType, facts, payload) {
     if (busy || uncertain) throw new Error("上一操作尚未确认，请等待或重新进入。");
     busy = true;
@@ -172,21 +183,30 @@ export function createConversation(host) {
         resultFactIds: [...facts],
         payload
       };
-      const result = await host.dispatchExternalEvent(event, {storageScope: bound.scope});
-      const after = bound.read();
+      let result;
+      try {
+        result = await host.dispatchExternalEvent(event, {storageScope: bound.scope});
+      } catch (error) {
+        uncertain = true;
+        throw error;
+      }
       if (!result || typeof result.ok !== "boolean") {
         uncertain = true;
         throw new Error("操作结果无法确认，请重新进入。");
       }
-      if (!result.ok) throw new Error(result.message || "操作未提交，请重新进入。");
+      if (!result.ok) throw new Error(result.message || "操作未提交，请重试。");
+      let after;
+      try {
+        after = bound.read();
+      } catch (error) {
+        uncertain = true;
+        throw error;
+      }
       if (!facts.every((fact) => after.state.facts.includes(fact))) {
         uncertain = true;
         throw new Error("事实尚未提交，暂时停止后续操作。");
       }
       return result;
-    } catch (error) {
-      uncertain = true;
-      throw error;
     } finally {
       busy = false;
     }
@@ -213,6 +233,27 @@ export function createConversation(host) {
       return {ok: true, message: action.text};
     } catch (error) {
       console.error("[conversation] 操作未完成。", error);
+      return {ok: false, message: error.message};
+    }
+  }
+
+  async function completeReading(sceneId, actionId, result) {
+    try {
+      const context = bound.read();
+      if (sceneId !== NODE_SCENES[context.state.storyCheckpoint.nodeId]) {
+        throw new Error("地点已经变化。");
+      }
+      const action = entries(context).find((item) => item.id === actionId);
+      if (!action) throw new Error("当前没有这段谈话。");
+      if (action.completed) return {ok: true, message: action.text};
+      const input = getReadingInput(sceneId, actionId);
+      if (!input) throw new Error("当前对话已经失效，请重新进入。");
+      validateReadingCompletion(input, result);
+      await send(action.task, action.command, action.id, "NPC_TALKED", action.supportedFacts,
+        {conversationId: action.task.target, npcId: action.task.npc});
+      return {ok: true, message: action.text};
+    } catch (error) {
+      console.error("[conversation] 阅读完成未提交。", error);
       return {ok: false, message: error.message};
     }
   }
@@ -260,6 +301,7 @@ export function createConversation(host) {
     getSceneView,
     getLayout,
     getReadingInput,
+    completeReading,
     interact,
     cancel,
     reportProgress,

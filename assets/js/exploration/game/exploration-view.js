@@ -50,8 +50,8 @@ export function mountExploration({
 
     node.disabled = true;
     openConversation(conversationInput, {
-      onComplete: async () => {
-        const outcome = await module.interact(sceneId, actionId, {confirm: true});
+      onComplete: async (result) => {
+        const outcome = await module.completeReading(sceneId, actionId, result);
         if (active) {
           notify(
             playerMessage(outcome.message, "交谈未完成，请重试。"),

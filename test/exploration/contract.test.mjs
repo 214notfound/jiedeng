@@ -77,6 +77,41 @@ test("同一个探索命令可回报多个对象，回读不重复提交",async(
  await click(module,"burned-work-id");assert.equal(host.getContext().state.processedEventIds.length,count);
  assert.equal(host.getContext().commands[0].commandId,id);await click(module,"blue-glass-bead");
 });
+test("Host 明确拒绝调查后可在同一页面直接重试",async()=>{
+ const host=createDemoHost();host.act("confirm-wake-context");
+ const setup=createInteractionModule(host);await click(setup,"surface-briefing");setup.dispose();
+ let calls=0;
+ const proxy={...host,dispatchExternalEvent:(event,meta)=>{
+  calls+=1;
+  if(calls===1)return {ok:false,message:"测试失败已触发，本次操作没有提交；请再次点击重试。"};
+  return host.dispatchExternalEvent(event,meta);
+ }};
+ const module=createInteractionModule(proxy);
+ const before=host.getContext().state;
+ const failed=await module.interact("shrine","burned-work-id");
+ assert.equal(failed.ok,false);assert.deepEqual(host.getContext().state,before);
+ const retried=await module.interact("shrine","burned-work-id");
+ assert.equal(retried.ok,true,retried.message);assert.equal(calls,2);
+ assert.equal(host.getContext().state.facts.includes("burned-work-id-investigated"),true);
+ module.dispose();
+});
+test("Host 明确拒绝对话完成后可在同一页面直接重试",async()=>{
+ const host=createDemoHost();host.act("confirm-wake-context");let calls=0;
+ const proxy={...host,dispatchExternalEvent:(event,meta)=>{
+  calls+=1;
+  if(calls===1)return {ok:false,message:"对话提交失败，请重试。"};
+  return host.dispatchExternalEvent(event,meta);
+ }};
+ const module=createInteractionModule(proxy);
+ const preview=await module.interact("shrine","surface-briefing");
+ assert.equal(preview.requiresConfirmation,true);
+ const failed=await module.interact("shrine","surface-briefing",{confirm:true});
+ assert.equal(failed.ok,false);
+ const retried=await module.interact("shrine","surface-briefing",{confirm:true});
+ assert.equal(retried.ok,true,retried.message);assert.equal(calls,2);
+ assert.equal(host.getContext().state.facts.includes("surface-investigation-task-known"),true);
+ module.dispose();
+});
 test("可选追问记录事实，不是必须完成的门槛",async()=>{
  const host=createDemoHost(),module=createInteractionModule(host);
  host.act("confirm-wake-context");await click(module,"surface-briefing");await click(module,"burned-work-id");await click(module,"blue-glass-bead");
