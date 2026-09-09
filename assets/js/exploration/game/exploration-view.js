@@ -30,6 +30,7 @@ export function mountExploration({
   stage.append(hotspots);
   scene.append(heading, help, stage);
   let active = true;
+  let inventoryView;
 
   function callExternal(callback, argument) {
     try {
@@ -92,6 +93,10 @@ export function mountExploration({
           notify(playerMessage(result.speaker ? "【" + result.speaker + "】" + result.message : result.message,
             "调查未完成，请重试或稍后再来。"),
             result.ok ? "success" : "warning");
+          if (result.ok && module.listItems().some((item) => item.id === action.id)) {
+            hotspots.querySelector('[data-hotspot-id="' + action.id + '"]')?.focus();
+            inventoryView.openItem(action.id);
+          }
         }, "scene-hotspot" + (action.completed ? " is-completed" : "")
           + (!action.available ? " is-disabled" : ""));
         node.style.left = hotspot.x + "%";
@@ -137,10 +142,9 @@ export function mountExploration({
     }
   }
   let unsubscribe;
-  let unmountInventory;
   try {
     unsubscribe = module.subscribe(render);
-    unmountInventory = mountInventory({
+    inventoryView = mountInventory({
       module,
       root: inventoryRoot,
       detailRoot,
@@ -158,7 +162,7 @@ export function mountExploration({
     if (!active) return;
     active = false;
     unsubscribe();
-    unmountInventory();
+    inventoryView.dispose();
     scene.remove();
     actions.remove();
   };

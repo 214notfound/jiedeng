@@ -1,6 +1,15 @@
 // 背包视图：只读展示已提交物品；详情统一挂载到 controller 管理的 detail-root。
 import {element, button, region, createFeedback, playerMessage} from "./view-utils.js";
 
+export function getObtainedItem(module, itemId) {
+  if (typeof itemId !== "string" || !itemId.trim()) {
+    throw new TypeError("缺少要查看的物品或线索。");
+  }
+  const item = module.listItems().find((entry) => entry.id === itemId);
+  if (!item) throw new Error("这件物品或线索尚未获得。");
+  return item;
+}
+
 export function mountInventory({module, root, detailRoot, showFeedback, openDetail}) {
   if (typeof showFeedback !== "function") throw new TypeError("缺少反馈回调。");
   if (!detailRoot?.append) throw new TypeError("缺少详情容器。");
@@ -30,8 +39,7 @@ export function mountInventory({module, root, detailRoot, showFeedback, openDeta
   let active = true;
 
   function renderDetail(itemId) {
-    const item = module.listItems().find((entry) => entry.id === itemId);
-    if (!item) throw new Error("这件物品尚未获得。");
+    const item = getObtainedItem(module, itemId);
 
     detailTitle.textContent = item.name;
     detailImage.hidden = false;
@@ -118,12 +126,15 @@ export function mountInventory({module, root, detailRoot, showFeedback, openDeta
   }
   render();
 
-  return () => {
-    if (!active) return;
-    active = false;
-    unsubscribe();
-    container.remove();
-    detail.replaceChildren();
-    detail.remove();
-  };
+  return Object.freeze({
+    openItem,
+    dispose() {
+      if (!active) return;
+      active = false;
+      unsubscribe();
+      container.remove();
+      detail.replaceChildren();
+      detail.remove();
+    }
+  });
 }

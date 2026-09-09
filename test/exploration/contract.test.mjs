@@ -210,4 +210,5 @@ test("背包分类由宿主数组决定，不读取目录中的固定分类",()=
    ["map-fragment-1","restored-village-map"]);
  assert.deepEqual(module.listItems("clues").map(item=>item.id),
    ["old-photograph","school-uniform","height-marks","funeral-list"]);
+ module.dispose();
 });
