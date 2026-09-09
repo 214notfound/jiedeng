@@ -3,6 +3,7 @@
 export const EXPLORATION_TASKS = Object.freeze([
   {
     node: "prologue-belongings", target: "shrine-belongings", type: "exploration",
+    interactionType: "item",
     label: "检查随身物品",
     actions: [
       {id: "burned-work-id", label: "查看烧毁的工作证", marker: "证件", x: 25, y: 75,
@@ -15,6 +16,7 @@ export const EXPLORATION_TASKS = Object.freeze([
   },
   {
     node: "village-arrival", target: "village-arrival-observation", type: "exploration",
+    interactionType: "item",
     label: "观察村口",
     actions: [
       {id: "village-decline", label: "观察村口环境", marker: "村口", x: 25, y: 50,
@@ -26,7 +28,8 @@ export const EXPLORATION_TASKS = Object.freeze([
     ]
   },
   {
-    node: "old-house-entry", target: "old-house-door", type: "exploration", label: "打开老宅",
+    node: "old-house-entry", target: "old-house-door", type: "exploration",
+    interactionType: "item", label: "打开老宅",
     actions: [
       {id: "old-house-door", label: "用旧钥匙打开宅门", marker: "宅门", x: 50, y: 30,
         facts: ["old-house-door-opened"], requiredItems: ["key-a"],
@@ -35,6 +38,7 @@ export const EXPLORATION_TASKS = Object.freeze([
   },
   {
     node: "old-house-investigation", target: "old-house-clues", type: "exploration",
+    interactionType: "item",
     label: "核对屋内线索",
     actions: [
       {id: "old-photograph", label: "查看家庭照片", marker: "照片", x: 20, y: 40,

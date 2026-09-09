@@ -37,6 +37,13 @@ test("E1 人物锚点与 1280×720 标记草图一致", () => {
   });
 });
 
+test("E1 热点显式声明最终布局所需的交互类型", () => {
+  assert.ok(EXPLORATION_TASKS.length > 0);
+  assert.ok(CONVERSATION_TASKS.length > 0);
+  assert.ok(EXPLORATION_TASKS.every((task) => task.interactionType === "item"));
+  assert.ok(CONVERSATION_TASKS.every((task) => task.interactionType === "conversation"));
+});
+
 test("E1 坐标保持百分比范围且老宅门与门外声音只复用视觉锚点", () => {
   for (const [id, coordinates] of Object.entries({
     ...actionCoordinates(EXPLORATION_TASKS),

@@ -33,7 +33,8 @@ export function validateConversationContext(context) {
     }
     if (command.commandType !== "REQUEST_CONVERSATION") continue;
     const task = conversationTaskFor(command);
-    if (!task || task.node !== checkpoint.nodeId || !Array.isArray(command.payload.goals)) {
+    if (!task || task.node !== checkpoint.nodeId || task.interactionType !== "conversation"
+      || !Array.isArray(command.payload.goals)) {
       throw new Error("未知或不属于当前 Node 的对话任务。");
     }
     if (!Array.isArray(command.payload.npcIds) || !command.payload.npcIds.includes(task.npc)) {
@@ -71,7 +72,7 @@ export function createConversation(host) {
             const supportedFacts = action.facts.filter((fact) =>
               fact !== optionalMemoryFact || (command && acceptsOptionalMemory(command)));
             const completed = supportedFacts.every((fact) => facts.includes(fact));
-            return {...action, task, command, supportedFacts,
+            return {...action, interactionType: task.interactionType, task, command, supportedFacts,
               completed, available: completed || Boolean(command)};
           });
       });

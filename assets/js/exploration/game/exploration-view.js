@@ -6,10 +6,10 @@ export { mountAchievements } from "../../achievements/game/achievements-view.js"
 
 export function mountExploration({
   module, sceneRoot, actionsRoot, inventoryRoot, detailRoot,
-  showFeedback, openMap, openDetail, openConversation
+  showFeedback, openDetail, openConversation
 }) {
-  if (typeof showFeedback !== "function" || typeof openMap !== "function") {
-    throw new TypeError("缺少全局反馈或地图入口。");
+  if (typeof showFeedback !== "function") {
+    throw new TypeError("缺少全局反馈入口。");
   }
   if (![sceneRoot, actionsRoot, inventoryRoot, detailRoot].every((root) => root?.append)) {
     throw new TypeError("缺少约定区域。");
@@ -31,19 +31,6 @@ export function mountExploration({
   scene.append(heading, help, stage);
   let active = true;
   let inventoryView;
-
-  function callExternal(callback, argument) {
-    try {
-      if (typeof callback !== "function") throw new Error("剧情继续接口尚未接入。");
-      Promise.resolve(callback(argument)).catch((error) => {
-        console.error("[exploration-view] 外部操作失败。", error);
-        if (active) notify("操作未完成，请重试或返回主菜单。", "error");
-      });
-    } catch (error) {
-      console.error("[exploration-view] 外部操作失败。", error);
-      notify(playerMessage(error.message, "操作未完成，请重试或返回主菜单。"), "error");
-    }
-  }
 
   function startConversation(sceneId, actionId, node) {
     const conversationInput = module.getReadingInput?.(sceneId, actionId);
@@ -83,9 +70,18 @@ export function mountExploration({
       const views = buildHotspotViews(view, layout);
       hotspots.replaceChildren(...views.map((hotspot) => {
         const action = hotspot.interaction;
-        const node = button(hotspot.marker + " · " + action.label, async () => {
+        const node = button(hotspot.marker, async () => {
           if (!active) return;
-          if (startConversation(sceneId, action.id, node)) return;
+          if (action.interactionType === "conversation") {
+            if (!startConversation(sceneId, action.id, node)) {
+              notify("这段对话当前不可用，请刷新后重试。", "warning");
+            }
+            return;
+          }
+          if (action.interactionType !== "item") {
+            notify("热点类型无法识别，未执行任何操作。", "error");
+            return;
+          }
           node.disabled = true;
           const result = await module.interact(sceneId, action.id);
           if (!active) return;
@@ -104,17 +100,17 @@ export function mountExploration({
         node.dataset.hotspotId = hotspot.id;
         node.dataset.hotspotX = String(hotspot.x);
         node.dataset.hotspotY = String(hotspot.y);
+        node.dataset.interactionType = action.interactionType;
         node.setAttribute("aria-disabled", String(!action.available));
         node.setAttribute("aria-label", action.label + (action.completed ? "，已调查，可回读" : ""));
         return node;
       }));
-      actions.replaceChildren(element("h2", "exploration-title", "当前调查"));
-      const tasks = element("ul", "exploration-tasks");
-      for (const { interaction } of views) {
-        tasks.append(element("li", "", interaction.label + (interaction.completed ? " · 已完成" : "")));
+      const alternatives = view.interactions.filter(action => action.alternative && !action.completed);
+      actions.replaceChildren();
+      if (alternatives.length) {
+        actions.append(element("h2", "exploration-title", "可选交谈方式"));
       }
-      actions.append(tasks);
-      for (const alternative of view.interactions.filter(action => action.alternative && !action.completed)) {
+      for (const alternative of alternatives) {
         const alternativeButton = button(alternative.label, async () => {
           if (!active || startConversation(sceneId, alternative.id, alternativeButton)) return;
           const result = await module.interact(sceneId, alternative.id);
@@ -122,18 +118,6 @@ export function mountExploration({
         });
         actions.append(alternativeButton);
       }
-      actions.append(button("查看当前调查状态", () => {
-        if (!active) return;
-        try {
-          const status = module.getExitStatus(module.getCurrentSceneId());
-          notify(playerMessage(status.message, "当前还不能离开，请先完成调查。"), status.canLeave ? "success" : "warning");
-        } catch (error) { notify(playerMessage(error.message, "暂时无法读取调查状态，请重试。"), "error"); }
-      }));
-      if (module.canStartMapPuzzle()) actions.append(button("复原手绘地图", () => {
-        if (!active) return;
-        try { if (module.canStartMapPuzzle()) callExternal(openMap, module.getMapCommand()); }
-        catch (error) { notify(playerMessage(error.message, "地图暂时无法打开，请重试。"), "error"); }
-      }, "button button--primary"));
     } catch (error) {
       hotspots.replaceChildren();
       actions.replaceChildren();

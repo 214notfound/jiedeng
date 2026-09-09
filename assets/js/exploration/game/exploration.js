@@ -47,7 +47,8 @@ export function validateExplorationContext(context) {
   for (const command of context.commands) {
     if (command.commandType === "REQUEST_EXPLORATION") {
       const task = explorationTaskFor(command);
-      if (!task || task.node !== checkpoint.nodeId || !Array.isArray(command.payload.goals)) {
+      if (!task || task.node !== checkpoint.nodeId || task.interactionType !== "item"
+        || !Array.isArray(command.payload.goals)) {
         throw new Error("未知或不属于当前 Node 的探索任务。");
       }
     }
@@ -87,7 +88,8 @@ export function createExploration(host) {
           .filter((action) => command || action.facts.every((fact) => facts.includes(fact)))
           .map((action) => {
             const completed = action.facts.every((fact) => facts.includes(fact));
-            return {...action, task, command, completed, available: completed || Boolean(command)};
+            return {...action, interactionType: task.interactionType,
+              task, command, completed, available: completed || Boolean(command)};
           });
       });
   }
