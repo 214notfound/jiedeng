@@ -15,9 +15,28 @@
 }
 .exploration-module .exploration-stage {
   position: relative;
-  height: 420px;
+  aspect-ratio: 16 / 9;
+  min-height: 0;
+  height: auto;
   background: #e9e9e9;
   border: 1px solid #888;
+}
+.exploration-module .scene-coordinate-space {
+  width: 100%;
+  overflow: hidden;
+}
+.exploration-module .scene-coordinate-space::before {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(145deg, rgb(13 18 27 / 82%), rgb(13 18 27 / 94%)),
+    radial-gradient(circle at 72% 28%, rgb(245 240 227 / 17%), transparent 22%);
+  content: "";
+  pointer-events: none;
+}
+.exploration-module .exploration-hotspots {
+  position: absolute;
+  inset: 0;
 }
 .exploration-module .scene-hotspot {
   position: absolute;
@@ -112,7 +131,7 @@
     padding: .5rem;
   }
   .exploration-module .exploration-stage {
-    height: 540px;
+    aspect-ratio: 16 / 9;
   }
   .exploration-module .scene-hotspot {
     max-width: 72px;
