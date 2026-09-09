@@ -33,6 +33,16 @@ export function createInteractionModule(host) {
     return {playerStart: explored.playerStart, hotspots: [...explored.hotspots, ...talked.hotspots]};
   }
 
+  function getReadingInput(sceneId, actionId) {
+    if (sceneId !== sameScene()) throw new Error("地点已经变化。");
+    return conversation.getReadingInput(sceneId, actionId);
+  }
+
+  function completeReading(sceneId, actionId, result) {
+    if (sceneId !== sameScene()) throw new Error("地点已经变化。");
+    return conversation.completeReading(sceneId, actionId, result);
+  }
+
   async function interact(sceneId, actionId, options) {
     const explorationIds = new Set(
       exploration.getSceneView(sceneId).interactions.map((item) => item.id)
@@ -82,6 +92,8 @@ export function createInteractionModule(host) {
     getCurrentSceneId: sameScene,
     getSceneView,
     getLayout,
+    getReadingInput,
+    completeReading,
     listItems: exploration.listItems,
     interact,
     cancel: conversation.cancel,

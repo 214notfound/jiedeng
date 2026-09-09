@@ -5,40 +5,31 @@ import { mountInventory } from "./inventory.js";
 export { mountAchievements } from "../../achievements/game/achievements-view.js";
 
 export function mountExploration({
-  module, sceneRoot, actionsRoot, inventoryRoot, showFeedback, openMap
+  module, sceneRoot, actionsRoot, inventoryRoot, detailRoot,
+  showFeedback, openMap, openDetail, openConversation
 }) {
   if (typeof showFeedback !== "function" || typeof openMap !== "function") {
     throw new TypeError("缺少全局反馈或地图入口。");
   }
-  if (![sceneRoot, actionsRoot, inventoryRoot].every((root) => root?.append)) {
+  if (![sceneRoot, actionsRoot, inventoryRoot, detailRoot].every((root) => root?.append)) {
     throw new TypeError("缺少约定区域。");
+  }
+  if (typeof openDetail !== "function") {
+    throw new TypeError("缺少统一详情入口。");
+  }
+  if (typeof openConversation !== "function") {
+    throw new TypeError("缺少统一阅读入口。");
   }
   const scene = region(sceneRoot);
   const actions = region(actionsRoot);
   const notify = createFeedback(scene, showFeedback);
   const heading = element("h2", "exploration-title");
   const help = element("p", "exploration-help", "点击场景中发光的物体或人物，查看线索或开始交谈。");
-  const stage = element("div", "exploration-stage");
+  const stage = element("div", "exploration-stage scene-coordinate-space");
   const hotspots = element("div", "exploration-hotspots");
   stage.append(hotspots);
   scene.append(heading, help, stage);
   let active = true;
-
-  function offerConfirmation(result, sceneId, actionId) {
-    if (!result.requiresConfirmation || !active) return;
-    actions.querySelector(".conversation-confirmation")?.remove();
-    const choices = element("div", "conversation-confirmation");
-    choices.append(button("确认交谈完成", async () => {
-      const outcome = await module.interact(sceneId, actionId, {confirm:true});
-      if (active) notify(playerMessage(outcome.message, "交谈未完成，请重试。"), outcome.ok ? "success" : "warning");
-      choices.remove();
-    }), button("暂不交谈", () => {
-      callExternal(() => module.cancel(result.commandId));
-      choices.remove();
-    }));
-    actions.append(choices);
-    choices.querySelector("button").focus();
-  }
 
   function callExternal(callback, argument) {
     try {
@@ -52,12 +43,40 @@ export function mountExploration({
       notify(playerMessage(error.message, "操作未完成，请重试或返回主菜单。"), "error");
     }
   }
+
+  function startConversation(sceneId, actionId, node) {
+    const conversationInput = module.getReadingInput?.(sceneId, actionId);
+    if (!conversationInput) return false;
+
+    node.disabled = true;
+    openConversation(conversationInput, {
+      onComplete: async (result) => {
+        const outcome = await module.completeReading(sceneId, actionId, result);
+        if (active) {
+          notify(
+            playerMessage(outcome.message, "交谈未完成，请重试。"),
+            outcome.ok ? "success" : "warning"
+          );
+        }
+        if (active && !outcome.ok) node.disabled = false;
+        return outcome;
+      },
+      onFailure: () => {
+        if (active) node.disabled = false;
+      },
+      onClose: () => {
+        if (active) node.disabled = false;
+      }
+    });
+    return true;
+  }
   function render() {
     if (!active) return;
     try {
       const sceneId = module.getCurrentSceneId();
       const view = module.getSceneView(sceneId);
       const layout = module.getLayout();
+      stage.dataset.sceneId = sceneId;
       heading.textContent = view.name;
       stage.setAttribute("aria-label", view.name + "探索区域");
       const views = buildHotspotViews(view, layout);
@@ -65,6 +84,7 @@ export function mountExploration({
         const action = hotspot.interaction;
         const node = button(hotspot.marker + " · " + action.label, async () => {
           if (!active) return;
+          if (startConversation(sceneId, action.id, node)) return;
           node.disabled = true;
           const result = await module.interact(sceneId, action.id);
           if (!active) return;
@@ -72,7 +92,6 @@ export function mountExploration({
           notify(playerMessage(result.speaker ? "【" + result.speaker + "】" + result.message : result.message,
             "调查未完成，请重试或稍后再来。"),
             result.ok ? "success" : "warning");
-          offerConfirmation(result, sceneId, action.id);
         }, "scene-hotspot" + (action.completed ? " is-completed" : "")
           + (!action.available ? " is-disabled" : ""));
         node.style.left = hotspot.x + "%";
@@ -91,11 +110,12 @@ export function mountExploration({
       }
       actions.append(tasks);
       for (const alternative of view.interactions.filter(action => action.alternative && !action.completed)) {
-        actions.append(button(alternative.label, async () => {
+        const alternativeButton = button(alternative.label, async () => {
+          if (!active || startConversation(sceneId, alternative.id, alternativeButton)) return;
           const result = await module.interact(sceneId, alternative.id);
           if (active) notify(playerMessage(result.message, "操作未完成，请重试。"), result.ok ? "success" : "warning");
-          offerConfirmation(result, sceneId, alternative.id);
-        }));
+        });
+        actions.append(alternativeButton);
       }
       actions.append(button("查看当前调查状态", () => {
         if (!active) return;
@@ -120,7 +140,13 @@ export function mountExploration({
   let unmountInventory;
   try {
     unsubscribe = module.subscribe(render);
-    unmountInventory = mountInventory({ module, root: inventoryRoot, showFeedback });
+    unmountInventory = mountInventory({
+      module,
+      root: inventoryRoot,
+      detailRoot,
+      showFeedback,
+      openDetail
+    });
   } catch (error) {
     unsubscribe?.();
     scene.remove();

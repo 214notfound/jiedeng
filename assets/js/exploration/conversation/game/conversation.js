@@ -1,7 +1,9 @@
 // R10 对话服务：探索板块内独立负责对白回读、确认和事件，不推进剧情 Node。
 import {NODE_SCENES, sceneName} from "../../core/story-scenes.js";
 import {CONVERSATION_TASKS, conversationTaskFor} from "../data/conversations.js";
+import {V2_CONVERSATIONS} from "../data/conversations-v2.js";
 import {bindHost, requireIds} from "../../core/host-binding.js";
+import {adaptConversationInput} from "../../../core/reading-contract.js";
 
 export function validateConversationContext(context) {
   const state = context?.state;
@@ -121,6 +123,51 @@ export function createConversation(host) {
     };
   }
 
+  function getReadingInput(sceneId, actionId) {
+    if (sceneId !== getCurrentSceneId()) {
+      throw new Error("地点已经变化。");
+    }
+    const action = entries(bound.read()).find((item) => item.id === actionId);
+    if (!action || !action.command) {
+      return null;
+    }
+    const v2Conversation = V2_CONVERSATIONS[action.id];
+    if (v2Conversation) {
+      return adaptConversationInput({
+        conversation: v2Conversation,
+        conversationId: action.task.target,
+        npcId: action.task.npc,
+        actionId: action.id,
+        commandId: action.command.commandId
+      });
+    }
+    return adaptConversationInput({
+      conversation: {
+        speaker: action.task.marker,
+        dialogues: [{
+          lineId: `${action.id}-legacy`,
+          text: action.text
+        }]
+      },
+      conversationId: action.task.target,
+      npcId: action.task.npc,
+      actionId: action.id,
+      commandId: action.command.commandId
+    });
+  }
+
+  function validateReadingCompletion(input, result) {
+    const metadata = result?.metadata;
+    if (result?.mode !== "conversation"
+      || result.finalItemId !== input.items.at(-1)?.id
+      || metadata?.conversationId !== input.metadata.conversationId
+      || metadata?.npcId !== input.metadata.npcId
+      || metadata?.actionId !== input.metadata.actionId
+      || metadata?.commandId !== input.metadata.commandId) {
+      throw new Error("阅读完成信息不一致，请重新打开本段对话。");
+    }
+  }
+
   async function send(task, command, actionId, eventType, facts, payload) {
     if (busy || uncertain) throw new Error("上一操作尚未确认，请等待或重新进入。");
     busy = true;
@@ -191,6 +238,27 @@ export function createConversation(host) {
     }
   }
 
+  async function completeReading(sceneId, actionId, result) {
+    try {
+      const context = bound.read();
+      if (sceneId !== NODE_SCENES[context.state.storyCheckpoint.nodeId]) {
+        throw new Error("地点已经变化。");
+      }
+      const action = entries(context).find((item) => item.id === actionId);
+      if (!action) throw new Error("当前没有这段谈话。");
+      if (action.completed) return {ok: true, message: action.text};
+      const input = getReadingInput(sceneId, actionId);
+      if (!input) throw new Error("当前对话已经失效，请重新进入。");
+      validateReadingCompletion(input, result);
+      await send(action.task, action.command, action.id, "NPC_TALKED", action.supportedFacts,
+        {conversationId: action.task.target, npcId: action.task.npc});
+      return {ok: true, message: action.text};
+    } catch (error) {
+      console.error("[conversation] 阅读完成未提交。", error);
+      return {ok: false, message: error.message};
+    }
+  }
+
   async function cancel(commandId, errorCode) {
     const context = bound.read();
     const command = context.commands.find((item) => item.commandId === commandId);
@@ -233,6 +301,8 @@ export function createConversation(host) {
     getCurrentSceneId,
     getSceneView,
     getLayout,
+    getReadingInput,
+    completeReading,
     interact,
     cancel,
     reportProgress,
