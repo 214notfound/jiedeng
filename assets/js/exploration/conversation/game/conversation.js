@@ -167,7 +167,6 @@ export function createConversation(host) {
       throw new Error("阅读完成信息不一致，请重新打开本段对话。");
     }
   }
-
   async function send(task, command, actionId, eventType, facts, payload) {
     if (busy || uncertain) throw new Error("上一操作尚未确认，请等待或重新进入。");
     busy = true;
