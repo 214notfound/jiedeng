@@ -1,7 +1,7 @@
 // R10 对话展示数据：作为探索板块子包，通过剧情命令和事件合同协作。
 export const CONVERSATION_TASKS = Object.freeze([
   {node: "prologue-wake", target: "prologue-briefing", type: "conversation",
-    npc: "companion-x", label: "听小X说明来意", marker: "小X", x: 22, y: 55,
+    npc: "companion-x", label: "听小X说明来意", marker: "小X", x: 50, y: 40,
     actions: [{id: "surface-briefing", label: "与小X交谈",
       facts: ["surface-investigation-task-known"],
       text: "【小X】我是公司的安全联络员。你最近的记忆出了问题，先别急着勉强自己。石涧村最近不断出现白灯、夜间广播和脚印，公司希望查清是谁在借项目制造混乱。我们先从这些怪事查起。"}]},
@@ -15,7 +15,7 @@ export const CONVERSATION_TASKS = Object.freeze([
         text: "【你】我以前是做什么的？\n【小X】先别硬想，能查东西就够了。眼下要查的是村里的异常。\n他把话题岔开，随后递来一把没有标记的老钥匙，说是在你出事地点附近捡到的。"}
     ]},
   {node: "prologue-white-lamp", target: "prologue-lamp-incident", type: "conversation",
-    npc: "companion-x", label: "询问白灯", marker: "小X", x: 65, y: 50,
+    npc: "companion-x", label: "询问白灯", marker: "小X", x: 50, y: 40,
     actions: [{id: "lamp-incident", label: "询问白灯与供电异常",
       facts: ["prologue-lamp-incident-understood"],
       text: "【小X】村里有借灯的禁忌，遇见这种灯别轻易回应。\n祠堂忽然断电。小X比外来人更快找到供电问题，随后白灯消失了。\n【小X】去村口问问吧。最近谁见过怪事，为什么还不搬，项目又出了什么问题——先查这些。"}]},
