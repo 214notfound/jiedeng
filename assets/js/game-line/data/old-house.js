@@ -13,7 +13,7 @@
       sourceRef: "O00",
       stageId: "old-house",
       revision: 1,
-      intent: "玩家抵达陈家老宅，并确认小 X 交出的旧钥匙可以开门。",
+      intent: "玩家抵达陈家老宅，并确认小周交出的旧钥匙可以开门。",
       enterWhen: {
         allFacts: [
           "key-a-acquired",
@@ -53,12 +53,12 @@
       sourceRef: "O01-O04",
       stageId: "old-house",
       revision: 1,
-      intent: "玩家按任意顺序调查四项线索，建立 A 与陈家的基础轮廓。",
+      intent: "玩家按任意顺序调查四项线索，建立陈晋年与陈家的基础轮廓。",
       enterWhen: { allFacts: ["old-house-door-opened"] },
       milestones: [
         {
           id: "photograph-clue-known",
-          intent: "玩家确认照片中的 A、妹妹和父亲，且 A 当时面容完整。",
+          intent: "玩家确认照片中的陈晋年、妹妹和父亲，且陈晋年当时面容完整。",
           satisfiedWhen: { allFacts: ["old-photograph-clue-known"] },
           onReach: [
             {
@@ -82,7 +82,7 @@
         },
         {
           id: "height-clue-known",
-          intent: "玩家确认事故时 A 约十七岁，妹妹才是小学生。",
+          intent: "玩家确认事故时陈晋年约十七岁，妹妹才是小学生。",
           satisfiedWhen: { allFacts: ["height-marks-clue-known"] },
           onReach: [
             {
@@ -94,7 +94,7 @@
         },
         {
           id: "funeral-clue-known",
-          intent: "玩家确认妹妹死亡，A 也被村里作为死者送葬。",
+          intent: "玩家确认妹妹死亡，陈晋年也被村里作为死者送葬。",
           satisfiedWhen: { allFacts: ["funeral-list-clue-known"] },
           onReach: [
             {
@@ -144,7 +144,7 @@
       sourceRef: "O05",
       stageId: "old-house",
       revision: 1,
-      intent: "玩家感到身份线索存在矛盾，而小 X 立即压下这一问题。",
+      intent: "玩家感到身份线索存在矛盾，而小周立即压下这一问题。",
       enterWhen: {
         allFacts: [
           "old-photograph-clue-known",
@@ -156,7 +156,7 @@
       milestones: [
         {
           id: "identity-conflict-raised",
-          intent: "身份矛盾和小 X 转移话题均已传达。",
+          intent: "身份矛盾和小周转移话题均已传达。",
           satisfiedWhen: {
             allFacts: ["old-house-identity-conflict-raised"],
           },
@@ -187,7 +187,7 @@
       sourceRef: "O06-O08",
       stageId: "old-house",
       revision: 1,
-      intent: "门外声音呼唤 A，小 X 阻止回应，声音的目标仍保持多解。",
+      intent: "门外声音呼唤陈晋年，小周阻止回应，声音的目标仍保持多解。",
       enterWhen: { allFacts: ["old-house-identity-conflict-raised"] },
       milestones: [
         {
@@ -259,7 +259,7 @@
             {
               id: "identity-question-lit",
               blockType: "narration",
-              text: "而另一个问题已经无法忽视——你为什么带着陈家妹妹的旧物，小 X 的钥匙又为什么能打开陈家。",
+              text: "而另一个问题已经无法忽视——你为什么带着陈家妹妹的旧物，小周的钥匙又为什么能打开陈家。",
             },
           ],
           actionIds: ["confirm-week-one-end"],

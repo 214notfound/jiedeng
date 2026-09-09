@@ -18,9 +18,9 @@
 - P00、V11、O07 等编号只用于追溯原内容，不进入存档。
 - 同一段对话无论聊几轮，都属于同一个 Node handoff；对话模块只在产生稳定事实或整段完成时回报剧情。
 - 三名村民的谈话同属 `village-inquiries`，可以按任意顺序完成。
-- V1 主动取消旧需求中的“相信/怀疑小 X”选项，不登记 `trust-x`、`doubt-x` 或对应事实；剧情引擎只保留未来使用的通用选择能力。
+- V1 主动取消旧需求中的“相信/怀疑小周”选项，不登记 `trust-x`、`doubt-x` 或对应事实；剧情引擎只保留未来使用的通用选择能力。
 
-剧情内容以 `剧情Node推进.md` 为准。钥匙在玩家眼中是**无标记老钥匙**，`key-a` 只是内部技术 ID，界面和美术不得提前显示字母 A。祠堂内检查的随身物品是烧毁的工作证和蓝玻璃珠，钥匙由小 X 随后交给主角；旧 PRD 中“三件随身物品”和“刻有 A 的钥匙”的写法不再作为剧情实现依据。
+剧情内容以 `剧情Node推进.md` 为准。钥匙在玩家眼中是**无标记老钥匙**，`key-a` 只是内部技术 ID，界面和美术不得提前显示字母 A。祠堂内检查的随身物品是烧毁的工作证和蓝玻璃珠，钥匙由小周随后交给主角；旧 PRD 中“三件随身物品”和“刻有 A 的钥匙”的写法不再作为剧情实现依据。
 
 运行时 Node 只在以下位置拆分：需要等待外部模块、允许存档恢复、出现选择或分支、完成阶段、进入终点。相邻的叙述和同一场谈话不再机械拆开。
 
@@ -30,13 +30,13 @@
 
 | ID | 当前身份 |
 | --- | --- |
-| `companion-x` | 小 X |
+| `companion-x` | 小周 |
 | `villager-1` | 小卖部老板 |
 | `villager-2` | 拒签户 |
 | `villager-3` | 年老村民 |
 | `unknown-caller` | 老宅门外声音；身份暂不揭示 |
 
-正式姓名以后可以修改显示文案，上述运行时 ID 不再改名。
+人物显示名固定为小周；上述运行时 ID 不再改名。
 
 ### 物品、线索、地点和小游戏
 
@@ -49,7 +49,7 @@
 
 三块地图碎片与村民的编号对应只用于稳定发奖：`villager-1` 给碎片一，`villager-2` 给碎片二，`villager-3` 给碎片三，不额外表达剧情重要性。
 
-新游戏初始背包只包含 `burned-work-id` 和 `blue-glass-bead`，但二者尚未调查，所以不预置对应调查事实。`key-a` 在 `prologue-belongings` 中由小 X 交付后加入。
+新游戏初始背包只包含 `burned-work-id` 和 `blue-glass-bead`，但二者尚未调查，所以不预置对应调查事实。`key-a` 在 `prologue-belongings` 中由小周交付后加入。
 
 ### 剧情操作
 
@@ -84,18 +84,18 @@
 
 ### 4.1 `prologue-wake`
 
-- **目标：** 玩家确认自己近期失忆，认识小 X 的表面身份，并接受“调查村中怪事”的当前任务。
+- **目标：** 玩家确认自己近期失忆，认识小周的表面身份，并接受“调查村中怪事”的当前任务。
 - **进入条件：** 新游戏固定进入，无额外事实。
 - **里程碑：**
   - `wake-context-known` ← `prologue-wake-context-known`
   - `surface-task-known` ← `surface-investigation-task-known`
-- **对话 handoff：** `prologue-briefing`，`startWhen: prologue-wake-context-known`，参与者 `companion-x`；必须让玩家知道小 X 自称公司安全联络员，公司希望调查白灯、广播和脚印等异常。
+- **对话 handoff：** `prologue-briefing`，`startWhen: prologue-wake-context-known`，参与者 `companion-x`；必须让玩家知道小周自称公司安全联络员，公司希望调查白灯、广播和脚印等异常。
 - **完成条件：** 两个里程碑全部完成。
 - **出口：** `prologue-belongings`
 
 ### 4.2 `prologue-belongings`
 
-- **目标：** 玩家检查工作证和蓝玻璃珠，从小 X 处取得旧钥匙；若追问过去，小 X 会把话题拉回调查。
+- **目标：** 玩家检查工作证和蓝玻璃珠，从小周处取得旧钥匙；若追问过去，小周会把话题拉回调查。
 - **进入条件：** `surface-investigation-task-known`
 - **里程碑：**
   - `burned-work-id-checked` ← `burned-work-id-investigated`
@@ -110,13 +110,13 @@
 
 ### 4.3 `prologue-white-lamp`
 
-- **目标：** 玩家亲眼遭遇第一盏白灯，得知借灯禁忌，并注意到小 X 对供电异常熟悉。
+- **目标：** 玩家亲眼遭遇第一盏白灯，得知借灯禁忌，并注意到小周对供电异常熟悉。
 - **进入条件：** `burned-work-id-investigated`、`blue-glass-bead-investigated`、`key-a-given-by-x`
 - **里程碑：**
   - `white-lamp-seen` ← `white-lamp-witnessed`
   - `lamp-incident-understood` ← `prologue-lamp-incident-understood`
   - `leave-shrine-decided` ← `leave-shrine-chosen`
-- **对话 handoff：** `prologue-lamp-incident`，`startWhen: white-lamp-witnessed`，参与者 `companion-x`；必须传达借灯禁忌、小 X 很快找到供电问题，以及两人接下来去村口调查。
+- **对话 handoff：** `prologue-lamp-incident`，`startWhen: white-lamp-witnessed`，参与者 `companion-x`；必须传达借灯禁忌、小周很快找到供电问题，以及两人接下来去村口调查。
 - **完成条件：** 三个里程碑全部完成。
 - **阶段：** 完成 `prologue`。
 - **出口：** `village-arrival`
@@ -134,7 +134,7 @@
 
 ### 4.5 `village-inquiries`
 
-- **目标：** 玩家从三名村民处取得公司、怪事、苏禾、旧事故及 A/B 身份暗线，并收集三块地图碎片。
+- **目标：** 玩家从三名村民处取得公司、怪事、苏禾、旧事故及 陈晋年/王阙身份暗线，并收集三块地图碎片。
 - **进入条件：** `village-decline-observed`、`su-he-missing-notice-observed`
 - **里程碑：**
   - `shopkeeper-thread-complete` ← `shopkeeper-inquiry-completed`
@@ -147,9 +147,9 @@
 
 | handoff | 参与者 | 对话必须传达什么 | 里程碑首次效果 |
 | --- | --- | --- | --- |
-| `village-shopkeeper-inquiry` | `villager-1`、`companion-x` | 项目进村后人口搬离；老板称主角为 B 工程师；怪事与项目时间重合；苏禾查过怪事和公司后失踪；小 X 为公司辩护并限制解释方向 | `ITEM_ACQUIRED { itemId: "map-fragment-1" }` |
-| `village-holdout-inquiry` | `villager-2`、`companion-x` | 拒签涉及房屋、祖坟和旧事故；小 X 用公司立场激怒对方并中断深挖 | `ITEM_ACQUIRED { itemId: "map-fragment-2" }` |
-| `village-elder-inquiry` | `villager-3`、`companion-x` | 蓝玻璃珠与陈家旧事有关；老人一度称主角为 A 又否认；旧事故的公开版本是山体滑坡；小 X 再次阻止追问 | `ITEM_ACQUIRED { itemId: "map-fragment-3" }` |
+| `village-shopkeeper-inquiry` | `villager-1`、`companion-x` | 项目进村后人口搬离；老板称主角为 王阙工程师；怪事与项目时间重合；苏禾查过怪事和公司后失踪；小周为公司辩护并限制解释方向 | `ITEM_ACQUIRED { itemId: "map-fragment-1" }` |
+| `village-holdout-inquiry` | `villager-2`、`companion-x` | 拒签涉及房屋、祖坟和旧事故；小周用公司立场激怒对方并中断深挖 | `ITEM_ACQUIRED { itemId: "map-fragment-2" }` |
+| `village-elder-inquiry` | `villager-3`、`companion-x` | 蓝玻璃珠与陈家旧事有关；老人一度称主角为 陈晋年又否认；旧事故的公开版本是山体滑坡；小周再次阻止追问 | `ITEM_ACQUIRED { itemId: "map-fragment-3" }` |
 
 对话模块只有在本行内容全部传达后，才能提交该行对应的完成事实。一次谈话可以分任意轮数，中途可用 `NPC_TALK_PROGRESS` 回报，但不能提前完成里程碑或发放碎片。
 
@@ -170,7 +170,7 @@
 
 ### 4.7 `old-house-entry`
 
-- **目标：** 玩家抵达陈家老宅，并确认小 X 交出的旧钥匙可以开门。
+- **目标：** 玩家抵达陈家老宅，并确认小周交出的旧钥匙可以开门。
 - **进入条件：** `key-a-acquired`、`restored-village-map-acquired`、`old-house-unlocked`、`old-house-route-chosen`
 - **里程碑：** `old-house-door-opened` ← `old-house-door-opened`
 - **探索 handoff：** `old-house-door`；目标是使用 `key-a` 打开老宅。
@@ -179,7 +179,7 @@
 
 ### 4.8 `old-house-investigation`
 
-- **目标：** 玩家按任意顺序调查照片、校服、身高刻痕和送葬名单，建立 A、妹妹及陈家旧事的基础轮廓。
+- **目标：** 玩家按任意顺序调查照片、校服、身高刻痕和送葬名单，建立 陈晋年、妹妹及陈家旧事的基础轮廓。
 - **进入条件：** `old-house-door-opened`
 - **里程碑：**
   - `photograph-clue-known` ← `old-photograph-clue-known`
@@ -193,19 +193,19 @@
 
 ### 4.9 `old-house-clue-confrontation`
 
-- **目标：** 玩家把工作证、玻璃珠、钥匙和屋内线索联系起来，明确感到身份矛盾；小 X 立即压下这一问题。
+- **目标：** 玩家把工作证、玻璃珠、钥匙和屋内线索联系起来，明确感到身份矛盾；小周立即压下这一问题。
 - **进入条件：** `old-photograph-clue-known`、`school-uniform-clue-known`、`height-marks-clue-known`、`funeral-list-clue-known`
 - **里程碑：** `identity-conflict-raised` ← `old-house-identity-conflict-raised`
-- **对话 handoff：** `old-house-clue-confrontation`，参与者 `companion-x`；必须让玩家感到线索之间存在身份冲突，并让小 X 把注意力重新引向最近的怪事。
+- **对话 handoff：** `old-house-clue-confrontation`，参与者 `companion-x`；必须让玩家感到线索之间存在身份冲突，并让小周把注意力重新引向最近的怪事。
 - **完成条件：** 里程碑完成。
 - **出口：** `old-house-call-at-door`
 
 ### 4.10 `old-house-call-at-door`
 
-- **目标：** 门外声音呼唤 A，小 X 阻止主角回应；事件结束后仍不能确定声音在叫谁。
+- **目标：** 门外声音呼唤 陈晋年，小周阻止主角回应；事件结束后仍不能确定声音在叫谁。
 - **进入条件：** `old-house-identity-conflict-raised`
 - **里程碑：** `door-call-finished` ← `door-call-incident-completed`
-- **对话 handoff：** `old-house-door-call`，参与者 `unknown-caller`、`companion-x`；必须出现“A”的呼名、小 X 的“别答”警告，并保留对声音目标的多种解释。
+- **对话 handoff：** `old-house-door-call`，参与者 `unknown-caller`、`companion-x`；必须出现“陈晋年”的呼名、小周的“别答”警告，并保留对声音目标的多种解释。
 - **完成条件：** 里程碑完成。
 - **出口：** `week-one-end`
 
@@ -222,12 +222,12 @@
 
 | `factId` | 唯一产生模块 | 产生时机 |
 | --- | --- | --- |
-| `prologue-wake-context-known` | `story` | 玩家确认醒来、失忆和小 X 表面身份的开场内容 |
+| `prologue-wake-context-known` | `story` | 玩家确认醒来、失忆和小周表面身份的开场内容 |
 | `surface-investigation-task-known` | `conversation` | `prologue-briefing` 完成任务说明 |
 | `burned-work-id-investigated` | `exploration` | 工作证调查完成 |
 | `blue-glass-bead-investigated` | `exploration` | 蓝玻璃珠调查完成 |
-| `key-a-given-by-x` | `conversation` | 小 X 完成交付钥匙 |
-| `x-deflects-memory-question-noticed` | `conversation` | 玩家追问过去且小 X 转移话题；可选 |
+| `key-a-given-by-x` | `conversation` | 小周完成交付钥匙 |
+| `x-deflects-memory-question-noticed` | `conversation` | 玩家追问过去且小周转移话题；可选 |
 | `key-a-acquired` | `state` | `ITEM_ACQUIRED key-a` 提交成功后派生 |
 | `white-lamp-witnessed` | `story` | 第一盏白灯的展示被确认 |
 | `prologue-lamp-incident-understood` | `conversation` | 借灯禁忌、供电疑点和村口计划均已传达 |
@@ -245,11 +245,11 @@
 | `old-house-unlocked` | `state` | `LOCATION_UNLOCKED old-house` 提交成功后派生 |
 | `old-house-route-chosen` | `story` | 玩家在地图完成后选择前往老宅 |
 | `old-house-door-opened` | `exploration` | 使用 `key-a` 成功开门 |
-| `old-photograph-clue-known` | `exploration` | 确认照片中的 A、妹妹和父亲，且 A 当时面容完整 |
+| `old-photograph-clue-known` | `exploration` | 确认照片中的 陈晋年、妹妹和父亲，且 陈晋年当时面容完整 |
 | `school-uniform-clue-known` | `exploration` | 确认妹妹旧物与蓝玻璃珠的实体联系 |
-| `height-marks-clue-known` | `exploration` | 确认事故时 A 约十七岁、妹妹才是小学生 |
-| `funeral-list-clue-known` | `exploration` | 确认妹妹死亡，A 也被村里作为死者送葬 |
-| `old-house-identity-conflict-raised` | `conversation` | O05 的身份矛盾和小 X 转移话题均已传达 |
+| `height-marks-clue-known` | `exploration` | 确认事故时 陈晋年约十七岁、妹妹才是小学生 |
+| `funeral-list-clue-known` | `exploration` | 确认妹妹死亡，陈晋年也被村里作为死者送葬 |
+| `old-house-identity-conflict-raised` | `conversation` | O05 的身份矛盾和小周转移话题均已传达 |
 | `door-call-incident-completed` | `conversation` | 呼名、阻止回应和多解状态均已传达 |
 | `week-one-end-acknowledged` | `story` | 玩家确认 V1 结束提示 |
 

@@ -14,6 +14,8 @@
   ];
   const capabilities = ["exploration", "conversation", "minigame"];
   const actionTypes = ["advance", "choice"];
+  const completionModes = ["all", "any"];
+  const gameStyles = ["puzzle", "chase"];
   const blockTypes = ["narration", "system"];
   const effectTypes = [
     "STORY_FACT_RECORDED",
@@ -248,6 +250,12 @@
       if (!capabilities.includes(handoff.capability)) {
         issues.push(`${handoffPath}.capability 未登记：${handoff.capability}`);
       }
+      if (
+        handoff.completionMode !== undefined &&
+        !completionModes.includes(handoff.completionMode)
+      ) {
+        issues.push(`${handoffPath}.completionMode 只能是 all 或 any`);
+      }
       validateId(handoff.targetId, `${handoffPath}.targetId`, issues);
       validateIdList(handoff.goalIds, `${handoffPath}.goalIds`, issues);
       (handoff.goalIds || []).forEach((goalId) => {
@@ -285,6 +293,12 @@
         !data.minigames.includes(handoff.targetId)
       ) {
         issues.push(`${handoffPath}.targetId 引用了未知小游戏：${handoff.targetId}`);
+      }
+      if (
+        handoff.gameStyle !== undefined &&
+        (handoff.capability !== "minigame" || !gameStyles.includes(handoff.gameStyle))
+      ) {
+        issues.push(`${handoffPath}.gameStyle 只能在小游戏中使用 puzzle 或 chase`);
       }
     });
 
@@ -496,8 +510,40 @@
     if (Array.isArray(data.expectedNodeIds)) {
       const missing = data.expectedNodeIds.filter((id) => !nodeIds.includes(id));
       const unexpected = nodeIds.filter((id) => !data.expectedNodeIds.includes(id));
-      missing.forEach((id) => issues.push(`缺少 V1 Node：${id}`));
-      unexpected.forEach((id) => issues.push(`出现未登记 V1 Node：${id}`));
+      missing.forEach((id) => issues.push(`缺少预期 Node：${id}`));
+      unexpected.forEach((id) => issues.push(`出现未登记预期 Node：${id}`));
+    }
+    if (!Array.isArray(data.checkpointMigrations)) {
+      issues.push("checkpointMigrations 必须是数组");
+    } else {
+      const migrationKeys = [];
+      data.checkpointMigrations.forEach((migration, index) => {
+        const path = `checkpointMigrations[${index}]`;
+        if (!isObject(migration)) {
+          issues.push(`${path} 必须是对象`);
+          return;
+        }
+        validateId(migration.nodeId, `${path}.nodeId`, issues);
+        const node = findById(data.nodes, migration.nodeId);
+        if (!node) {
+          issues.push(`${path}.nodeId 引用了未知 Node`);
+        }
+        if (
+          !Number.isInteger(migration.fromRevision) ||
+          !Number.isInteger(migration.toRevision) ||
+          migration.fromRevision < 1 ||
+          migration.toRevision <= migration.fromRevision
+        ) {
+          issues.push(`${path} 的 revision 迁移无效`);
+        }
+        if (node && node.revision !== migration.toRevision) {
+          issues.push(`${path}.toRevision 与当前 Node revision 不一致`);
+        }
+        migrationKeys.push(`${migration.nodeId}@${migration.fromRevision}`);
+      });
+      if (containsDuplicate(migrationKeys)) {
+        issues.push("checkpointMigrations 存在重复起点");
+      }
     }
 
     const globalActionIds = [];

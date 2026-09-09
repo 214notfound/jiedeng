@@ -166,14 +166,22 @@
     return factIds;
   }
 
+  function areHandoffGoalsComplete(handoff, completedMilestoneIds) {
+    const matches = (goalId) => completedMilestoneIds.includes(goalId);
+    return handoff.completionMode === "any"
+      ? handoff.goalIds.some(matches)
+      : handoff.goalIds.every(matches);
+  }
+
   function addEligibleCommands(node, checkpoint, facts) {
     node.handoffs.forEach((handoff) => {
       const commandId = `cmd-${node.id}-${handoff.id}`;
       const alreadyPending = checkpoint.pendingCommands.some(
         (command) => command.commandId === commandId,
       );
-      const goalsComplete = handoff.goalIds.every((goalId) =>
-        checkpoint.completedMilestoneIds.includes(goalId),
+      const goalsComplete = areHandoffGoalsComplete(
+        handoff,
+        checkpoint.completedMilestoneIds,
       );
       if (
         !alreadyPending &&
@@ -217,12 +225,24 @@
         payload: { explorationId: handoff.targetId, goals },
       };
     }
+    const factIds = getHandoffFactIds(node, handoff);
+    if (handoff.gameStyle) {
+      return {
+        commandId: pending.commandId,
+        commandType: pending.commandType,
+        payload: {
+          minigameId: handoff.targetId,
+          gameStyle: handoff.gameStyle,
+          allowedResultFactIds: factIds,
+        },
+      };
+    }
     return {
       commandId: pending.commandId,
       commandType: pending.commandType,
       payload: {
         minigameId: handoff.targetId,
-        successFactId: getHandoffFactIds(node, handoff)[0],
+        successFactId: factIds[0],
       },
     };
   }
@@ -294,6 +314,7 @@
 
   internal.storyRuntime = {
     addEligibleCommands,
+    areHandoffGoalsComplete,
     appendEffect,
     chooseTransition,
     copyCheckpoint,
