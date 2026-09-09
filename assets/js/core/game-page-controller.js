@@ -138,6 +138,7 @@ export function createViewCoordinator({
 
   function render() {
     const visible = visibleStates();
+    sceneRoot.closest?.(".game-main")?.setAttribute("data-view-state", currentView);
     setLayerState(sceneRoot, {
       visible: visible.has(VIEW_STATES.EXPLORATION) || currentView === VIEW_STATES.READING,
       interactive: currentView === VIEW_STATES.EXPLORATION
@@ -447,6 +448,14 @@ export function setupGamePage() {
   openMinigameButton.addEventListener("click", handleOpenMinigame);
   closeDetailButton.addEventListener("click", handleCloseDetail);
 
+  const handleEscape = (event) => {
+    if (event.key === "Escape" && viewCoordinator.getState() === VIEW_STATES.DETAIL) {
+      event.preventDefault();
+      viewCoordinator.closeOverlay();
+    }
+  };
+  document.addEventListener("keydown", handleEscape);
+
   function openMap(command) {
     const opened = viewCoordinator.openOverlay(VIEW_STATES.MINIGAME);
     if (!opened.ok) {
@@ -643,6 +652,7 @@ export function setupGamePage() {
       closeInventoryButton.removeEventListener("click", handleCloseInventory);
       openMinigameButton.removeEventListener("click", handleOpenMinigame);
       closeDetailButton.removeEventListener("click", handleCloseDetail);
+      document.removeEventListener("keydown", handleEscape);
       saveButton.removeEventListener("click", handleSave);
       removeExploration?.();
       interactionModule?.dispose();
