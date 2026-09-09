@@ -1,14 +1,16 @@
 // 页面导航层：只处理身份检查、主菜单操作和 URL 跳转。
 
 import { loadGame } from "./storage.js";
+import { playerFacingFeedback, storageResultFeedback } from "./player-feedback.js";
 
 const auth = globalThis.WhiteLamp?.auth;
 
 function showMenuFeedback(message, type = "info") {
   const element = document.getElementById("feedback");
-  const visibleMessage = typeof message === "string" && message.trim()
-    ? message
-    : "操作没有完成，请刷新页面后重试。";
+  const visibleMessage = playerFacingFeedback(message, {
+    type,
+    fallback: "操作没有完成，请刷新页面后重试。"
+  });
 
   if (!element) {
     console.log(`[white-lamp:${type}] ${visibleMessage}`);
@@ -71,9 +73,10 @@ export function setupMenuPage() {
 
     if (continueHint) {
       continueHint.hidden = hasSave;
-      continueHint.textContent = loadResult.code === "SAVE_VERSION_UNSUPPORTED"
-        ? "检测到旧版存档，当前版本不能继续"
-        : "暂无可用存档";
+      continueHint.textContent = storageResultFeedback(loadResult, {
+        operation: "load",
+        compact: true
+      });
     }
 
     if (newGameButton) {

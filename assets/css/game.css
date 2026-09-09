@@ -85,6 +85,22 @@ button { font: inherit; }
 }
 .game-overlay__close { position: sticky; z-index: 1; top: 0; display: block; margin-left: auto; }
 .minigame-root { background: rgba(8, 11, 17, 0.97); }
+.resource-fallback {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.resource-fallback--thumbnail {
+  display: grid;
+  width: 64px;
+  height: 64px;
+  padding: 6px;
+  place-items: center;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px dashed rgba(236, 231, 220, 0.28);
+}
+.resource-fallback[hidden] { display: none; }
 .scene-panel { position: relative; min-height: 300px; overflow: hidden; background: linear-gradient(145deg, rgba(13, 18, 27, 0.45), rgba(13, 18, 27, 0.88)); border: 1px solid var(--line); }
 .scene-panel::before { position: absolute; inset: 0; background: radial-gradient(circle at 72% 28%, rgba(225, 217, 192, 0.17), transparent 22%); content: ""; }
 .scene-name { position: absolute; left: 20px; bottom: 18px; z-index: 1; display: grid; gap: 5px; }
@@ -124,7 +140,15 @@ button { font: inherit; }
 .game-main[data-view-state="reading"] #game-story {
   min-height: 0;
   margin: 0;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+.game-main[data-view-state="reading"] .exploration-hotspots {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
 }
 .story-panel h2, .side-panel h2 { margin: 0; font-size: 12px; letter-spacing: 0.26em; text-transform: uppercase; color: var(--muted); }
 #game-story { min-height: 128px; margin-top: 26px; }
@@ -173,12 +197,18 @@ button { font: inherit; }
   .game-header .button { flex: 1; }
   .game-overlay { inset: 118px 10px 10px; }
   .story-panel { padding: 22px 18px; }
+}
+
+@media (max-width: 520px) {
   .game-main[data-view-state="reading"] .story-panel {
-    right: 8px;
-    bottom: 8px;
-    left: 8px;
-    min-height: 176px;
-    max-height: 68%;
+    position: relative;
+    right: auto;
+    bottom: auto;
+    left: auto;
+    z-index: 10;
+    min-height: 190px;
+    max-height: min(52vh, 420px);
+    margin: -16px 8px 0;
     padding: 28px 18px 16px;
   }
   .game-main[data-view-state="reading"] .story-speaker { left: 18px; }

@@ -9,6 +9,7 @@ import { createMapPuzzleAdapter } from "../minigames/map-puzzle/adapter/map-puzz
 import { getAchievementEvents } from "../achievements/game/achievements.js";
 import { saveGame } from "./storage.js";
 import { STORY_FACT_DEFINITIONS } from "./game-contract.js";
+import { playerFacingFeedback, storageResultFeedback } from "./player-feedback.js";
 
 export const VIEW_STATES = Object.freeze({
   READING: "reading",
@@ -29,22 +30,9 @@ const EXTERNAL_COMMAND_TYPES = new Set([
   "REQUEST_CONVERSATION",
   "REQUEST_MINIGAME"
 ]);
-const TECHNICAL_FEEDBACK_PATTERN = /(?:\b(?:Node|command|event|payload|source|state|localStorage|storageScope|schemaVersion|storyCheckpoint|pendingCommands|resultFactIds)\b|[A-Z]{2,}(?:_[A-Z0-9]+)+|\b[a-z]+(?:-[a-z0-9]+){2,}\b|模块|接口|挂载|订阅|存储域|结构不正确|检查点与命令|格式无效|无权产生)/;
-
-function playerFacingFeedback(message, type) {
-  if (typeof message !== "string" || !message.trim()) {
-    return "操作没有完成，请重试；仍无法继续时请返回主菜单。";
-  }
-  if (["error", "warning"].includes(type) && TECHNICAL_FEEDBACK_PATTERN.test(message)) {
-    console.error("[white-lamp:player-feedback] 已隐藏内部错误详情", message);
-    return "操作没有完成，请重试；仍无法继续时请返回主菜单。";
-  }
-  return message;
-}
-
 function showFeedback(message, type = "info") {
   const element = document.getElementById("feedback");
-  const visibleMessage = playerFacingFeedback(message, type);
+  const visibleMessage = playerFacingFeedback(message, {type});
 
   if (!element) {
     console.log(`[white-lamp:${type}] ${visibleMessage}`);
@@ -499,7 +487,11 @@ export function setupGamePage() {
       }),
       onError: (error) => {
         console.error("[white-lamp:game-flow]", error.developerMessage);
-        showFeedback(error.userMessage, "error");
+        showFeedback(storageResultFeedback({
+          ok: false,
+          code: error.errorCode,
+          message: error.userMessage
+        }), "error");
       }
     });
 
@@ -508,12 +500,12 @@ export function setupGamePage() {
       const saveResult = saveGame(gameFlow.getState(), storageScope);
 
       if (!saveResult.ok) {
-        showFeedback(saveResult.message, "error");
+        showFeedback(storageResultFeedback(saveResult, {operation: "save"}), "error");
         return saveResult;
       }
 
       gameFlow.replaceState(saveResult.data.state);
-      showFeedback("进度已保存。", "success");
+      showFeedback(storageResultFeedback(saveResult, {operation: "save"}), "success");
       return saveResult;
     }
 
