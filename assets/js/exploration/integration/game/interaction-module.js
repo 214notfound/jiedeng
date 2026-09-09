@@ -30,7 +30,7 @@ export function createInteractionModule(host) {
   function getLayout() {
     const explored = exploration.getLayout();
     const talked = conversation.getLayout();
-    return {playerStart: explored.playerStart, hotspots: [...explored.hotspots, ...talked.hotspots]};
+    return {hotspots: [...explored.hotspots, ...talked.hotspots]};
   }
 
   function getReadingInput(sceneId, actionId) {

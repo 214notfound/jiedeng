@@ -59,6 +59,7 @@ test("初始只有工作证和玻璃珠，没有旧录音与钥匙",()=>{
  const host=createDemoHost();const module=createInteractionModule(host);
  assert.deepEqual(module.listItems().map(i=>i.id),["burned-work-id","blue-glass-bead"]);
  assert.equal(module.getSceneView("shrine").interactions.length,0);
+ assert.equal("playerStart" in module.getLayout(),false);
  assert.equal(ITEMS.some(i=>i.name.includes("A")),false);
  assert.equal(module.listItems().some(i=>i.id==="su-he-notice"),false);
 });

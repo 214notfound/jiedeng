@@ -50,7 +50,7 @@
 | --- | --- | --- |
 | `getCurrentSceneId()` | 无 | `shrine/village/old-house` |
 | `getSceneView(sceneId)` | 当前地点 ID | 名称及物体交互列表 |
-| `getLayout()` | 无 | 玩家起点和物体热点 |
+| `getLayout()` | 无 | 当前剧情 Node 的百分比热点；不包含玩家位置或距离门槛 |
 | `listItems(layer?)` | `items/clues`，可省略 | 已获得背包条目 |
 | `interact(sceneId, actionId)` | 当前地点和动作 ID | `{ok,message}` |
 | `cancel(commandId,errorCode?)` | 探索命令 ID、可选错误码 | 协调器结果 |

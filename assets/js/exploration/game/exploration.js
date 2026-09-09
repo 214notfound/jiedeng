@@ -108,7 +108,6 @@ export function createExploration(host) {
 
   function getLayout() {
     return {
-      playerStart: {x: 50, y: 92},
       hotspots: entries(bound.read()).map((action) => ({
         id: action.id,
         x: action.x,

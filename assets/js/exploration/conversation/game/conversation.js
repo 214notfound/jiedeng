@@ -105,7 +105,6 @@ export function createConversation(host) {
       return true;
     }).map((task) => task.target));
     return {
-      playerStart: {x: 50, y: 92},
       hotspots: entries(context)
         .filter((action) => visibleTargets.has(action.task.target))
         .reduce((rows, action) => {
