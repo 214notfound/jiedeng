@@ -623,6 +623,7 @@ export function setupGamePage() {
       openConversation(input, callbacks = {}) {
         viewCoordinator.showBase(VIEW_STATES.READING);
         gameView.openConversation(input, {
+          onAction: callbacks.onAction,
           onComplete: async (result) => {
             try {
               const outcome = await callbacks.onComplete?.(result);

@@ -117,3 +117,38 @@ test("快速连续完成只允许一个 Host 请求在途", async () => {
   assert.equal(host.getContext().state.facts.includes("surface-investigation-task-known"), true);
   module.dispose();
 });
+
+test("NPC Choice 只选择路径，所选对白读完后才提交事实", async () => {
+  const host = createDemoHost();
+  host.act("confirm-wake-context");
+  const module = createInteractionModule(host);
+
+  let input = module.getReadingInput("shrine", "surface-briefing");
+  await module.completeReading("shrine", "surface-briefing", completionFor(input));
+  await module.interact("shrine", "burned-work-id");
+  await module.interact("shrine", "blue-glass-bead");
+
+  const beforeChoice = structuredClone(host.getContext().state);
+  const choice = module.getReadingChoiceInput("shrine", [
+    "receive-key",
+    "ask-memory-and-receive-key"
+  ]);
+  assert.equal(choice.readingState, "choice");
+  assert.deepEqual(choice.actions.map((action) => action.actionId), [
+    "receive-key",
+    "ask-memory-and-receive-key"
+  ]);
+  assert.deepEqual(host.getContext().state, beforeChoice);
+
+  input = module.getReadingInput("shrine", "ask-memory-and-receive-key");
+  assert.deepEqual(host.getContext().state, beforeChoice);
+  const outcome = await module.completeReading(
+    "shrine",
+    "ask-memory-and-receive-key",
+    completionFor(input)
+  );
+  assert.equal(outcome.ok, true, outcome.message);
+  assert.equal(host.getContext().state.facts.includes("key-a-given-by-x"), true);
+  assert.equal(host.getContext().state.facts.includes("x-deflects-memory-question-noticed"), true);
+  module.dispose();
+});

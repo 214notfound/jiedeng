@@ -21,7 +21,6 @@ export function mountExploration({
     throw new TypeError("缺少统一阅读入口。");
   }
   const scene = region(sceneRoot);
-  const actions = region(actionsRoot);
   const notify = createFeedback(scene, showFeedback);
   const heading = element("h2", "exploration-title");
   const help = element("p", "exploration-help", "点击场景中发光的物体或人物，查看线索或开始交谈。");
@@ -58,6 +57,29 @@ export function mountExploration({
     });
     return true;
   }
+
+  function startConversationChoice(sceneId, hotspot, node) {
+    const choiceInput = module.getReadingChoiceInput?.(
+      sceneId,
+      hotspot.interactions.map((action) => action.id)
+    );
+    if (!choiceInput) return false;
+
+    node.disabled = true;
+    openConversation(choiceInput, {
+      onAction: (selectedActionId) => {
+        const selected = hotspot.interactions.find((action) => action.id === selectedActionId);
+        if (!selected || !startConversation(sceneId, selected.id, node)) {
+          node.disabled = false;
+          notify("这项对话当前不可用，请重新选择人物。", "warning");
+        }
+      },
+      onClose: () => {
+        if (active) node.disabled = false;
+      }
+    });
+    return true;
+  }
   function render() {
     if (!active) return;
     try {
@@ -73,7 +95,8 @@ export function mountExploration({
         const node = button(hotspot.marker, async () => {
           if (!active) return;
           if (action.interactionType === "conversation") {
-            if (!startConversation(sceneId, action.id, node)) {
+            if (!startConversationChoice(sceneId, hotspot, node)
+              && !startConversation(sceneId, action.id, node)) {
               notify("这段对话当前不可用，请刷新后重试。", "warning");
             }
             return;
@@ -105,22 +128,8 @@ export function mountExploration({
         node.setAttribute("aria-label", action.label + (action.completed ? "，已调查，可回读" : ""));
         return node;
       }));
-      const alternatives = view.interactions.filter(action => action.alternative && !action.completed);
-      actions.replaceChildren();
-      if (alternatives.length) {
-        actions.append(element("h2", "exploration-title", "可选交谈方式"));
-      }
-      for (const alternative of alternatives) {
-        const alternativeButton = button(alternative.label, async () => {
-          if (!active || startConversation(sceneId, alternative.id, alternativeButton)) return;
-          const result = await module.interact(sceneId, alternative.id);
-          if (active) notify(playerMessage(result.message, "操作未完成，请重试。"), result.ok ? "success" : "warning");
-        });
-        actions.append(alternativeButton);
-      }
     } catch (error) {
       hotspots.replaceChildren();
-      actions.replaceChildren();
       heading.textContent = "探索暂不可用";
       notify(playerMessage(error.message, "探索暂时无法使用，请返回主菜单后重试。"), "error");
     }
@@ -138,7 +147,6 @@ export function mountExploration({
   } catch (error) {
     unsubscribe?.();
     scene.remove();
-    actions.remove();
     throw error;
   }
   render();
@@ -148,6 +156,5 @@ export function mountExploration({
     unsubscribe();
     inventoryView.dispose();
     scene.remove();
-    actions.remove();
   };
 }

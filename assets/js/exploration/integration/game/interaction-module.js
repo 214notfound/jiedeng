@@ -43,6 +43,11 @@ export function createInteractionModule(host) {
     return conversation.completeReading(sceneId, actionId, result);
   }
 
+  function getReadingChoiceInput(sceneId, actionIds) {
+    if (sceneId !== sameScene()) throw new Error("地点已经变化。");
+    return conversation.getReadingChoiceInput(sceneId, actionIds);
+  }
+
   async function interact(sceneId, actionId, options) {
     const explorationIds = new Set(
       exploration.getSceneView(sceneId).interactions.map((item) => item.id)
@@ -92,6 +97,7 @@ export function createInteractionModule(host) {
     getCurrentSceneId: sameScene,
     getSceneView,
     getLayout,
+    getReadingChoiceInput,
     getReadingInput,
     completeReading,
     listItems: exploration.listItems,

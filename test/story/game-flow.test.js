@@ -243,6 +243,8 @@ for (const entry of ["formal", "debug"]) {
     context.document = {
       body: { dataset: { page: "game" } },
       activeElement: { focus() {} },
+      addEventListener() {},
+      removeEventListener() {},
       getElementById(id) {
         if (!elements.has(id)) elements.set(id, {
           hidden: false,

@@ -3,7 +3,10 @@ import {NODE_SCENES, sceneName} from "../../core/story-scenes.js";
 import {CONVERSATION_TASKS, conversationTaskFor} from "../data/conversations.js";
 import {V2_CONVERSATIONS} from "../data/conversations-v2.js";
 import {bindHost, requireIds} from "../../core/host-binding.js";
-import {adaptConversationInput} from "../../../core/reading-contract.js";
+import {
+  adaptConversationChoiceInput,
+  adaptConversationInput
+} from "../../../core/reading-contract.js";
 
 export function validateConversationContext(context) {
   const state = context?.state;
@@ -168,6 +171,36 @@ export function createConversation(host) {
       throw new Error("阅读完成信息不一致，请重新打开本段对话。");
     }
   }
+
+  function getReadingChoiceInput(sceneId, actionIds) {
+    if (sceneId !== getCurrentSceneId()) {
+      throw new Error("地点已经变化。");
+    }
+    if (!Array.isArray(actionIds)) {
+      throw new TypeError("NPC Choice 缺少候选对话。");
+    }
+    const requestedIds = new Set(actionIds);
+    const choices = entries(bound.read()).filter((action) =>
+      requestedIds.has(action.id) && action.command && !action.completed
+    );
+    if (choices.length < 2) return null;
+    const task = choices[0].task;
+    if (!task.choicePrompt || choices.some((action) => action.task !== task
+      || action.command.commandId !== choices[0].command.commandId)) {
+      throw new Error("NPC Choice 数据不属于同一段对话。");
+    }
+    return adaptConversationChoiceInput({
+      prompt: task.choicePrompt,
+      choices: choices.map((action) => ({
+        actionId: action.id,
+        label: action.label,
+        actionType: "choice"
+      })),
+      conversationId: task.target,
+      npcId: task.npc,
+      commandId: choices[0].command.commandId
+    });
+  }
   async function send(task, command, actionId, eventType, facts, payload) {
     if (busy || uncertain) throw new Error("上一操作尚未确认，请等待或重新进入。");
     busy = true;
@@ -301,6 +334,7 @@ export function createConversation(host) {
     getCurrentSceneId,
     getSceneView,
     getLayout,
+    getReadingChoiceInput,
     getReadingInput,
     completeReading,
     interact,

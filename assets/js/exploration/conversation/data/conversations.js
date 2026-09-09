@@ -9,6 +9,10 @@ export const CONVERSATION_TASKS = Object.freeze([
   {node: "prologue-belongings", target: "prologue-key-and-memory", type: "conversation",
     interactionType: "conversation",
     npc: "companion-x", label: "从小X处接过钥匙", marker: "小X", x: 50, y: 40,
+    choicePrompt: {
+      lineId: "prologue-key-choice",
+      text: "【小X】他把那把旧钥匙递到你面前，却没有立刻松手。"
+    },
     actions: [
       {id: "receive-key", label: "接过小X递来的旧钥匙", facts: ["key-a-given-by-x"],
         text: "【小X】这是在你出事地点附近捡到的。先拿着，调查时可能用得上。\n他递来一把没有标记的老钥匙。你还不知道它能打开什么。"},

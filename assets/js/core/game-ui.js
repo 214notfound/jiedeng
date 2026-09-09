@@ -165,10 +165,20 @@ export function createReadingView({
     if (!["story", "conversation"].includes(nextInput.mode)) {
       throw new TypeError(`不支持的阅读模式：${String(nextInput.mode)}`);
     }
+    if (nextInput.readingState !== undefined && nextInput.readingState !== "choice") {
+      throw new TypeError(`不支持的阅读内部状态：${String(nextInput.readingState)}`);
+    }
+    if (nextInput.readingState === "choice"
+      && (nextInput.mode !== "conversation"
+        || !Array.isArray(nextInput.actions)
+        || nextInput.actions.length < 2
+        || nextInput.actions.length > 4)) {
+      throw new TypeError("NPC Choice 必须提供 2 至 4 个选项");
+    }
 
     input = nextInput;
     currentIndex = 0;
-    completed = false;
+    completed = input.readingState === "choice";
     busy = false;
     clear();
 
@@ -201,12 +211,14 @@ export function createGameView({onStoryAction} = {}) {
   const actionsElement = requiredElement("game-actions");
   let readingView;
   let onReadingComplete = () => {};
+  let onReadingAction = (actionId) => onStoryAction?.(actionId);
   let onReadingClose = () => {};
 
   function renderState() {}
 
   function renderResponse(response) {
     onReadingComplete = () => {};
+    onReadingAction = (actionId) => onStoryAction?.(actionId);
     onReadingClose = () => {};
     if (!response.presentation) {
       readingView?.close();
@@ -231,7 +243,7 @@ export function createGameView({onStoryAction} = {}) {
   readingView = createReadingView({
     storyElement,
     actionsElement,
-    onAction: (actionId) => onStoryAction?.(actionId),
+    onAction: (actionId, metadata) => onReadingAction(actionId, metadata),
     onComplete: (result) => onReadingComplete(result),
     onClose: () => onReadingClose()
   });
@@ -245,8 +257,13 @@ export function createGameView({onStoryAction} = {}) {
         button.disabled = disabled;
       });
     },
-    openConversation(input, {onComplete = () => {}, onClose = () => {}} = {}) {
+    openConversation(input, {
+      onComplete = () => {},
+      onAction = () => {},
+      onClose = () => {}
+    } = {}) {
       onReadingComplete = onComplete;
+      onReadingAction = onAction;
       onReadingClose = onClose;
       readingView.open({...input, allowClose: true});
     },
