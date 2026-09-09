@@ -134,6 +134,21 @@ export function createExploration(host) {
     });
   }
 
+  function getItemDetail(itemId) {
+    const {state} = bound.read();
+    const item = ITEMS.find((entry) => entry.id === itemId);
+    if (!item) return null;
+    const stateLayer = state.inventory.includes(itemId)
+      ? "items"
+      : state.clues.includes(itemId) ? "clues" : null;
+    const action = EXPLORATION_TASKS
+      .flatMap((task) => task.actions)
+      .find((entry) => entry.id === itemId);
+    const inspected = Boolean(action?.facts.every((fact) => state.facts.includes(fact)));
+    if (!stateLayer && !inspected) return null;
+    return {...item, layer: stateLayer, obtained: Boolean(stateLayer), inspected};
+  }
+
   async function send(task, command, actionId, eventType, facts, payload) {
     if (busy || uncertain) throw new Error("上一操作尚未确认，请等待或重新进入。");
     busy = true;
@@ -229,6 +244,7 @@ export function createExploration(host) {
     getSceneView,
     getLayout,
     listItems,
+    getItemDetail,
     interact,
     cancel,
     pendingLabels,

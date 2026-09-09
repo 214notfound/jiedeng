@@ -1,6 +1,6 @@
 # 剧情目标与探索事实对照
 
-本表从探索与对话两个数据目录核对，基准为新版 V1 Node 清单。动作 ID 是界面内部标识，不是剧情 actionId。正式事件携带收到的 commandId，不重新创建命令。OBJECT_INVESTIGATED 由探索模块生产，NPC_TALKED 由独立对话子包生产。
+本表从探索与对话两个数据目录核对，运行时基准为当前 V2 Host 通过 `game-flow.js` 提供的剧情 Node、命令和已提交状态。动作 ID 是界面内部标识，不是剧情 actionId。正式事件携带收到的 commandId，不重新创建命令。OBJECT_INVESTIGATED 由探索模块生产，NPC_TALKED 由独立对话子包生产。
 
 | Node | handoff / 目标 ID | 内部动作 ID | 完成事实 | 事件 |
 | --- | --- | --- | --- | --- |

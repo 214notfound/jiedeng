@@ -101,6 +101,7 @@ export function createInteractionModule(host) {
     getReadingInput,
     completeReading,
     listItems: exploration.listItems,
+    getItemDetail: exploration.getItemDetail,
     interact,
     cancel: conversation.cancel,
     reportProgress: conversation.reportProgress,

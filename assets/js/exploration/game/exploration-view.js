@@ -2,6 +2,7 @@
 import { buildHotspotViews } from "./hotspot-view.js";
 import { element, button, region, createFeedback, playerMessage } from "./view-utils.js";
 import { mountInventory } from "./inventory.js";
+import { sceneAssetFor } from "../data/scene-assets.js";
 export { mountAchievements } from "../../achievements/game/achievements-view.js";
 
 export function mountExploration({
@@ -25,8 +26,11 @@ export function mountExploration({
   const heading = element("h2", "exploration-title");
   const help = element("p", "exploration-help", "点击场景中发光的物体或人物，查看线索或开始交谈。");
   const stage = element("div", "exploration-stage scene-coordinate-space");
+  const backdrop = document.createElement("img");
+  backdrop.className = "exploration-scene-image";
+  backdrop.alt = "";
   const hotspots = element("div", "exploration-hotspots");
-  stage.append(hotspots);
+  stage.append(backdrop, hotspots);
   scene.append(heading, help, stage);
   let active = true;
   let inventoryView;
@@ -86,7 +90,12 @@ export function mountExploration({
       const sceneId = module.getCurrentSceneId();
       const view = module.getSceneView(sceneId);
       const layout = module.getLayout();
+      const oldHouseDoorOpen = sceneId === "old-house"
+        && !view.interactions.some((interaction) => interaction.id === "old-house-door");
+      const sceneAsset = sceneAssetFor(sceneId, {oldHouseDoorOpen});
+      if (sceneAsset && backdrop.src !== sceneAsset) backdrop.src = sceneAsset;
       stage.dataset.sceneId = sceneId;
+      stage.dataset.sceneVariant = oldHouseDoorOpen ? "door-open" : "default";
       heading.textContent = view.name;
       stage.setAttribute("aria-label", view.name + "探索区域");
       const views = buildHotspotViews(view, layout);
@@ -112,9 +121,9 @@ export function mountExploration({
           notify(playerMessage(result.speaker ? "【" + result.speaker + "】" + result.message : result.message,
             "调查未完成，请重试或稍后再来。"),
             result.ok ? "success" : "warning");
-          if (result.ok && module.listItems().some((item) => item.id === action.id)) {
+          if (result.ok && module.getItemDetail?.(action.id)) {
             hotspots.querySelector('[data-hotspot-id="' + action.id + '"]')?.focus();
-            inventoryView.openItem(action.id);
+            inventoryView.openTarget(action.id);
           }
         }, "scene-hotspot" + (action.completed ? " is-completed" : "")
           + (!action.available ? " is-disabled" : ""));

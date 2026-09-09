@@ -39,27 +39,39 @@ export function mountInventory({module, root, detailRoot, showFeedback, openDeta
   let layer = "items";
   let active = true;
 
-  function renderDetail(itemId) {
-    const item = getObtainedItem(module, itemId);
-
+  function renderDetail(item) {
     detailTitle.textContent = item.name;
     detailImage.hidden = false;
     detailImageError.hidden = true;
     detailImage.alt = item.name;
     detailImage.src = item.image;
     detailDescription.textContent = item.description;
-    detailSource.textContent = "来源：" + item.source + " · 已获得";
+    detailSource.textContent = "来源：" + item.source + (item.obtained ? " · 已获得" : " · 已查看");
   }
 
   function openItem(itemId) {
     try {
-      renderDetail(itemId);
+      renderDetail(getObtainedItem(module, itemId));
       const result = openDetail(itemId);
       if (!result?.ok) {
         throw new Error(result?.message || "详情暂时无法打开。");
       }
     } catch (error) {
       notify(playerMessage(error.message, "暂时无法查看这项内容，请重试。"), "error");
+    }
+  }
+
+  function openTarget(itemId) {
+    try {
+      const item = module.getItemDetail?.(itemId);
+      if (!item) return false;
+      renderDetail(item);
+      const result = openDetail(itemId);
+      if (!result?.ok) throw new Error(result?.message || "详情暂时无法打开。");
+      return true;
+    } catch (error) {
+      notify(playerMessage(error.message, "暂时无法查看这项内容，请重试。"), "error");
+      return false;
     }
   }
 
@@ -129,6 +141,7 @@ export function mountInventory({module, root, detailRoot, showFeedback, openDeta
 
   return Object.freeze({
     openItem,
+    openTarget,
     dispose() {
       if (!active) return;
       active = false;

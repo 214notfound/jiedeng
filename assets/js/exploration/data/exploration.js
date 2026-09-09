@@ -19,10 +19,10 @@ export const EXPLORATION_TASKS = Object.freeze([
     interactionType: "item",
     label: "观察村口",
     actions: [
-      {id: "village-decline", label: "观察村口环境", marker: "村口", x: 25, y: 50,
+      {id: "village-decline", label: "观察村口环境", marker: "村口", x: 15, y: 30,
         facts: ["village-decline-observed"],
         text: "不少屋子已经空了，搬迁和施工的痕迹留在路边。村里的衰败并不只是怪谈留下的结果。"},
-      {id: "su-he-notice", label: "查看苏禾寻人启事", marker: "启事", x: 75, y: 65,
+      {id: "su-he-notice", label: "查看苏禾寻人启事", marker: "启事", x: 85, y: 30,
         facts: ["su-he-missing-notice-observed"],
         text: "路口和墙上贴着苏禾的寻人启事：村小学教师，近期失踪。有人还在寻找她，这不是旧传闻，而是村里正在发生的事。"}
     ]

@@ -18,8 +18,19 @@
   aspect-ratio: 16 / 9;
   min-height: 0;
   height: auto;
-  background: #e9e9e9;
+  background: #11151c;
   border: 1px solid #888;
+}
+.exploration-module .exploration-scene-image {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: contain;
+  pointer-events: none;
 }
 .exploration-module .scene-coordinate-space {
   width: 100%;
@@ -29,38 +40,45 @@
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(145deg, rgb(13 18 27 / 82%), rgb(13 18 27 / 94%)),
-    radial-gradient(circle at 72% 28%, rgb(245 240 227 / 17%), transparent 22%);
+    linear-gradient(145deg, rgb(13 18 27 / 8%), rgb(13 18 27 / 18%)),
+    radial-gradient(circle at 72% 28%, rgb(245 240 227 / 8%), transparent 22%);
+  z-index: 1;
   content: "";
   pointer-events: none;
 }
 .exploration-module .exploration-hotspots {
   position: absolute;
+  z-index: 2;
   inset: 0;
 }
 .exploration-module .scene-hotspot {
   position: absolute;
   transform: translate(-50%, -50%);
-  max-width: 120px;
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
   min-height: 44px;
-  padding: .5rem;
-  font: inherit;
-  background: #fff;
-  color: #222;
-  border: 1px solid #555;
-  border-radius: .4rem;
+  padding: 0;
+  overflow: hidden;
+  color: transparent;
+  background: radial-gradient(circle, #fff9c4 0 10%, #f5d76e 11% 22%, rgb(245 215 110 / 32%) 23% 42%, transparent 68%);
+  border: 0;
+  border-radius: 50%;
+  box-shadow: 0 0 13px rgb(245 215 110 / 88%);
   cursor: pointer;
+  font-size: 0;
 }
 .exploration-module .scene-hotspot:hover {
-  background: #ddd;
+  background: radial-gradient(circle, #fff 0 12%, #ffe58d 13% 26%, rgb(245 215 110 / 42%) 27% 48%, transparent 70%);
+  box-shadow: 0 0 19px rgb(255 229 141 / 100%);
 }
 .exploration-module .is-completed {
-  border-style: dashed;
+  opacity: .62;
 }
 .exploration-module .is-disabled {
-  color: #666;
-  background: #ddd;
+  filter: grayscale(1);
 }
+.game-main[data-view-state="reading"] .exploration-hotspots { opacity: 0; }
 .exploration-module .exploration-controls {
   display: flex;
   gap: .5rem;
@@ -134,9 +152,8 @@
     aspect-ratio: 16 / 9;
   }
   .exploration-module .scene-hotspot {
-    max-width: 72px;
-    padding: .35rem;
-    font-size: .75rem;
-    line-height: 1.35;
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
   }
 }
