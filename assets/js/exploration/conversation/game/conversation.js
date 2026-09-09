@@ -52,17 +52,12 @@ export function createConversation(host) {
   }
   const bound = bindHost(host, validateConversationContext);
   const presented = new Set();
-  const optionalMemoryFact = "x-deflects-memory-question-noticed";
   let busy = false;
   let uncertain = false;
 
   const commandFor = (context, task) => context.commands.find(
     (command) => command.payload?.conversationId === task.target
   );
-  const acceptsOptionalMemory = (command) => command.payload.goals.some(
-    (goal) => goal.goalId === "x-memory-deflection-noticed"
-  );
-
   function entries(context) {
     const facts = context.state.facts;
     return CONVERSATION_TASKS
@@ -72,8 +67,7 @@ export function createConversation(host) {
         return task.actions
           .filter((action) => command || action.facts.every((fact) => facts.includes(fact)))
           .map((action) => {
-            const supportedFacts = action.facts.filter((fact) =>
-              fact !== optionalMemoryFact || (command && acceptsOptionalMemory(command)));
+            const supportedFacts = [...action.facts];
             const completed = supportedFacts.every((fact) => facts.includes(fact));
             return {...action, interactionType: task.interactionType, task, command, supportedFacts,
               completed, available: completed || Boolean(command)};
@@ -313,9 +307,6 @@ export function createConversation(host) {
     if (!task || !factIds.length
       || factIds.some((fact) => !task.actions.some((action) => action.facts.includes(fact)))) {
       throw new Error("进展事实不属于当前对话。");
-    }
-    if (factIds.includes(optionalMemoryFact) && !acceptsOptionalMemory(command)) {
-      throw new Error("当前剧情版本尚未开放这个可选事实。");
     }
     if (task.actions[0].facts.every((fact) =>
       context.state.facts.includes(fact) || factIds.includes(fact))) {

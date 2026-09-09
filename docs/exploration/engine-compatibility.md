@@ -43,21 +43,21 @@ goals[].goalId 是里程碑 ID，resultFactIds 是事实 ID，例如 burned-work
 
 已取消的 trust-x/doubt-x 不再添加。本包不揭露后续身份答案。
 
-## 当前上游缺口：可选记忆事实
+## 已确认规则：追问对白不记录可选记忆事实
 
-文档允许 x-deflects-memory-question-noticed。但当前 data/prologue.js 的 prologue-key-and-memory 只有 key-received-from-x 一个 goalId；story-runtime.js 的 getHandoffFactIds 只从 goalIds 取允许事实，story-request.js 因此拒绝可选记忆事实。
+剧情与探索侧已确认采用方案 A。`prologue-key-and-memory` 只以 `key-received-from-x` 为目标；“追问过去，再接过钥匙”只改变本次展示的对白路径，不产生或保存 `x-deflects-memory-question-noticed`。
 
 本包行为：
 
 - 玩家仍能选择追问过去，内容正常展示。
 - 确认后只报告当前命令支持的 key-a-given-by-x，完成交钥匙并推进。
-- 不把没有提交的可选事实假装已经保存。
-- reportProgress 明确拒绝上游尚未开放的可选事实，也不允许用“中途进展”提交完整谈话。
+- 不把追问选择或对白展示解释为新增剧情事实。
+- `reportProgress` 拒绝这项未约定的事实，也不允许用“中途进展”提交完整谈话。
 - 原引擎快照保持不变；有专门回归测试固定上述行为。
 
-需要剧情负责人区分“允许回报的可选事实”和“决定 handoff 完成的必需目标”。不能简单把可选里程碑加入当前 goalIds，因为引擎把 goalIds 全部当作完成条件，会把可选追问变为必选。修复时明确返回给外部模块的能力信息，并同步调整本模块的可选事实适配及测试。
+不要把可选里程碑加入当前 `goalIds`，也不要由对话模块越权补记事实。若未来产品重新要求保存这项选择，必须先由剧情合同提供不会将可选项变成必选条件的正式能力，再同步调整数据和测试；该扩展不属于当前版本。
 
-因此：必需主线和两个模块展示已兼容当前引擎；可选追问的事实持久化尚受上游限制，不能宣称该项完全通过。
+因此：当前必需主线、追问展示和保存语义已经统一，不再把此项列为待解决的上游缺口。
 
 ## 快照检出稳定性
 

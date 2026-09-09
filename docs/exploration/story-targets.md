@@ -8,7 +8,7 @@
 | prologue-belongings | shrine-belongings | burned-work-id | burned-work-id-investigated | OBJECT_INVESTIGATED |
 | prologue-belongings | shrine-belongings | blue-glass-bead | blue-glass-bead-investigated | OBJECT_INVESTIGATED |
 | prologue-belongings | prologue-key-and-memory | receive-key | key-a-given-by-x | NPC_TALKED |
-| prologue-belongings | prologue-key-and-memory | ask-memory-and-receive-key | key-a-given-by-x<br>x-deflects-memory-question-noticed | NPC_TALKED |
+| prologue-belongings | prologue-key-and-memory | ask-memory-and-receive-key | key-a-given-by-x（追问只改变对白，不额外记录事实） | NPC_TALKED |
 | prologue-white-lamp | prologue-lamp-incident | lamp-incident | prologue-lamp-incident-understood | NPC_TALKED |
 | village-arrival | village-arrival-observation | village-decline | village-decline-observed | OBJECT_INVESTIGATED |
 | village-arrival | village-arrival-observation | su-he-notice | su-he-missing-notice-observed | OBJECT_INVESTIGATED |
@@ -23,7 +23,7 @@
 | old-house-clue-confrontation | old-house-clue-confrontation | identity-conflict | old-house-identity-conflict-raised | NPC_TALKED |
 | old-house-call-at-door | old-house-door-call | door-call | door-call-incident-completed | NPC_TALKED |
 
-同一探索 handoff 可以报告多个对象；对话先显示、确认后报告。当前引擎不接受可选记忆事实；追问对白保留，但只报告交钥匙事实。详情见 engine-compatibility.md 和 ../conversation/interface.md。
+同一探索 handoff 可以报告多个对象；对话先显示、确认后报告。经剧情与探索侧确认采用方案 A：追问对白保留，但只报告交钥匙事实，不记录可选记忆事实。详情见 engine-compatibility.md 和 ../conversation/interface.md。
 
 ## 地图交接
 

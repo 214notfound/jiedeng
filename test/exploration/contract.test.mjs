@@ -14,11 +14,11 @@ test("谈话内容先展示，确认前不能记录完成事实",async()=>{
  assert.equal(preview.requiresConfirmation,true);assert.equal(host.getContext().state.facts.includes("surface-investigation-task-known"),false);
  await click(module,"surface-briefing");assert.equal(host.getContext().state.facts.includes("surface-investigation-task-known"),true);
 });
-test("对话进展和取消不提前发钥匙",async()=>{
+test("未约定的对话进展和取消不提前发钥匙",async()=>{
  const host=createDemoHost(),module=createInteractionModule(host);
  host.act("confirm-wake-context");await click(module,"surface-briefing");await click(module,"burned-work-id");await click(module,"blue-glass-bead");
  const command=host.getContext().commands[0];
- await module.reportProgress(command.commandId,["x-deflects-memory-question-noticed"]);
+ await assert.rejects(module.reportProgress(command.commandId,["x-deflects-memory-question-noticed"]),/不属于当前对话/);
  assert.equal(host.getContext().commands[0].commandId,command.commandId);
  assert.equal(host.getContext().state.inventory.includes("key-a"),false);
  await module.cancel(command.commandId);await click(module,"receive-key");
@@ -112,11 +112,12 @@ test("Host 明确拒绝对话完成后可在同一页面直接重试",async()=>{
  assert.equal(host.getContext().state.facts.includes("surface-investigation-task-known"),true);
  module.dispose();
 });
-test("可选追问记录事实，不是必须完成的门槛",async()=>{
+test("追问路径保留对白但只记录取得钥匙",async()=>{
  const host=createDemoHost(),module=createInteractionModule(host);
  host.act("confirm-wake-context");await click(module,"surface-briefing");await click(module,"burned-work-id");await click(module,"blue-glass-bead");
  await click(module,"ask-memory-and-receive-key");
- assert.ok(host.getContext().state.facts.includes("x-deflects-memory-question-noticed"));
+ assert.equal(host.getContext().state.facts.includes("key-a-given-by-x"),true);
+ assert.equal(host.getContext().state.facts.includes("x-deflects-memory-question-noticed"),false);
 });
 for(const order of [
  ["shopkeeper-inquiry","holdout-inquiry","elder-inquiry"],["shopkeeper-inquiry","elder-inquiry","holdout-inquiry"],

@@ -17,7 +17,7 @@ export const CONVERSATION_TASKS = Object.freeze([
       {id: "receive-key", label: "接过小X递来的旧钥匙", facts: ["key-a-given-by-x"],
         text: "【小X】这是在你出事地点附近捡到的。先拿着，调查时可能用得上。\n他递来一把没有标记的老钥匙。你还不知道它能打开什么。"},
       {id: "ask-memory-and-receive-key", alternative: true, label: "追问过去，再接过钥匙",
-        facts: ["key-a-given-by-x", "x-deflects-memory-question-noticed"],
+        facts: ["key-a-given-by-x"],
         text: "【你】我以前是做什么的？\n【小X】先别硬想，能查东西就够了。眼下要查的是村里的异常。\n他把话题岔开，随后递来一把没有标记的老钥匙，说是在你出事地点附近捡到的。"}
     ]},
   {node: "prologue-white-lamp", target: "prologue-lamp-incident", type: "conversation",

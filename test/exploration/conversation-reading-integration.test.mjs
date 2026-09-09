@@ -118,7 +118,7 @@ test("快速连续完成只允许一个 Host 请求在途", async () => {
   module.dispose();
 });
 
-test("NPC Choice 只选择路径，所选对白读完后才提交事实", async () => {
+test("NPC Choice 只选择路径，追问对白不额外记录记忆事实", async () => {
   const host = createDemoHost();
   host.act("confirm-wake-context");
   const module = createInteractionModule(host);
@@ -149,6 +149,6 @@ test("NPC Choice 只选择路径，所选对白读完后才提交事实", async 
   );
   assert.equal(outcome.ok, true, outcome.message);
   assert.equal(host.getContext().state.facts.includes("key-a-given-by-x"), true);
-  assert.equal(host.getContext().state.facts.includes("x-deflects-memory-question-noticed"), true);
+  assert.equal(host.getContext().state.facts.includes("x-deflects-memory-question-noticed"), false);
   module.dispose();
 });
