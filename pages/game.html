@@ -50,7 +50,10 @@
           </section>
 
           <section id="detail-root" class="game-overlay detail-root" aria-label="线索详情" tabindex="-1" hidden>
-            <button id="close-detail-button" class="button game-overlay__close" type="button">关闭详情</button>
+            <div class="detail-card">
+              <button id="close-detail-button" class="button detail-card__close" type="button" aria-label="关闭详情">×</button>
+              <div class="detail-card__content"></div>
+            </div>
           </section>
 
           <section id="minigame-root" class="game-overlay minigame-root" aria-label="小游戏" tabindex="-1" hidden></section>

@@ -84,6 +84,56 @@ button { font: inherit; }
   box-shadow: 0 18px 60px rgba(0, 0, 0, 0.55);
 }
 .game-overlay__close { position: sticky; z-index: 1; top: 0; display: block; margin-left: auto; }
+.detail-root {
+  display: grid;
+  place-items: center;
+  inset: 0;
+  padding: clamp(16px, 4vw, 40px);
+  background: rgba(8, 11, 17, 0.92);
+  border: 0;
+}
+.detail-card {
+  position: relative;
+  width: min(560px, 90vw);
+  max-height: 85vh;
+  overflow: hidden;
+  background: rgba(12, 16, 23, 0.98);
+  border: 1px solid var(--line);
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.62);
+}
+.detail-card__content {
+  max-height: 85vh;
+  padding: 20px;
+  overflow: auto;
+}
+.detail-card__content .exploration-module { padding: 0; color: var(--paper); background: transparent; }
+.detail-card__content .exploration-title { min-height: 44px; padding-right: 56px; }
+.detail-card__close {
+  position: absolute;
+  z-index: 2;
+  top: 16px;
+  right: 16px;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0;
+  color: var(--paper);
+  background: rgba(8, 11, 17, 0.78);
+  border: 1px solid rgba(236, 231, 220, 0.5);
+  border-radius: 50%;
+  font-size: 24px;
+  line-height: 1;
+}
+.detail-card__close:hover,
+.detail-card__close:focus-visible {
+  background: rgba(28, 34, 44, 0.96);
+  border-color: var(--accent);
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
 .minigame-root { background: rgba(8, 11, 17, 0.97); }
 .scene-panel { position: relative; min-height: 300px; overflow: hidden; background: linear-gradient(145deg, rgba(13, 18, 27, 0.45), rgba(13, 18, 27, 0.88)); border: 1px solid var(--line); }
 .scene-panel::before { position: absolute; inset: 0; background: radial-gradient(circle at 72% 28%, rgba(225, 217, 192, 0.17), transparent 22%); content: ""; }
@@ -124,7 +174,7 @@ button { font: inherit; }
 .game-main[data-view-state="reading"] #game-story {
   min-height: 0;
   margin: 0;
-  overflow: hidden;
+  overflow: auto;
 }
 .story-panel h2, .side-panel h2 { margin: 0; font-size: 12px; letter-spacing: 0.26em; text-transform: uppercase; color: var(--muted); }
 #game-story { min-height: 128px; margin-top: 26px; }
@@ -172,17 +222,29 @@ button { font: inherit; }
   .game-header__title { width: 100%; order: -1; }
   .game-header .button { flex: 1; }
   .game-overlay { inset: 118px 10px 10px; }
+  .detail-root { inset: 0; padding: 12px; }
+  .detail-card { width: min(90vw, 360px); }
+  .detail-card__content { padding: 16px; }
+  .detail-card__close { top: 12px; right: 12px; }
   .story-panel { padding: 22px 18px; }
   .game-main[data-view-state="reading"] .story-panel {
     right: 8px;
     bottom: 8px;
     left: 8px;
     min-height: 176px;
-    max-height: 68%;
+    position: relative;
+    right: auto;
+    bottom: auto;
+    left: auto;
+    min-height: 0;
+    max-height: none;
+    margin-top: -16px;
     padding: 28px 18px 16px;
   }
   .game-main[data-view-state="reading"] .story-speaker { left: 18px; }
   .story-block { font-size: 16px; line-height: 1.72; }
   .game-actions { gap: 8px; }
+  .game-actions:has(.story-action--plot) { display: grid; grid-template-columns: 1fr; }
+  .game-actions:has(.story-action--plot) .story-action { width: 100%; max-width: 100%; white-space: normal; }
   .story-action { min-width: 96px; min-height: 38px; padding-block: 7px; }
 }

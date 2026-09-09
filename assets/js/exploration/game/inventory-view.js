@@ -16,7 +16,8 @@ export function mountInventory({module, root, detailRoot, showFeedback, openDeta
   if (typeof openDetail !== "function") throw new TypeError("缺少统一详情入口。");
 
   const container = region(root);
-  const detail = region(detailRoot);
+  const detailMount = detailRoot.querySelector?.(".detail-card__content") ?? detailRoot;
+  const detail = region(detailMount);
   const notify = createFeedback(container, showFeedback);
   const browser = element("div", "exploration-inventory-browser");
   const detailTitle = element("h2", "exploration-title", "详情");
