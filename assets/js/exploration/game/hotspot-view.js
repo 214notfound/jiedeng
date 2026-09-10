@@ -22,7 +22,7 @@ export function buildHotspotViews(scene, presentation) {
       && !lastCompletedAction;
     if (shouldWaitUntilAvailable) continue;
 
-    hotspotViews.push({ ...hotspot, interaction });
+    hotspotViews.push({ ...hotspot, interaction, interactions: actions });
   }
 
   return hotspotViews;

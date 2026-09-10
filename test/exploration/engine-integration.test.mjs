@@ -132,7 +132,7 @@ for (const [index, order] of orders.entries()) {
   });
 }
 
-test("当前引擎的可选事实缺口：拒绝越权事实，正常保留追问对白和交钥匙", async () => {
+test("方案 A：拒绝未约定事实，追问对白只提交交钥匙事实", async () => {
   const { host, exploration } = setup();
   await belongings(host, exploration);
   const command = host.getContext().commands[0];
@@ -142,7 +142,7 @@ test("当前引擎的可选事实缺口：拒绝越权事实，正常保留追�
     payload: { conversationId: "prologue-key-and-memory", npcId: "companion-x" } };
   assert.throws(() => host.dispatchExternalEvent(unsupported, { storageScope: "guest" }), /无权/);
   assert.deepEqual(host.getContext(), before);
-  await assert.rejects(exploration.reportProgress(command.commandId, unsupported.resultFactIds), /尚未开放/);
+  await assert.rejects(exploration.reportProgress(command.commandId, unsupported.resultFactIds), /不属于当前对话/);
   await click(exploration, "ask-memory-and-receive-key");
   assert.equal(host.getContext().state.inventory.includes("key-a"), true);
   assert.equal(host.getContext().state.facts.includes("x-deflects-memory-question-noticed"), false);

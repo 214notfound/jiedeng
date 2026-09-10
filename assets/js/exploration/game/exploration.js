@@ -47,7 +47,8 @@ export function validateExplorationContext(context) {
   for (const command of context.commands) {
     if (command.commandType === "REQUEST_EXPLORATION") {
       const task = explorationTaskFor(command);
-      if (!task || task.node !== checkpoint.nodeId || !Array.isArray(command.payload.goals)) {
+      if (!task || task.node !== checkpoint.nodeId || task.interactionType !== "item"
+        || !Array.isArray(command.payload.goals)) {
         throw new Error("未知或不属于当前 Node 的探索任务。");
       }
     }
@@ -87,7 +88,8 @@ export function createExploration(host) {
           .filter((action) => command || action.facts.every((fact) => facts.includes(fact)))
           .map((action) => {
             const completed = action.facts.every((fact) => facts.includes(fact));
-            return {...action, task, command, completed, available: completed || Boolean(command)};
+            return {...action, interactionType: task.interactionType,
+              task, command, completed, available: completed || Boolean(command)};
           });
       });
   }
@@ -106,7 +108,6 @@ export function createExploration(host) {
 
   function getLayout() {
     return {
-      playerStart: {x: 50, y: 92},
       hotspots: entries(bound.read()).map((action) => ({
         id: action.id,
         x: action.x,
@@ -130,6 +131,21 @@ export function createExploration(host) {
       if (!stateLayer || (layer && layer !== stateLayer)) return [];
       return [{...item, layer: stateLayer, obtained: true}];
     });
+  }
+
+  function getItemDetail(itemId) {
+    const {state} = bound.read();
+    const item = ITEMS.find((entry) => entry.id === itemId);
+    if (!item) return null;
+    const stateLayer = state.inventory.includes(itemId)
+      ? "items"
+      : state.clues.includes(itemId) ? "clues" : null;
+    const action = EXPLORATION_TASKS
+      .flatMap((task) => task.actions)
+      .find((entry) => entry.id === itemId);
+    const inspected = Boolean(action?.facts.every((fact) => state.facts.includes(fact)));
+    if (!stateLayer && !inspected) return null;
+    return {...item, layer: stateLayer, obtained: Boolean(stateLayer), inspected};
   }
 
   async function send(task, command, actionId, eventType, facts, payload) {
@@ -227,6 +243,7 @@ export function createExploration(host) {
     getSceneView,
     getLayout,
     listItems,
+    getItemDetail,
     interact,
     cancel,
     pendingLabels,

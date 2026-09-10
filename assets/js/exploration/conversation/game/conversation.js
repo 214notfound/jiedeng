@@ -3,7 +3,10 @@ import {NODE_SCENES, sceneName} from "../../core/story-scenes.js";
 import {CONVERSATION_TASKS, conversationTaskFor} from "../data/conversations.js";
 import {V2_CONVERSATIONS} from "../data/conversations-v2.js";
 import {bindHost, requireIds} from "../../core/host-binding.js";
-import {adaptConversationInput} from "../../../core/reading-contract.js";
+import {
+  adaptConversationChoiceInput,
+  adaptConversationInput
+} from "../../../core/reading-contract.js";
 
 export function validateConversationContext(context) {
   const state = context?.state;
@@ -33,7 +36,8 @@ export function validateConversationContext(context) {
     }
     if (command.commandType !== "REQUEST_CONVERSATION") continue;
     const task = conversationTaskFor(command);
-    if (!task || task.node !== checkpoint.nodeId || !Array.isArray(command.payload.goals)) {
+    if (!task || task.node !== checkpoint.nodeId || task.interactionType !== "conversation"
+      || !Array.isArray(command.payload.goals)) {
       throw new Error("未知或不属于当前 Node 的对话任务。");
     }
     if (!Array.isArray(command.payload.npcIds) || !command.payload.npcIds.includes(task.npc)) {
@@ -48,17 +52,12 @@ export function createConversation(host) {
   }
   const bound = bindHost(host, validateConversationContext);
   const presented = new Set();
-  const optionalMemoryFact = "x-deflects-memory-question-noticed";
   let busy = false;
   let uncertain = false;
 
   const commandFor = (context, task) => context.commands.find(
     (command) => command.payload?.conversationId === task.target
   );
-  const acceptsOptionalMemory = (command) => command.payload.goals.some(
-    (goal) => goal.goalId === "x-memory-deflection-noticed"
-  );
-
   function entries(context) {
     const facts = context.state.facts;
     return CONVERSATION_TASKS
@@ -68,10 +67,9 @@ export function createConversation(host) {
         return task.actions
           .filter((action) => command || action.facts.every((fact) => facts.includes(fact)))
           .map((action) => {
-            const supportedFacts = action.facts.filter((fact) =>
-              fact !== optionalMemoryFact || (command && acceptsOptionalMemory(command)));
+            const supportedFacts = [...action.facts];
             const completed = supportedFacts.every((fact) => facts.includes(fact));
-            return {...action, task, command, supportedFacts,
+            return {...action, interactionType: task.interactionType, task, command, supportedFacts,
               completed, available: completed || Boolean(command)};
           });
       });
@@ -107,7 +105,6 @@ export function createConversation(host) {
       return true;
     }).map((task) => task.target));
     return {
-      playerStart: {x: 50, y: 92},
       hotspots: entries(context)
         .filter((action) => visibleTargets.has(action.task.target))
         .reduce((rows, action) => {
@@ -166,6 +163,36 @@ export function createConversation(host) {
       || metadata?.commandId !== input.metadata.commandId) {
       throw new Error("阅读完成信息不一致，请重新打开本段对话。");
     }
+  }
+
+  function getReadingChoiceInput(sceneId, actionIds) {
+    if (sceneId !== getCurrentSceneId()) {
+      throw new Error("地点已经变化。");
+    }
+    if (!Array.isArray(actionIds)) {
+      throw new TypeError("NPC Choice 缺少候选对话。");
+    }
+    const requestedIds = new Set(actionIds);
+    const choices = entries(bound.read()).filter((action) =>
+      requestedIds.has(action.id) && action.command && !action.completed
+    );
+    if (choices.length < 2) return null;
+    const task = choices[0].task;
+    if (!task.choicePrompt || choices.some((action) => action.task !== task
+      || action.command.commandId !== choices[0].command.commandId)) {
+      throw new Error("NPC Choice 数据不属于同一段对话。");
+    }
+    return adaptConversationChoiceInput({
+      prompt: task.choicePrompt,
+      choices: choices.map((action) => ({
+        actionId: action.id,
+        label: action.label,
+        actionType: "choice"
+      })),
+      conversationId: task.target,
+      npcId: task.npc,
+      commandId: choices[0].command.commandId
+    });
   }
   async function send(task, command, actionId, eventType, facts, payload) {
     if (busy || uncertain) throw new Error("上一操作尚未确认，请等待或重新进入。");
@@ -280,9 +307,6 @@ export function createConversation(host) {
       || factIds.some((fact) => !task.actions.some((action) => action.facts.includes(fact)))) {
       throw new Error("进展事实不属于当前对话。");
     }
-    if (factIds.includes(optionalMemoryFact) && !acceptsOptionalMemory(command)) {
-      throw new Error("当前剧情版本尚未开放这个可选事实。");
-    }
     if (task.actions[0].facts.every((fact) =>
       context.state.facts.includes(fact) || factIds.includes(fact))) {
       throw new Error("完整谈话请通过确认完成提交，不能作为中途进展。");
@@ -300,6 +324,7 @@ export function createConversation(host) {
     getCurrentSceneId,
     getSceneView,
     getLayout,
+    getReadingChoiceInput,
     getReadingInput,
     completeReading,
     interact,

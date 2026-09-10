@@ -23,9 +23,9 @@ export function createFeedback(root, showFeedback) {
   fallback.hidden = true;
   fallback.setAttribute("role", "alert");
   root.append(fallback);
-  return (message, kind = "error") => {
+  return (message, kind = "error", resultCode) => {
     try {
-      showFeedback(message, kind);
+      showFeedback(message, kind, resultCode);
       fallback.hidden = true;
     }
     catch (error) {
