@@ -74,7 +74,12 @@ export function mountExploration({
             outcome.ok ? undefined : "OPERATION_FAILED"
           );
         }
-        if (active && outcome.ok) clearCharacter();
+        if (active && outcome.ok) {
+          clearCharacter();
+          for (const itemId of outcome.acquiredItemIds ?? []) {
+            if (inventoryView.openTarget(itemId)) break;
+          }
+        }
         if (active && !outcome.ok) node.disabled = false;
         return outcome;
       },
