@@ -199,6 +199,10 @@ async function run() {
     assert.equal(await page.evaluate(() => document.activeElement?.dataset.hotspotId), "burned-work-id");
 
     await clickVisibleButton("查看蓝玻璃珠");
+    assert.match(
+      await page.locator("#detail-root .detail-card__content img").getAttribute("src"),
+      /blue-glass-bead\.png$/
+    );
     await closeDetail();
     await completeNpc("接过小X递来的旧钥匙", "追问过去，再接过钥匙", "reading");
     assert.equal(await page.evaluate(() => WhiteLamp.game.getState().facts

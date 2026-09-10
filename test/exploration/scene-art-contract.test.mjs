@@ -127,10 +127,14 @@ test("E1 正式场景和已确认物品特写资源均可读取", () => {
         "old-photograph",
         "school-uniform"
       ].includes(item.id))
-      .map((item) => item.image)
+      .map((item) => item.detailImage ?? item.image)
   ];
 
   for (const url of urls) assert.equal(existsSync(fileURLToPath(url)), true, url);
+  for (const id of ["blue-glass-bead", "old-photograph", "school-uniform"]) {
+    assert.match(ITEMS.find((item) => item.id === id).image, /\.svg$/);
+    assert.match(ITEMS.find((item) => item.id === id).detailImage, /\.png$/);
+  }
   assert.match(ITEMS.find((item) => item.id === "burned-work-id").image, /\.svg$/);
   assert.match(ITEMS.find((item) => item.id === "funeral-list").image, /\.svg$/);
 });

@@ -2,7 +2,7 @@
 const rows = [
  ["burned-work-id","烧毁的工作证","随身物品","烧毁大半的工作证，还能辨认项目公司标识和姓氏B。"],
  ["blue-glass-bead","蓝玻璃珠","随身物品","一颗蓝玻璃珠，来历尚待调查。","blue-glass-bead.png"],
- ["su-he-notice","苏禾寻人启事","村口墙面","寻人启事上写着：苏禾，村小学教师，近日失踪。","su-he-notice.png"],
+ ["su-he-notice","苏禾寻人启事","村口墙面","寻人启事上写着：苏禾，村小学教师，近日失踪。","su-he-notice.png","su-he-notice.png"],
  ["key-a","无标记旧钥匙","小X交付","没有字母或名字标记的旧钥匙。"],
  ["map-fragment-1","手绘地图碎片一","小卖部老板","村庄手绘图的一部分。"],
  ["map-fragment-2","手绘地图碎片二","拒签户","村庄手绘图的一部分。"],
@@ -13,6 +13,15 @@ const rows = [
  ["height-marks","身高刻痕","陈家老宅·刻痕调查记录","事故时A约十七岁，妹妹才是村小学生。"],
  ["funeral-list","送葬名单","陈家老宅·名单调查记录","妹妹死亡，A也被村里作为死者送葬。"]
 ];
-export const ITEMS=Object.freeze(rows.map(([id,name,source,description,imageName=id+".svg"])=>({
- id,name,source,description,image:new URL("../../../images/exploration/items/"+imageName,import.meta.url).href
+export const ITEMS=Object.freeze(rows.map(([
+ id,name,source,description,detailImageName=null,imageName=id+".svg"
+])=>({
+ id,
+ name,
+ source,
+ description,
+ image:new URL("../../../images/exploration/items/"+imageName,import.meta.url).href,
+ ...(detailImageName ? {
+  detailImage:new URL("../../../images/exploration/items/"+detailImageName,import.meta.url).href
+ } : {})
 })));

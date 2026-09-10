@@ -44,7 +44,7 @@ export function mountInventory({module, root, detailRoot, showFeedback, openDeta
     detailImage.hidden = false;
     detailImageError.hidden = true;
     detailImage.alt = item.name;
-    detailImage.src = item.image;
+    detailImage.src = item.detailImage ?? item.image;
     detailDescription.textContent = item.description;
     detailSource.textContent = "来源：" + item.source + (item.obtained ? " · 已获得" : " · 已查看");
   }

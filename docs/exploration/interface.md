@@ -59,7 +59,7 @@
 | `subscribe(listener)` | 回调 | 清理函数 |
 | `dispose()` | 无 | 释放订阅并使实例失效 |
 
-背包目录只保存 `id/name/image/description/source`。运行时 `state.inventory` 中的 ID 返回 `layer:"items"`，`state.clues` 中的 ID 返回 `layer:"clues"`；同一 ID 同时出现在两数组会被拒绝。地图碎片和完整地图属于物品，老宅照片、校服、刻痕、名单均由真实状态作为线索提供。
+背包目录保存 `id/name/image/detailImage?/description/source`。`image` 是背包列表使用的轻量缩略图；`detailImage` 是可选正式特写，详情优先使用它，缺省时回退到 `image`。运行时 `state.inventory` 中的 ID 返回 `layer:"items"`，`state.clues` 中的 ID 返回 `layer:"clues"`；同一 ID 同时出现在两数组会被拒绝。地图碎片和完整地图属于物品，老宅照片、校服、刻痕、名单均由真实状态作为线索提供。
 
 ## 探索事件
 

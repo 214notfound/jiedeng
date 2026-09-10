@@ -19,6 +19,8 @@ test("详情只读取宿主已经提交的物品或线索且不修改状态", ()
   const detail = getObtainedItem(module, "old-photograph");
   assert.equal(detail.name, "家庭照片");
   assert.equal(detail.layer, "clues");
+  assert.match(detail.image, /old-photograph\.svg$/);
+  assert.match(detail.detailImage, /old-photograph\.png$/);
   assert.throws(() => getObtainedItem(module, "key-a"), /尚未获得/);
   assert.throws(() => getObtainedItem(module, ""), /缺少/);
   assert.deepEqual(state, before);
@@ -48,7 +50,7 @@ test("已调查的苏禾启事可打开特写但不会伪装成背包物品", ()
 
   const detail = module.getItemDetail("su-he-notice");
   assert.equal(detail?.obtained, false);
-  assert.match(detail?.image ?? "", /su-he-notice\.png$/);
+  assert.match(detail?.detailImage ?? "", /su-he-notice\.png$/);
   assert.equal(module.listItems().some((item) => item.id === "su-he-notice"), false);
   module.dispose();
 });
