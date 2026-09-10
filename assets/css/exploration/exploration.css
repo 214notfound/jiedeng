@@ -32,6 +32,25 @@
   object-fit: contain;
   pointer-events: none;
 }
+.exploration-module .exploration-character-visual {
+  position: absolute;
+  z-index: 2;
+  top: 3%;
+  width: min(38%, 390px);
+  height: 78%;
+  max-width: none;
+  object-fit: contain;
+  object-position: center top;
+  opacity: 0;
+  filter: drop-shadow(0 14px 22px rgb(0 0 0 / 72%));
+  pointer-events: none;
+  transition: opacity 140ms ease-out;
+}
+.exploration-module .exploration-character-visual[data-placement="left"] { left: 5%; }
+.exploration-module .exploration-character-visual[data-placement="right"] { right: 5%; }
+.game-main[data-view-state="reading"] .exploration-character-visual:not([hidden]) {
+  opacity: 1;
+}
 .exploration-module .scene-coordinate-space {
   width: 100%;
   overflow: hidden;
@@ -78,7 +97,11 @@
 .exploration-module .is-disabled {
   filter: grayscale(1);
 }
-.game-main[data-view-state="reading"] .exploration-hotspots { opacity: 0; }
+.game-main[data-view-state="reading"] .exploration-hotspots {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
 .exploration-module .exploration-controls {
   display: flex;
   gap: .5rem;
@@ -155,5 +178,10 @@
     width: 44px;
     min-width: 44px;
     height: 44px;
+  }
+  .exploration-module .exploration-character-visual {
+    top: 2%;
+    width: 42%;
+    height: 88%;
   }
 }

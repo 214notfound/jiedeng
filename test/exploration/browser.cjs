@@ -82,16 +82,79 @@ async function run() {
       await clickVisibleButton(label);
     }
 
+    const capturedCharacters = new Set();
     async function completeNpc(actionLabel, choiceLabel, expectedState = "exploration") {
+      const characterByAction = {
+        "与小X交谈": "companion-x",
+        "接过小X递来的旧钥匙": "companion-x",
+        "询问白灯与供电异常": "companion-x",
+        "询问小卖部老板": "villager-1",
+        "询问拒签户": "villager-2",
+        "询问年老村民": "villager-3",
+        "向小X追问线索之间的矛盾": "companion-x",
+        "听门外呼名": null
+      };
+      const expectedCharacterId = characterByAction[actionLabel];
       await waitForState("exploration");
+      assert.equal(await page.locator(".exploration-character-visual:not([hidden])").count(), 0);
       await clickVisibleButton(actionLabel);
       await waitForState("reading");
+      if (expectedCharacterId) {
+        const visual = page.locator(
+          `.exploration-character-visual[data-character-id="${expectedCharacterId}"]:not([hidden])`
+        );
+        await visual.waitFor();
+        await visual.evaluate((image) => image.decode());
+        assert.equal(await visual.evaluate((image) => image.naturalWidth > 0), true);
+        const [visualRect, stageRect] = await Promise.all([
+          visual.boundingBox(),
+          page.locator(".exploration-stage").boundingBox()
+        ]);
+        assert.ok(visualRect && stageRect);
+        assert.ok(visualRect.x >= stageRect.x - 1 && visualRect.y >= stageRect.y - 1);
+        assert.ok(visualRect.x + visualRect.width <= stageRect.x + stageRect.width + 1);
+        assert.ok(visualRect.y + visualRect.height <= stageRect.y + stageRect.height + 1);
+        if (!capturedCharacters.has(expectedCharacterId)) {
+          capturedCharacters.add(expectedCharacterId);
+          await page.screenshot({
+            path: path.join(outputDirectory, `reading-${expectedCharacterId}.png`),
+            fullPage: true
+          });
+          if (expectedCharacterId === "companion-x") {
+            await page.setViewportSize({width: 390, height: 844});
+            assert.equal(
+              await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+              true
+            );
+            const [mobileVisualRect, mobileStageRect] = await Promise.all([
+              visual.boundingBox(),
+              page.locator(".exploration-stage").boundingBox()
+            ]);
+            assert.ok(mobileVisualRect && mobileStageRect);
+            assert.ok(mobileVisualRect.x >= mobileStageRect.x - 1);
+            assert.ok(mobileVisualRect.x + mobileVisualRect.width
+              <= mobileStageRect.x + mobileStageRect.width + 1);
+            await page.screenshot({
+              path: path.join(outputDirectory, "reading-companion-x-mobile.png"),
+              fullPage: true
+            });
+            await page.setViewportSize({width: 1280, height: 900});
+          }
+        }
+      } else {
+        assert.equal(await page.locator(".exploration-character-visual:not([hidden])").count(), 0);
+      }
+      assert.equal(await page.locator(".exploration-hotspots").evaluate((node) =>
+        getComputedStyle(node).pointerEvents), "none");
       if (choiceLabel) {
         assert.equal(await page.getByRole("button", {name: "继续", exact: true}).count(), 0);
         await clickVisibleButton(choiceLabel);
       }
       await finishReading();
       await waitForState(expectedState);
+      await page.waitForFunction(() => !document.querySelector(
+        ".exploration-character-visual:not([hidden])"
+      ));
     }
 
     async function closeDetail(expectedReturn = "exploration") {
@@ -181,7 +244,7 @@ async function run() {
     await finishStoryAction("确认当前处境");
     await checkExplorationLayout();
 
-    // E3：既有 NPC 阅读链只在末尾提交；人物视觉不在本轮范围。
+    // E3：探索态只有光点；点击后 reading 显示独立人物层，读完后清除。
     await completeNpc("与小X交谈");
     await checkExplorationLayout();
 
@@ -223,7 +286,7 @@ async function run() {
     await clickVisibleButton("查看苏禾寻人启事");
     await closeDetail();
 
-    // 人物设计冻结前只回归既有业务链，不改人物资源或点位。
+    // 三名村民共用正式阅读链，人物层不改变已冻结热点坐标。
     await completeNpc("询问年老村民");
     await completeNpc("询问小卖部老板");
     await completeNpc("询问拒签户");

@@ -5,6 +5,7 @@ import {fileURLToPath} from "node:url";
 import {EXPLORATION_TASKS} from "../../assets/js/exploration/data/exploration.js";
 import {CONVERSATION_TASKS} from "../../assets/js/exploration/conversation/data/conversations.js";
 import {sceneAssetFor} from "../../assets/js/exploration/data/scene-assets.js";
+import {characterAssetFor} from "../../assets/js/exploration/data/character-assets.js";
 import {ITEMS} from "../../assets/js/exploration/data/items.js";
 
 function actionCoordinates(tasks) {
@@ -137,4 +138,21 @@ test("E1 正式场景和已确认物品特写资源均可读取", () => {
   }
   assert.match(ITEMS.find((item) => item.id === "burned-work-id").image, /\.svg$/);
   assert.match(ITEMS.find((item) => item.id === "funeral-list").image, /\.svg$/);
+});
+
+test("E1 第一周 NPC 人物层使用独立素材且门外声音不显示人物", () => {
+  const expected = {
+    "companion-x": "companion-x.png",
+    "villager-1": "villager-1.png",
+    "villager-2": "villager-2.png",
+    "villager-3": "villager-3.png"
+  };
+
+  for (const [npcId, filename] of Object.entries(expected)) {
+    const asset = characterAssetFor(npcId);
+    assert.ok(asset, npcId);
+    assert.equal(existsSync(fileURLToPath(asset.src)), true, asset.src);
+    assert.match(asset.src, new RegExp(`${filename}$`));
+  }
+  assert.equal(characterAssetFor("unknown-caller"), null);
 });

@@ -3,6 +3,7 @@ import { buildHotspotViews } from "./hotspot-view.js";
 import { element, button, region, createFeedback, playerMessage } from "./view-utils.js";
 import { mountInventory } from "./inventory.js";
 import { sceneAssetFor } from "../data/scene-assets.js";
+import { characterAssetFor } from "../data/character-assets.js";
 export { mountAchievements } from "../../achievements/game/achievements-view.js";
 
 export function mountExploration({
@@ -29,17 +30,41 @@ export function mountExploration({
   const backdrop = document.createElement("img");
   backdrop.className = "exploration-scene-image";
   backdrop.alt = "";
+  const character = document.createElement("img");
+  character.className = "exploration-character-visual";
+  character.alt = "";
+  character.hidden = true;
   const hotspots = element("div", "exploration-hotspots");
-  stage.append(backdrop, hotspots);
+  stage.append(backdrop, character, hotspots);
   scene.append(heading, help, stage);
   let active = true;
   let inventoryView;
+
+  function clearCharacter() {
+    character.hidden = true;
+    character.removeAttribute("src");
+    character.removeAttribute("data-character-id");
+    character.removeAttribute("data-placement");
+  }
+
+  function showCharacter(npcId) {
+    const asset = characterAssetFor(npcId);
+    if (!asset) {
+      clearCharacter();
+      return;
+    }
+    character.src = asset.src;
+    character.dataset.characterId = npcId;
+    character.dataset.placement = asset.placement;
+    character.hidden = false;
+  }
 
   function startConversation(sceneId, actionId, node) {
     const conversationInput = module.getReadingInput?.(sceneId, actionId);
     if (!conversationInput) return false;
 
     node.disabled = true;
+    showCharacter(conversationInput.metadata?.npcId);
     openConversation(conversationInput, {
       onComplete: async (result) => {
         const outcome = await module.completeReading(sceneId, actionId, result);
@@ -49,6 +74,7 @@ export function mountExploration({
             outcome.ok ? "success" : "warning"
           );
         }
+        if (active && outcome.ok) clearCharacter();
         if (active && !outcome.ok) node.disabled = false;
         return outcome;
       },
@@ -56,6 +82,7 @@ export function mountExploration({
         if (active) node.disabled = false;
       },
       onClose: () => {
+        clearCharacter();
         if (active) node.disabled = false;
       }
     });
@@ -70,6 +97,7 @@ export function mountExploration({
     if (!choiceInput) return false;
 
     node.disabled = true;
+    showCharacter(choiceInput.metadata?.npcId);
     openConversation(choiceInput, {
       onAction: (selectedActionId) => {
         const selected = hotspot.interactions.find((action) => action.id === selectedActionId);
@@ -79,6 +107,7 @@ export function mountExploration({
         }
       },
       onClose: () => {
+        clearCharacter();
         if (active) node.disabled = false;
       }
     });
@@ -162,6 +191,7 @@ export function mountExploration({
   return () => {
     if (!active) return;
     active = false;
+    clearCharacter();
     unsubscribe();
     inventoryView.dispose();
     scene.remove();
