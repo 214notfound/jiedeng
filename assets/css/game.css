@@ -248,3 +248,59 @@ button { font: inherit; }
   .game-actions:has(.story-action--plot) .story-action { width: 100%; max-width: 100%; white-space: normal; }
   .story-action { min-width: 96px; min-height: 38px; padding-block: 7px; }
 }
+
+@media (max-width: 520px) {
+  body {
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+  .game-shell {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding-bottom: 0;
+  }
+  .game-layout {
+    flex: 1 0 auto;
+    width: 100%;
+    min-height: 0;
+    margin: 0 auto;
+  }
+  .game-main[data-view-state="reading"] {
+    min-height: 100%;
+    grid-template-rows: auto auto minmax(190px, 1fr);
+    align-content: stretch;
+  }
+  .game-main[data-view-state="reading"] .story-panel {
+    align-self: stretch;
+    min-height: 190px;
+    max-height: none;
+    overflow: visible;
+  }
+  .game-main[data-view-state="reading"] #game-story {
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .game-main[data-view-state="reading"]
+    .exploration-module
+    .exploration-character-visual:not([hidden]) {
+    top: auto;
+    bottom: 0;
+    width: 54%;
+    height: 96%;
+    max-width: none;
+    object-position: center bottom;
+  }
+  .game-main[data-view-state="reading"]
+    .exploration-character-visual[data-placement="left"] {
+    right: auto;
+    left: 2%;
+  }
+  .game-main[data-view-state="reading"]
+    .exploration-character-visual[data-placement="right"] {
+    right: 2%;
+    left: auto;
+  }
+}
