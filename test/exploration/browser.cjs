@@ -106,6 +106,7 @@ async function run() {
     }
 
     const capturedCharacters = new Set();
+    let checkedSubsceneClose = false;
     async function completeNpc(actionLabel, choiceLabel, expectedState = "exploration") {
       const characterByAction = {
         "与小X交谈": "companion-x",
@@ -118,6 +119,11 @@ async function run() {
         "听门外呼名": null
       };
       const subsceneNames = {"询问小卖部老板": "小卖部", "询问拒签户": "拒签户家", "询问年老村民": "路边石凳"};
+      const acquiredDetailIds = {
+        "询问小卖部老板": "map-fragment-1",
+        "询问拒签户": "map-fragment-2",
+        "询问年老村民": "map-fragment-3"
+      };
       const subsceneName = subsceneNames[actionLabel];
       const expectedCharacterId = subsceneName ? null : characterByAction[actionLabel];
       await waitForState("exploration");
@@ -139,6 +145,18 @@ async function run() {
       assert.equal(await page.locator(".exploration-character-visual:not([hidden])").count(), 0);
       await clickVisibleButton(actionLabel);
       await waitForState("reading");
+      if (subsceneName) {
+        assert.equal(await page.getByRole("button", {name: "返回村口", exact: true}).isVisible(), false);
+        if (!checkedSubsceneClose) {
+          checkedSubsceneClose = true;
+          const selectedSceneId = await page.locator(".exploration-stage").getAttribute("data-scene-id");
+          await clickVisibleButton("结束阅读");
+          await waitForState("exploration");
+          assert.equal(await page.locator(".exploration-stage").getAttribute("data-scene-id"), selectedSceneId);
+          await clickVisibleButton(actionLabel);
+          await waitForState("reading");
+        }
+      }
       if (expectedCharacterId) {
         const visual = page.locator(
           `.exploration-character-visual[data-character-id="${expectedCharacterId}"]:not([hidden])`
@@ -153,7 +171,14 @@ async function run() {
         assert.ok(visualRect && stageRect);
         assert.ok(visualRect.x >= stageRect.x - 1 && visualRect.y >= stageRect.y - 1);
         assert.ok(visualRect.x + visualRect.width <= stageRect.x + stageRect.width + 1);
-        assert.ok(visualRect.y + visualRect.height <= stageRect.y + stageRect.height + 1);
+        const stageOverflow = await page.locator(".exploration-stage").evaluate((node) =>
+          getComputedStyle(node).overflow
+        );
+        assert.equal(stageOverflow, "hidden");
+        assert.ok(
+          visualRect.y + visualRect.height <= stageRect.y + stageRect.height * 1.03 + 1,
+          "人物层只允许在裁切容器内向下微调"
+        );
         if (!capturedCharacters.has(expectedCharacterId)) {
           capturedCharacters.add(expectedCharacterId);
           await page.screenshot({
@@ -191,7 +216,14 @@ async function run() {
         await clickVisibleButton(choiceLabel);
       }
       await finishReading();
-      await waitForState(expectedState);
+      const acquiredDetailId = acquiredDetailIds[actionLabel];
+      if (acquiredDetailId) {
+        await waitForState("detail");
+        assert.equal(await page.locator("#detail-root").getAttribute("data-target-id"), acquiredDetailId);
+        await closeDetail(expectedState);
+      } else {
+        await waitForState(expectedState);
+      }
       await page.waitForFunction(() => !document.querySelector(
         ".exploration-character-visual:not([hidden])"
       ));

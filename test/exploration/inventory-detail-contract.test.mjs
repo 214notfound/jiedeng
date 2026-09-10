@@ -54,3 +54,17 @@ test("已调查的苏禾启事可打开特写但不会伪装成背包物品", ()
   assert.equal(module.listItems().some((item) => item.id === "su-he-notice"), false);
   module.dispose();
 });
+
+test("仅地图碎片在对话取得后请求自动展示详情", () => {
+  const state = initialState();
+  state.inventory.push("key-a", "map-fragment-1");
+  const module = createInteractionModule({
+    getContext: () => ({storageScope: "guest", state, commands: []}),
+    subscribe: () => () => {},
+    dispatchExternalEvent: () => ({ok: true})
+  });
+
+  assert.equal(module.getItemDetail("key-a")?.autoOpenOnAcquire, undefined);
+  assert.equal(module.getItemDetail("map-fragment-1")?.autoOpenOnAcquire, true);
+  module.dispose();
+});

@@ -13,6 +13,11 @@ const rows = [
  ["height-marks","身高刻痕","陈家老宅·刻痕调查记录","事故时A约十七岁，妹妹才是村小学生。"],
  ["funeral-list","送葬名单","陈家老宅·名单调查记录","妹妹死亡，A也被村里作为死者送葬。"]
 ];
+const AUTO_OPEN_ON_ACQUIRE_IDS = new Set([
+ "map-fragment-1",
+ "map-fragment-2",
+ "map-fragment-3"
+]);
 export const ITEMS=Object.freeze(rows.map(([
  id,name,source,description,detailImageName=null,imageName=id+".svg"
 ])=>({
@@ -21,6 +26,7 @@ export const ITEMS=Object.freeze(rows.map(([
  source,
  description,
  image:new URL("../../../images/exploration/items/"+imageName,import.meta.url).href,
+ ...(AUTO_OPEN_ON_ACQUIRE_IDS.has(id) ? {autoOpenOnAcquire:true} : {}),
  ...(detailImageName ? {
   detailImage:new URL("../../../images/exploration/items/"+detailImageName,import.meta.url).href
  } : {})

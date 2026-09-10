@@ -53,6 +53,14 @@ class FakeElement {
     return this.attributes.get(name) ?? null;
   }
 
+  removeAttribute(name) {
+    this.attributes.delete(name);
+    if (name.startsWith("data-")) {
+      const key = name.slice(5).replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
+      delete this.dataset[key];
+    }
+  }
+
   remove() {
     if (!this.parentElement) return;
     this.parentElement.children = this.parentElement.children.filter((child) => child !== this);

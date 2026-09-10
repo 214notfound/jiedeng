@@ -94,7 +94,8 @@ export function mountExploration({
         if (active && outcome.ok) {
           clearCharacter();
           for (const itemId of outcome.acquiredItemIds ?? []) {
-            if (inventoryView.openTarget(itemId)) break;
+            if (module.getItemDetail?.(itemId)?.autoOpenOnAcquire
+              && inventoryView.openTarget(itemId)) break;
           }
         }
         if (active && !outcome.ok) node.disabled = false;

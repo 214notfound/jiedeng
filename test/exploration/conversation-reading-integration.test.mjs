@@ -148,6 +148,7 @@ test("NPC Choice 只选择路径，追问对白不额外记录记忆事实", asy
     completionFor(input)
   );
   assert.equal(outcome.ok, true, outcome.message);
+  assert.deepEqual(outcome.acquiredItemIds, ["key-a"]);
   assert.equal(host.getContext().state.facts.includes("key-a-given-by-x"), true);
   assert.equal(host.getContext().state.facts.includes("x-deflects-memory-question-noticed"), false);
   module.dispose();
