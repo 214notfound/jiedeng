@@ -47,9 +47,10 @@
 .exploration-module .exploration-character-visual {
   position: absolute;
   z-index: 2;
-  top: 3%;
+  top: auto;
+  bottom: -2%;
   width: min(38%, 390px);
-  height: 78%;
+  height: 92%;
   max-width: none;
   object-fit: contain;
   object-position: center top;
@@ -192,8 +193,9 @@
     height: 44px;
   }
   .exploration-module .exploration-character-visual {
-    top: 2%;
+    top: auto;
+    bottom: -2%;
     width: 42%;
-    height: 88%;
+    height: 96%;
   }
 }

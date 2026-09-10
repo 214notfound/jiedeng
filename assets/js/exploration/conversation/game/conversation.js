@@ -276,9 +276,12 @@ export function createConversation(host) {
       const input = getReadingInput(sceneId, actionId);
       if (!input) throw new Error("当前对话已经失效，请重新进入。");
       validateReadingCompletion(input, result);
+      const inventoryBefore = new Set(context.state.inventory);
       await send(action.task, action.command, action.id, "NPC_TALKED", action.supportedFacts,
         {conversationId: action.task.target, npcId: action.task.npc});
-      return {ok: true, message: action.text};
+      const inventoryAfter = bound.read().state.inventory;
+      const acquiredItemIds = inventoryAfter.filter((itemId) => !inventoryBefore.has(itemId));
+      return {ok: true, message: action.text, acquiredItemIds};
     } catch (error) {
       console.error("[conversation] 阅读完成未提交。", error);
       return {ok: false, message: error.message};
