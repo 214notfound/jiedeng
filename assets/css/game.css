@@ -135,6 +135,87 @@ button { font: inherit; }
   outline-offset: 2px;
 }
 .minigame-root { background: rgba(8, 11, 17, 0.97); }
+.detail-root {
+  inset: 0;
+  place-items: center;
+  padding: clamp(18px, 5vw, 48px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  background: rgba(3, 5, 8, 0.72);
+  border: 0;
+  box-shadow: none;
+}
+.detail-root:not([hidden]) { display: grid; }
+.detail-root > .detail-card,
+.detail-root > .exploration-module {
+  grid-area: 1 / 1;
+  width: min(100%, 680px);
+  max-height: min(82vh, 760px);
+  max-height: min(82dvh, 760px);
+}
+.detail-card {
+  position: relative;
+  z-index: 2;
+  align-self: stretch;
+  min-height: 180px;
+  pointer-events: none;
+}
+.detail-card__close {
+  position: absolute;
+  z-index: 3;
+  top: 16px;
+  right: 16px;
+  display: grid;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  place-items: center;
+  color: var(--paper);
+  background: rgba(8, 11, 17, 0.84);
+  border: 1px solid rgba(236, 231, 220, 0.42);
+  border-radius: 50%;
+  cursor: pointer;
+  pointer-events: auto;
+  font: 400 24px/1 Inter, "Microsoft YaHei", system-ui, sans-serif;
+}
+.detail-card__close:hover,
+.detail-card__close:focus-visible {
+  background: rgba(24, 29, 38, 0.98);
+  border-color: var(--accent);
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.detail-root > .exploration-module {
+  z-index: 1;
+  min-height: 180px;
+  padding: 28px clamp(22px, 4vw, 40px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  color: var(--paper);
+  background: rgba(12, 16, 23, 0.98);
+  border: 1px solid rgba(216, 198, 164, 0.58);
+  border-radius: 12px;
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.62);
+}
+.detail-root > .exploration-module .exploration-title {
+  min-height: 44px;
+  padding-right: 56px;
+}
+.detail-root > .exploration-module img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: min(52vh, 480px);
+  max-height: min(52dvh, 480px);
+  margin-inline: auto;
+  object-fit: contain;
+}
+.detail-root > .exploration-module p {
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
 .scene-panel { position: relative; min-height: 300px; overflow: hidden; background: linear-gradient(145deg, rgba(13, 18, 27, 0.45), rgba(13, 18, 27, 0.88)); border: 1px solid var(--line); }
 .scene-panel::before { position: absolute; inset: 0; background: radial-gradient(circle at 72% 28%, rgba(225, 217, 192, 0.17), transparent 22%); content: ""; }
 .scene-name { position: absolute; left: 20px; bottom: 18px; z-index: 1; display: grid; gap: 5px; }
@@ -227,6 +308,26 @@ button { font: inherit; }
   .detail-card__content { padding: 16px; }
   .detail-card__close { top: 12px; right: 12px; }
   .story-panel { padding: 22px 18px; }
+  .detail-root {
+    inset: 0;
+    padding: 12px;
+  }
+  .detail-card__close {
+    top: 12px;
+    right: 12px;
+  }
+  .detail-root > .detail-card,
+  .detail-root > .exploration-module {
+    max-height: calc(100vh - 24px);
+    max-height: calc(100dvh - 24px);
+  }
+  .detail-root > .exploration-module {
+    padding: 24px 18px;
+  }
+  .detail-root > .exploration-module img {
+    max-height: min(48vh, 420px);
+    max-height: min(48dvh, 420px);
+  }
   .game-main[data-view-state="reading"] .story-panel {
     right: 8px;
     bottom: 8px;
