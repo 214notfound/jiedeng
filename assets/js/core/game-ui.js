@@ -35,10 +35,6 @@ export function splitSpeakerLabel(text) {
 function renderTextItem(storyElement, item) {
   storyElement.replaceChildren();
   const labelledText = splitSpeakerLabel(item.text);
-  const storyPanel = storyElement.closest?.(".story-panel");
-
-  storyElement.dataset.contentKind = item.kind;
-  if (storyPanel) storyPanel.dataset.contentKind = item.kind;
 
   if (labelledText.speaker) {
     const speaker = document.createElement("p");
@@ -61,7 +57,6 @@ export function createReadingView({
   onAction,
   onClose
 } = {}) {
-  const storyPanel = storyElement.closest?.(".story-panel");
   let input = null;
   let currentIndex = 0;
   let completed = false;
@@ -70,8 +65,6 @@ export function createReadingView({
   function clear() {
     storyElement.replaceChildren();
     actionsElement.replaceChildren();
-    storyElement.removeAttribute("data-content-kind");
-    storyPanel?.removeAttribute("data-content-kind");
   }
 
   function setButtonsDisabled(disabled) {
@@ -188,8 +181,6 @@ export function createReadingView({
     completed = input.readingState === "choice";
     busy = false;
     clear();
-    storyElement.dataset.readingMode = input.mode;
-    if (storyPanel) storyPanel.dataset.readingMode = input.mode;
 
     if (input.items.length === 0) {
       complete();
@@ -209,8 +200,6 @@ export function createReadingView({
     completed = false;
     busy = false;
     clear();
-    storyElement.removeAttribute("data-reading-mode");
-    storyPanel?.removeAttribute("data-reading-mode");
     onClose?.();
   }
 
