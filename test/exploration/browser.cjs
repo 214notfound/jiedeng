@@ -171,6 +171,12 @@ async function run() {
       await waitForState(expectedReturn);
     }
 
+    async function closeDetailWithBrowserBack(expectedReturn = "exploration") {
+      await waitForState("detail");
+      await page.goBack();
+      await waitForState(expectedReturn);
+    }
+
     async function checkExplorationLayout() {
       await page.locator(".exploration-scene-image").evaluate((image) => image.decode());
       for (const width of [390, 768, 1280]) {
@@ -252,13 +258,17 @@ async function run() {
     await page.evaluate(() => globalThis.WhiteLamp.gamePage.failNextExternalEvent());
     await clickVisibleButton("查看烧毁的工作证");
     assert.equal(await page.locator('.game-main[data-view-state="detail"]').count(), 0);
+    assert.match(
+      await page.locator("#feedback").textContent(),
+      /操作没有完成，请重试；仍无法继续时请返回主菜单/
+    );
     assert.equal(await page.evaluate(() => WhiteLamp.game.getState().facts
       .includes("burned-work-id-investigated")), false);
     await clickVisibleButton("查看烧毁的工作证");
     await waitForState("detail");
     assert.equal(await page.locator("#detail-root").getAttribute("data-target-id"), "burned-work-id");
     assert.equal(await page.locator("#game-scene").getAttribute("inert"), "");
-    await closeDetail();
+    await closeDetailWithBrowserBack();
     assert.equal(await page.evaluate(() => document.activeElement?.dataset.hotspotId), "burned-work-id");
 
     await clickVisibleButton("查看蓝玻璃珠");
@@ -341,7 +351,7 @@ async function run() {
 
     assert.deepEqual(pageErrors, []);
     assert.deepEqual(missingResources, []);
-    console.log("PASS V2 formal page: E1-E5, 11 Nodes, 3 viewports, Host retry, reading, detail return, map, achievement and save/reload.");
+    console.log("PASS V2 formal page: E1-E5, 11 Nodes, 3 viewports, Host retry, reading, detail/browser-back return, map, achievement and save/reload.");
     console.log(`Screenshots: ${outputDirectory}`);
   } finally {
     if (browser) await browser.close();

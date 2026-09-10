@@ -57,7 +57,11 @@ export function mountInventory({module, root, detailRoot, showFeedback, openDeta
         throw new Error(result?.message || "详情暂时无法打开。");
       }
     } catch (error) {
-      notify(playerMessage(error.message, "暂时无法查看这项内容，请重试。"), "error");
+      notify(
+        playerMessage(error.message, "暂时无法查看这项内容，请重试。"),
+        "error",
+        "OPERATION_FAILED"
+      );
     }
   }
 
@@ -70,7 +74,11 @@ export function mountInventory({module, root, detailRoot, showFeedback, openDeta
       if (!result?.ok) throw new Error(result?.message || "详情暂时无法打开。");
       return true;
     } catch (error) {
-      notify(playerMessage(error.message, "暂时无法查看这项内容，请重试。"), "error");
+      notify(
+        playerMessage(error.message, "暂时无法查看这项内容，请重试。"),
+        "error",
+        "OPERATION_FAILED"
+      );
       return false;
     }
   }
@@ -125,7 +133,11 @@ export function mountInventory({module, root, detailRoot, showFeedback, openDeta
       candidate?.focus();
     } catch (error) {
       browser.replaceChildren();
-      notify(playerMessage(error.message, "背包暂时无法读取，请重试。"), "error");
+      notify(
+        playerMessage(error.message, "背包暂时无法读取，请重试。"),
+        "error",
+        "OPERATION_FAILED"
+      );
     }
   }
 

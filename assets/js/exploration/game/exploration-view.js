@@ -71,7 +71,8 @@ export function mountExploration({
         if (active) {
           notify(
             playerMessage(outcome.message, "交谈未完成，请重试。"),
-            outcome.ok ? "success" : "warning"
+            outcome.ok ? "success" : "warning",
+            outcome.ok ? undefined : "OPERATION_FAILED"
           );
         }
         if (active && outcome.ok) clearCharacter();
@@ -149,7 +150,8 @@ export function mountExploration({
           node.disabled = false;
           notify(playerMessage(result.speaker ? "【" + result.speaker + "】" + result.message : result.message,
             "调查未完成，请重试或稍后再来。"),
-            result.ok ? "success" : "warning");
+            result.ok ? "success" : "warning",
+            result.ok ? undefined : "OPERATION_FAILED");
           if (result.ok && module.getItemDetail?.(action.id)) {
             hotspots.querySelector('[data-hotspot-id="' + action.id + '"]')?.focus();
             inventoryView.openTarget(action.id);
@@ -169,7 +171,11 @@ export function mountExploration({
     } catch (error) {
       hotspots.replaceChildren();
       heading.textContent = "探索暂不可用";
-      notify(playerMessage(error.message, "探索暂时无法使用，请返回主菜单后重试。"), "error");
+      notify(
+        playerMessage(error.message, "探索暂时无法使用，请返回主菜单后重试。"),
+        "error",
+        "OPERATION_FAILED"
+      );
     }
   }
   let unsubscribe;
