@@ -160,6 +160,15 @@ async function run() {
     async function closeDetail(expectedReturn = "exploration") {
       await waitForState("detail");
       const card = page.locator(".detail-card");
+      const content = page.locator(".detail-card__content");
+      assert.equal(await content.evaluate(el => getComputedStyle(el).pointerEvents), "auto");
+      const savedContent = await content.locator("p").last().textContent();
+      await content.locator("p").last().evaluate(el => { el.textContent = "长内容滚动验证。".repeat(600); });
+      await content.hover();
+      await page.mouse.wheel(0, 500);
+      await page.waitForFunction(() => document.querySelector(".detail-card__content").scrollTop > 0);
+      await content.locator("p").last().evaluate((el, text) => { el.textContent = text; }, savedContent);
+      await content.evaluate(el => { el.scrollTop = 0; });
       const close = page.getByRole("button", {name: "关闭详情", exact: true});
       const [cardRect, closeRect] = await Promise.all([card.boundingBox(), close.boundingBox()]);
       assert.ok(cardRect && closeRect);
