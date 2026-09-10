@@ -82,6 +82,29 @@ async function run() {
       await clickVisibleButton(label);
     }
 
+    async function readingPanelLayout() {
+      return page.locator(".story-panel").evaluate((panel) => {
+        const mainRect = panel.closest(".game-main").getBoundingClientRect();
+        const panelRect = panel.getBoundingClientRect();
+        const story = panel.querySelector("#game-story");
+        const actionsRect = panel.querySelector("#game-actions").getBoundingClientRect();
+        return {
+          mode: panel.dataset.readingMode,
+          kind: panel.dataset.contentKind,
+          storyMode: story?.dataset.readingMode,
+          storyKind: story?.dataset.contentKind,
+          left: panelRect.left - mainRect.left,
+          right: mainRect.right - panelRect.right,
+          bottom: mainRect.bottom - panelRect.bottom,
+          height: panelRect.height,
+          maxHeight: getComputedStyle(panel).maxHeight,
+          storyClientHeight: story.clientHeight,
+          storyScrollHeight: story.scrollHeight,
+          actionsInside: actionsRect.bottom <= panelRect.bottom + 1
+        };
+      });
+    }
+
     const capturedCharacters = new Set();
     async function completeNpc(actionLabel, choiceLabel, expectedState = "exploration") {
       const characterByAction = {
@@ -236,6 +259,25 @@ async function run() {
 
     // E4：reading -> inventory -> detail，两级返回且恢复原按钮焦点。
     await waitForState("reading");
+    const narrationPanel = await readingPanelLayout();
+    assert.equal(narrationPanel.mode, "story");
+    assert.equal(narrationPanel.kind, "narration");
+    assert.equal(narrationPanel.storyMode, "story");
+    assert.equal(narrationPanel.storyKind, "narration");
+    assert.ok(narrationPanel.height <= 260);
+    assert.equal(narrationPanel.maxHeight, "260px");
+    const narrationBlock = page.locator("#game-story .story-block");
+    const narrationText = await narrationBlock.textContent();
+    await narrationBlock.evaluate((node, text) => {
+      node.textContent = text.repeat(24);
+    }, narrationText);
+    const longNarrationPanel = await readingPanelLayout();
+    assert.ok(longNarrationPanel.height <= 260);
+    assert.ok(longNarrationPanel.storyScrollHeight > longNarrationPanel.storyClientHeight);
+    assert.equal(longNarrationPanel.actionsInside, true);
+    await narrationBlock.evaluate((node, text) => {
+      node.textContent = text;
+    }, narrationText);
     await clickVisibleButton("背包");
     await waitForState("inventory");
     await clickVisibleButton("查看烧毁的工作证详情");
@@ -251,6 +293,20 @@ async function run() {
     await checkExplorationLayout();
 
     // E3：探索态只有光点；点击后 reading 显示独立人物层，读完后清除。
+    await waitForState("exploration");
+    await clickVisibleButton("与小X交谈");
+    await waitForState("reading");
+    const conversationPanel = await readingPanelLayout();
+    assert.equal(conversationPanel.mode, "conversation");
+    assert.equal(conversationPanel.kind, "dialogue");
+    assert.equal(conversationPanel.storyMode, "conversation");
+    assert.equal(conversationPanel.storyKind, "dialogue");
+    assert.ok(conversationPanel.height <= 260);
+    assert.ok(Math.abs(conversationPanel.left - narrationPanel.left) < 1);
+    assert.ok(Math.abs(conversationPanel.right - narrationPanel.right) < 1);
+    assert.ok(Math.abs(conversationPanel.bottom - narrationPanel.bottom) < 1);
+    await clickVisibleButton("结束阅读");
+    await waitForState("exploration");
     await completeNpc("与小X交谈");
     await checkExplorationLayout();
 
