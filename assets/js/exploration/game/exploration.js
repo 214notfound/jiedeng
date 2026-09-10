@@ -5,6 +5,7 @@ import {
 } from "../data/exploration.js";
 import {NODE_SCENES, sceneName} from "../core/story-scenes.js";
 import {ITEMS} from "../data/items.js";
+import {scenePresentationFor} from "../data/scene-assets.js";
 import {bindHost, requireIds} from "../core/host-binding.js";
 
 function validateEnvelope(context) {
@@ -103,7 +104,15 @@ export function createExploration(host) {
     if (sceneId !== NODE_SCENES[context.state.storyCheckpoint.nodeId]) {
       throw new Error("地点已经变化。");
     }
-    return {name: sceneName(sceneId), interactions: entries(context)};
+    const presentation = scenePresentationFor(sceneId, {facts: context.state.facts});
+    if (!presentation) throw new Error("场景展示资源不存在。");
+    return {
+      name: sceneName(sceneId),
+      sceneId: presentation.sceneId,
+      sceneVariant: presentation.variantId,
+      sceneImage: presentation.image,
+      interactions: entries(context)
+    };
   }
 
   function getLayout() {

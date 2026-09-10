@@ -139,7 +139,12 @@ test("老宅四线索、对质、呼名、明确结束连续完成",async()=>{
  const host=createDemoHost(),module=createInteractionModule(host);await reachVillage(host,module);
  for(const id of ["elder-inquiry","holdout-inquiry","shopkeeper-inquiry"])await click(module,id);
  host.dispatchExternalEvent(mapEvent(host),{storageScope:"guest"});host.act("go-old-house");
+ assert.equal(module.getSceneView("old-house").sceneId,"old-house");
+ assert.equal(module.getSceneView("old-house").sceneVariant,"door-closed");
+ assert.match(module.getSceneView("old-house").sceneImage,/old-house-door-closed\.png$/);
  await click(module,"old-house-door");
+ assert.equal(module.getSceneView("old-house").sceneVariant,"door-open");
+ assert.match(module.getSceneView("old-house").sceneImage,/old-house-door-open\.png$/);
  for(const id of ["funeral-list","height-marks","school-uniform","old-photograph"])await click(module,id);
  assert.equal(host.getContext().state.clues.length,4);
  await click(module,"identity-conflict");await click(module,"door-call");

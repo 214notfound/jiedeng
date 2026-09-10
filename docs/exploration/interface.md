@@ -49,9 +49,10 @@
 | 方法 | 参数 | 返回 |
 | --- | --- | --- |
 | `getCurrentSceneId()` | 无 | `shrine/village/old-house` |
-| `getSceneView(sceneId)` | 当前地点 ID | 名称及物体交互列表 |
+| `getSceneView(sceneId)` | 当前地点 ID | 名称、稳定场景展示字段及交互列表 |
 | `getLayout()` | 无 | 当前剧情 Node 的百分比热点；不包含玩家位置或距离门槛 |
 | `listItems(layer?)` | `items/clues`，可省略 | 已获得背包条目 |
+| `getItemDetail(itemId)` | 稳定物品/线索 ID | 已提交或已调查条目的只读详情；不可读时为 `null` |
 | `interact(sceneId, actionId)` | 当前地点和动作 ID | `{ok,message}` |
 | `cancel(commandId,errorCode?)` | 探索命令 ID、可选错误码 | 协调器结果 |
 | `getMapCommand()` | 无 | 地图命令或 `null` |
@@ -60,6 +61,8 @@
 | `dispose()` | 无 | 释放订阅并使实例失效 |
 
 背包目录保存 `id/name/image/detailImage?/description/source`。`image` 是背包列表使用的轻量缩略图；`detailImage` 是可选正式特写，详情优先使用它，缺省时回退到 `image`。运行时 `state.inventory` 中的 ID 返回 `layer:"items"`，`state.clues` 中的 ID 返回 `layer:"clues"`；同一 ID 同时出现在两数组会被拒绝。地图碎片和完整地图属于物品，老宅照片、校服、刻痕、名单均由真实状态作为线索提供。
+
+`getSceneView(sceneId)` 额外稳定返回 `sceneId/sceneVariant/sceneImage`。普通场景的 `sceneVariant` 为 `default`；老宅只允许 `door-closed/door-open`。探索模块依据已提交的 `old-house-door-opened` 事实生成该展示字段，页面只消费结果，不得读取事实、检查热点是否消失或根据 Node 自行推断图片。
 
 ## 探索事件
 

@@ -324,7 +324,7 @@ async function run() {
 
     // E1/E4：门关/门开资源和四项线索详情。
     await waitForState("exploration");
-    assert.equal(await page.locator(".exploration-stage").getAttribute("data-scene-variant"), "default");
+    assert.equal(await page.locator(".exploration-stage").getAttribute("data-scene-variant"), "door-closed");
     assert.match(await page.locator(".exploration-scene-image").getAttribute("src"), /old-house-door-closed\.png$/);
     await clickVisibleButton("用旧钥匙打开宅门");
     await page.waitForFunction(() => document.querySelector(".exploration-stage")
