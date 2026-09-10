@@ -39,6 +39,7 @@ async function run() {
   try {
     browser = await chromium.launch({channel: "msedge", headless: true});
     const page = await browser.newPage({viewport: {width: 1280, height: 900}});
+    await page.route("**/assets/images/exploration/items/burned-work-id.svg", (route) => route.abort());
     const pageErrors = [];
     const missingResources = [];
     page.on("pageerror", (error) => pageErrors.push(error.message));
@@ -338,6 +339,8 @@ async function run() {
     }, narrationText);
     await clickVisibleButton("背包");
     await waitForState("inventory");
+    await page.locator(".exploration-resource-fallback--thumbnail:not([hidden])").waitFor();
+    assert.match(await page.locator('[data-item-id="burned-work-id"]').textContent(), /图片暂不可用[\s\S]*烧毁的工作证/);
     await clickVisibleButton("查看烧毁的工作证详情");
     await closeDetail("inventory");
     assert.equal(

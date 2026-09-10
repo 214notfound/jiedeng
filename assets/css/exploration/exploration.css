@@ -160,6 +160,21 @@
   background: transparent;
   color: inherit;
 }
+.exploration-module .exploration-resource-fallback {
+  color: inherit;
+  line-height: 1.5;
+}
+.exploration-module .exploration-resource-fallback--thumbnail {
+  display: grid;
+  width: 64px;
+  height: 64px;
+  padding: .375rem;
+  place-items: center;
+  box-sizing: border-box;
+  border: 1px dashed currentColor;
+  text-align: center;
+  font-size: .75rem;
+}
 .exploration-module .exploration-item-dialog {
   width: min(90vw, 560px);
   max-height: 85vh;

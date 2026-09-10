@@ -25,7 +25,11 @@ export function mountInventory({module, root, detailRoot, showFeedback, openDeta
   detailImage.width = 240;
   detailImage.height = 240;
   detailImage.alt = "";
-  const detailImageError = element("p", "", "图片暂不可用，仍可阅读物品说明。");
+  const detailImageError = element(
+    "p",
+    "exploration-resource-fallback",
+    "图片暂不可用，仍可阅读物品说明。"
+  );
   detailImageError.hidden = true;
   detailImage.addEventListener("error", () => {
     detailImage.hidden = true;
@@ -115,8 +119,19 @@ export function mountInventory({module, root, detailRoot, showFeedback, openDeta
         thumbnail.alt = "";
         thumbnail.width = 64;
         thumbnail.height = 64;
+        const thumbnailError = element(
+          "span",
+          "exploration-resource-fallback exploration-resource-fallback--thumbnail",
+          "图片暂不可用"
+        );
+        thumbnailError.hidden = true;
+        thumbnail.addEventListener("error", () => {
+          thumbnail.hidden = true;
+          thumbnailError.hidden = false;
+        }, {once: true});
         entry.append(
           thumbnail,
+          thumbnailError,
           element("span", "", item.name),
           element("span", "", "来源：" + item.source + " · 已获得")
         );
