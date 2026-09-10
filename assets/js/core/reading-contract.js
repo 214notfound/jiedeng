@@ -99,15 +99,16 @@ export function adaptStoryPresentation(presentation) {
   });
 }
 
-export function adaptConversationInput({
-  conversation,
-  conversationId,
-  npcId,
-  actionId,
-  commandId
-}) {
-  if (!conversation || typeof conversation !== "object") {
+export function adaptConversationInput(input) {
+  if (!input || typeof input !== "object" || Array.isArray(input)) {
     throw new TypeError("NPC 对话输入必须是对象");
+  }
+  const {conversation, conversationId, npcId, actionId, commandId} = input;
+  if (!conversation || typeof conversation !== "object") {
+    throw new TypeError("conversation 必须是对象");
+  }
+  if (!Array.isArray(conversation.dialogues)) {
+    throw new TypeError("conversation.dialogues 必须是数组");
   }
 
   const speaker = requireNonEmptyString(conversation.speaker, "conversation.speaker");
@@ -141,13 +142,11 @@ export function adaptConversationInput({
   });
 }
 
-export function adaptConversationChoiceInput({
-  prompt,
-  choices,
-  conversationId,
-  npcId,
-  commandId
-}) {
+export function adaptConversationChoiceInput(input) {
+  if (!input || typeof input !== "object" || Array.isArray(input)) {
+    throw new TypeError("NPC Choice 输入必须是对象");
+  }
+  const {prompt, choices, conversationId, npcId, commandId} = input;
   const normalizedPrompt = normalizeItems([{
     id: prompt?.lineId,
     text: prompt?.text,
