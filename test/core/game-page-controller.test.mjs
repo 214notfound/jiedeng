@@ -1,9 +1,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
+  PLAYER_FEEDBACK_RESULTS,
   VIEW_STATES,
+  createDetailDismissController,
   createViewCoordinator,
-  deriveViewState
+  deriveViewState,
+  feedbackForResult
 } from "../../assets/js/core/game-page-controller.js";
 
 function fakeElement() {
@@ -102,4 +105,82 @@ test("覆盖层只允许当前层操作，关闭后返回打开前状态", () =>
   } finally {
     globalThis.document = previousDocument;
   }
+});
+
+function fakeEventTarget() {
+  const listeners = new Map();
+  return {
+    addEventListener(type, listener) { listeners.set(type, listener); },
+    removeEventListener(type, listener) {
+      if (listeners.get(type) === listener) listeners.delete(type);
+    },
+    dispatch(type, event = {}) { listeners.get(type)?.(event); },
+    has(type) { return listeners.has(type); }
+  };
+}
+
+test("详情的 ESC、关闭按钮和浏览器返回统一关闭并恢复上一状态", () => {
+  let state = VIEW_STATES.EXPLORATION;
+  let closeCount = 0;
+  const keyTarget = fakeEventTarget();
+  const navigationTarget = fakeEventTarget();
+  const historyCalls = [];
+  const viewCoordinator = {
+    getState: () => state,
+    closeOverlay() {
+      closeCount += 1;
+      state = VIEW_STATES.EXPLORATION;
+      return {ok: true, state};
+    }
+  };
+  const historyTarget = {
+    state: null,
+    pushState(value) { this.state = value; historyCalls.push("push"); },
+    back() { historyCalls.push("back"); }
+  };
+  const dismiss = createDetailDismissController({
+    viewCoordinator, keyTarget, navigationTarget, historyTarget
+  });
+
+  state = VIEW_STATES.DETAIL;
+  dismiss.markDetailOpened();
+  let prevented = false;
+  keyTarget.dispatch("keydown", {key: "Escape", preventDefault() { prevented = true; }});
+  assert.equal(prevented, true);
+  assert.equal(closeCount, 1);
+  assert.deepEqual(historyCalls, ["push", "back"]);
+  navigationTarget.dispatch("popstate");
+  assert.equal(closeCount, 1, "程序主动回退产生的 popstate 不得重复关闭");
+
+  state = VIEW_STATES.DETAIL;
+  dismiss.markDetailOpened();
+  navigationTarget.dispatch("popstate");
+  assert.equal(closeCount, 2, "Android/浏览器返回应关闭当前详情");
+  assert.deepEqual(historyCalls, ["push", "back", "push"]);
+
+  state = VIEW_STATES.DETAIL;
+  dismiss.markDetailOpened();
+  dismiss.closeDetail();
+  assert.equal(closeCount, 3, "详情关闭按钮复用同一关闭入口");
+  dismiss.destroy();
+  assert.equal(keyTarget.has("keydown"), false);
+  assert.equal(navigationTarget.has("popstate"), false);
+});
+
+test("六类正式反馈都包含玩家文案和下一步动作", () => {
+  const codes = [
+    "SAVE_NOT_FOUND",
+    "SAVE_INVALID",
+    "SAVE_VERSION_UNSUPPORTED",
+    "STORAGE_UNAVAILABLE",
+    "OPERATION_FAILED",
+    "SAVE_SUCCESS"
+  ];
+  assert.deepEqual(Object.keys(PLAYER_FEEDBACK_RESULTS), codes);
+  for (const code of codes) {
+    assert.equal(feedbackForResult(code), PLAYER_FEEDBACK_RESULTS[code]);
+    assert.ok(PLAYER_FEEDBACK_RESULTS[code].message.length > 0);
+    assert.ok(PLAYER_FEEDBACK_RESULTS[code].nextAction.length > 0);
+  }
+  assert.equal(feedbackForResult("UNKNOWN"), PLAYER_FEEDBACK_RESULTS.OPERATION_FAILED);
 });
