@@ -13,6 +13,18 @@
 .exploration-module .exploration-title {
   margin: 0 0 .75rem;
 }
+.exploration-module .exploration-subscene-return {
+  position: relative;
+  z-index: 3;
+  min-height: 44px;
+  margin-bottom: 8px;
+  color: #f4eedf;
+  background: #202831;
+  border: 1px solid #66717e;
+}
+.game-main:not([data-view-state="exploration"]) .exploration-subscene-return {
+  visibility: hidden;
+}
 .exploration-module .exploration-stage {
   position: relative;
   aspect-ratio: 16 / 9;
