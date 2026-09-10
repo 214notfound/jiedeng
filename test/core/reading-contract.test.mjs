@@ -94,6 +94,16 @@ test("适配器拒绝缺失或重复字段", () => {
   );
   assert.throws(
     () => adaptConversationInput({
+      conversation: {speaker: "老板"},
+      conversationId: "conversation",
+      npcId: "npc",
+      actionId: "action",
+      commandId: "command"
+    }),
+    /conversation\.dialogues/
+  );
+  assert.throws(
+    () => adaptConversationInput({
       conversation: {speaker: "老板", dialogues: [
         {lineId: "same", text: "一"},
         {lineId: "same", text: "二"}

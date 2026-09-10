@@ -201,6 +201,14 @@ button { font: inherit; }
 .story-placeholder { color: var(--muted); line-height: 1.8; }
 
 .game-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; }
+.story-action-status {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  text-align: right;
+}
+.story-action-status--error { color: #e0aaa5; }
 .story-action { min-width: 112px; }
 .story-action--continue { position: relative; padding-right: 34px; }
 .story-action--continue::after { position: absolute; right: 14px; content: "›"; font-size: 20px; line-height: 1; }
