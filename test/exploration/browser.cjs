@@ -94,8 +94,25 @@ async function run() {
         "向小X追问线索之间的矛盾": "companion-x",
         "听门外呼名": null
       };
-      const expectedCharacterId = characterByAction[actionLabel];
+      const subsceneNames = {"询问小卖部老板": "小卖部", "询问拒签户": "拒签户家", "询问年老村民": "路边石凳"};
+      const subsceneName = subsceneNames[actionLabel];
+      const expectedCharacterId = subsceneName ? null : characterByAction[actionLabel];
       await waitForState("exploration");
+      if (subsceneName) {
+        const before = await page.evaluate(() => JSON.stringify(WhiteLamp.game.getState()));
+        const back = page.getByRole("button", {name: "返回村口", exact: true});
+        if (await back.isVisible()) await back.click();
+        await clickVisibleButton("前往" + subsceneName);
+        await waitForState("exploration");
+        assert.equal(await page.evaluate(() => JSON.stringify(WhiteLamp.game.getState())), before);
+        assert.equal(await page.locator(".scene-hotspot").count(), 1);
+        for (const width of [390, 768, 1280]) {
+          await page.setViewportSize({width, height: 900});
+          await page.locator(".exploration-scene-image").evaluate(image => image.decode());
+          assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+          await page.screenshot({path: path.join(outputDirectory, `subscene-${characterByAction[actionLabel]}-${width}.png`), fullPage: true});
+        }
+      }
       assert.equal(await page.locator(".exploration-character-visual:not([hidden])").count(), 0);
       await clickVisibleButton(actionLabel);
       await waitForState("reading");

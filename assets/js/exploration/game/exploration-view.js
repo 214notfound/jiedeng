@@ -3,6 +3,7 @@ import { buildHotspotViews } from "./hotspot-view.js";
 import { element, button, region, createFeedback, playerMessage } from "./view-utils.js";
 import { mountInventory } from "./inventory.js";
 import { characterAssetFor } from "../data/character-assets.js";
+import { projectVillageScene } from "../data/village-subscenes.js";
 export { mountAchievements } from "../../achievements/game/achievements-view.js";
 
 export function mountExploration({
@@ -38,6 +39,18 @@ export function mountExploration({
   scene.append(heading, help, stage);
   let active = true;
   let inventoryView;
+  let selectedSceneId = null;
+  let selectedSubscene = null;
+  let returnHotspotId = null;
+  const returnButton = button("返回村口", () => {
+    selectedSceneId = null;
+    clearCharacter();
+    render();
+    hotspots.querySelector('[data-hotspot-id="' + returnHotspotId + '"]')?.focus();
+  });
+  returnButton.hidden = true;
+  returnButton.classList.add("exploration-subscene-return");
+  scene.insertBefore(returnButton, stage);
 
   function clearCharacter() {
     character.hidden = true;
@@ -47,6 +60,10 @@ export function mountExploration({
   }
 
   function showCharacter(npcId) {
+    if (selectedSubscene) {
+      clearCharacter();
+      return;
+    }
     const asset = characterAssetFor(npcId);
     if (!asset) {
       clearCharacter();
@@ -117,8 +134,11 @@ export function mountExploration({
     if (!active) return;
     try {
       const sceneId = module.getCurrentSceneId();
-      const view = module.getSceneView(sceneId);
-      const layout = module.getLayout();
+      const projected = projectVillageScene(module.getSceneView(sceneId), module.getLayout(), selectedSceneId);
+      const {view, layout} = projected;
+      selectedSubscene = projected.selected;
+      selectedSceneId = selectedSubscene?.sceneId ?? null;
+      returnButton.hidden = !selectedSubscene;
       if (view.sceneImage && backdrop.src !== view.sceneImage) backdrop.src = view.sceneImage;
       stage.dataset.sceneId = view.sceneId;
       stage.dataset.sceneVariant = view.sceneVariant;
@@ -129,6 +149,14 @@ export function mountExploration({
         const action = hotspot.interaction;
         const node = button(hotspot.marker, async () => {
           if (!active) return;
+          if (action.interactionType === "scene") {
+            selectedSceneId = action.targetSceneId;
+            returnHotspotId = hotspot.id;
+            clearCharacter();
+            render();
+            hotspots.querySelector("button")?.focus();
+            return;
+          }
           if (action.interactionType === "conversation") {
             if (!startConversationChoice(sceneId, hotspot, node)
               && !startConversation(sceneId, action.id, node)) {
