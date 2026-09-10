@@ -19,7 +19,7 @@
   min-height: 0;
   height: auto;
   background: #11151c;
-  border: 1px solid #888;
+  outline: 1px solid #888;
 }
 .exploration-module .exploration-scene-image {
   position: absolute;
