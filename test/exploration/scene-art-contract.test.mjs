@@ -4,7 +4,10 @@ import {existsSync} from "node:fs";
 import {fileURLToPath} from "node:url";
 import {EXPLORATION_TASKS} from "../../assets/js/exploration/data/exploration.js";
 import {CONVERSATION_TASKS} from "../../assets/js/exploration/conversation/data/conversations.js";
-import {sceneAssetFor} from "../../assets/js/exploration/data/scene-assets.js";
+import {
+  sceneAssetFor,
+  scenePresentationFor
+} from "../../assets/js/exploration/data/scene-assets.js";
 import {characterAssetFor} from "../../assets/js/exploration/data/character-assets.js";
 import {ITEMS} from "../../assets/js/exploration/data/items.js";
 
@@ -109,8 +112,16 @@ test("E1 正式场景按地点和老宅门状态选择同一坐标空间背景",
   assert.match(sceneAssetFor("village"), /scenes\/village\.png$/);
   assert.match(sceneAssetFor("old-house"), /old-house-door-closed\.png$/);
   assert.match(
-    sceneAssetFor("old-house", {oldHouseDoorOpen: true}),
+    sceneAssetFor("old-house", {variantId: "door-open"}),
     /old-house-door-open\.png$/
+  );
+  assert.deepEqual(
+    scenePresentationFor("old-house", {facts: []}).variantId,
+    "door-closed"
+  );
+  assert.deepEqual(
+    scenePresentationFor("old-house", {facts: ["old-house-door-opened"]}).variantId,
+    "door-open"
   );
   assert.equal(sceneAssetFor("unknown"), null);
 });
@@ -120,7 +131,7 @@ test("E1 正式场景和已确认物品特写资源均可读取", () => {
     sceneAssetFor("shrine"),
     sceneAssetFor("village"),
     sceneAssetFor("old-house"),
-    sceneAssetFor("old-house", {oldHouseDoorOpen: true}),
+    sceneAssetFor("old-house", {variantId: "door-open"}),
     ...ITEMS
       .filter((item) => [
         "blue-glass-bead",

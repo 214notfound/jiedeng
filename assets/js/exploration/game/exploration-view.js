@@ -2,7 +2,6 @@
 import { buildHotspotViews } from "./hotspot-view.js";
 import { element, button, region, createFeedback, playerMessage } from "./view-utils.js";
 import { mountInventory } from "./inventory.js";
-import { sceneAssetFor } from "../data/scene-assets.js";
 import { characterAssetFor } from "../data/character-assets.js";
 export { mountAchievements } from "../../achievements/game/achievements-view.js";
 
@@ -120,12 +119,9 @@ export function mountExploration({
       const sceneId = module.getCurrentSceneId();
       const view = module.getSceneView(sceneId);
       const layout = module.getLayout();
-      const oldHouseDoorOpen = sceneId === "old-house"
-        && !view.interactions.some((interaction) => interaction.id === "old-house-door");
-      const sceneAsset = sceneAssetFor(sceneId, {oldHouseDoorOpen});
-      if (sceneAsset && backdrop.src !== sceneAsset) backdrop.src = sceneAsset;
-      stage.dataset.sceneId = sceneId;
-      stage.dataset.sceneVariant = oldHouseDoorOpen ? "door-open" : "default";
+      if (view.sceneImage && backdrop.src !== view.sceneImage) backdrop.src = view.sceneImage;
+      stage.dataset.sceneId = view.sceneId;
+      stage.dataset.sceneVariant = view.sceneVariant;
       heading.textContent = view.name;
       stage.setAttribute("aria-label", view.name + "探索区域");
       const views = buildHotspotViews(view, layout);

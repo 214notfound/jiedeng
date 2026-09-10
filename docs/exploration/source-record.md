@@ -8,6 +8,8 @@
 
 2026-09-10 接收并仅采用 `人物(1).zip`：第一周接入小X、小卖部老板、拒签户、年老村民四张透明人物素材，按稳定 NPC ID 重命名存放。探索态仍只显示发光点，进入 `reading` 后才显示独立人物层。包内 A、B、苏禾、白灯客不属于当前第一周可见人物，未复制到发布资源；门外声音 `unknown-caller` 不绑定人物图。
 
+2026-09-10 完成跨负责人展示字段收口：`getSceneView()` 由探索模块输出 `sceneId/sceneVariant/sceneImage`，老宅变体只由已提交的 `old-house-door-opened` 生成，页面不再通过热点消失推断。原素材 `cunkou.png` 与仓库 `su-he-notice.png` 的 SHA-256 均为 `E2A6D7EEA6FA6E6D54FB9D92E3E9B1F8A6A07FA8CC95F990E9A50F20A4450C52`，确认其归属为村口苏禾寻人启事的场景热点详情，不作为背包物品。
+
 旧内容和协议以 migration.md 为迁移依据。项目课堂过程与个人修改记录由实际参与者如实填写，提交包中的说明只记录当前代码、接口与验证结果。
 
 真实剧情引擎快照来自本地已有 story-line 提交 cbece19ed83f0c63369d7b1cf60cb8775be12861，不代表远程分支一定没有后续提交。八个脚本逐字节保留，SHA-256 来源清单在 test/exploration/vendor/source.json；目录级 `.gitattributes` 关闭 JavaScript 换行转换。测试快照保留队友原注释，不归入本模块开发成果；正式接入复用团队原模块。

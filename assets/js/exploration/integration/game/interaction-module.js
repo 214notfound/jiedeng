@@ -24,7 +24,7 @@ export function createInteractionModule(host) {
     if (sceneId !== sameScene()) throw new Error("地点已经变化。");
     const explored = exploration.getSceneView(sceneId);
     const talked = conversation.getSceneView(sceneId);
-    return {name: explored.name, interactions: [...explored.interactions, ...talked.interactions]};
+    return {...explored, interactions: [...explored.interactions, ...talked.interactions]};
   }
 
   function getLayout() {
