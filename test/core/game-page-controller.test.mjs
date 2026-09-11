@@ -6,8 +6,37 @@ import {
   createDetailDismissController,
   createViewCoordinator,
   deriveViewState,
-  feedbackForResult
+  feedbackForResult,
+  selectMapPuzzleCommand
 } from "../../assets/js/core/game-page-controller.js";
+
+const validMapCommand = {
+  commandId: "cmd-village-map-and-route-map-puzzle",
+  commandType: "REQUEST_MINIGAME",
+  payload: {
+    minigameId: "map-puzzle",
+    successFactId: "map-puzzle-completed"
+  }
+};
+
+test("地图入口只接受唯一且符合 V2 契约的拼图命令", () => {
+  assert.equal(selectMapPuzzleCommand([]), null);
+  assert.equal(
+    selectMapPuzzleCommand([{commandType: "REQUEST_EXPLORATION"}, validMapCommand]),
+    validMapCommand
+  );
+  assert.throws(
+    () => selectMapPuzzleCommand([validMapCommand, {...validMapCommand, commandId: "cmd-other"}]),
+    /多个小游戏命令/
+  );
+  assert.throws(
+    () => selectMapPuzzleCommand([{
+      ...validMapCommand,
+      payload: {...validMapCommand.payload, successFactId: "unexpected-fact"}
+    }]),
+    /V2 契约/
+  );
+});
 
 function fakeElement() {
   const classes = new Set();

@@ -49,12 +49,60 @@ export function feedbackForResult(code) {
   return PLAYER_FEEDBACK_RESULTS[code] ?? PLAYER_FEEDBACK_RESULTS.OPERATION_FAILED;
 }
 
+export function selectMapPuzzleCommand(commands) {
+  if (!Array.isArray(commands)) {
+    throw new TypeError("地图入口缺少命令列表。");
+  }
+
+  const minigameCommands = commands.filter(
+    (command) => command?.commandType === "REQUEST_MINIGAME"
+  );
+  if (!minigameCommands.length) return null;
+  if (minigameCommands.length > 1) {
+    throw new TypeError("地图入口收到多个小游戏命令，无法确定要打开的内容。");
+  }
+
+  const command = minigameCommands[0];
+  if (
+    typeof command.commandId !== "string"
+    || !command.commandId.trim()
+    || command.payload?.minigameId !== "map-puzzle"
+    || command.payload?.successFactId !== "map-puzzle-completed"
+  ) {
+    throw new TypeError("地图入口收到的小游戏命令与 V2 契约不一致。");
+  }
+  return command;
+}
+
+const MAP_ENTRY_PROMPT_PRESENTATION = Object.freeze({
+  presentationId: "ui-map-puzzle-entry",
+  sceneId: "village",
+  blocks: Object.freeze([Object.freeze({
+    blockId: "map-puzzle-entry-message",
+    blockType: "system",
+    text: "【系统提示】三块地图碎片已经集齐，是否现在复原地图？"
+  })]),
+  actions: Object.freeze([
+    Object.freeze({
+      actionId: "enter-map-puzzle",
+      label: "进入游戏",
+      actionType: "choice"
+    }),
+    Object.freeze({
+      actionId: "dismiss-map-prompt",
+      label: "稍后再说",
+      actionType: "choice"
+    })
+  ])
+});
+
 const BASE_VIEW_STATES = new Set([VIEW_STATES.READING, VIEW_STATES.EXPLORATION]);
 const OVERLAY_VIEW_STATES = new Set([
   VIEW_STATES.DETAIL,
   VIEW_STATES.INVENTORY,
   VIEW_STATES.MINIGAME
 ]);
+const FOCUSABLE_SELECTOR = "button, [href], input, select, textarea, [tabindex]:not([tabindex='-1'])";
 const EXTERNAL_COMMAND_TYPES = new Set([
   "REQUEST_EXPLORATION",
   "REQUEST_CONVERSATION",
@@ -226,7 +274,7 @@ export function createViewCoordinator({
     const activeRoot = nextView === VIEW_STATES.DETAIL
       ? detailRoot
       : nextView === VIEW_STATES.INVENTORY ? inventoryRoot : minigameRoot;
-    const focusTarget = activeRoot.querySelector("button, [href], input, select, textarea, [tabindex]:not([tabindex='-1'])");
+    const focusTarget = activeRoot.querySelector(FOCUSABLE_SELECTOR);
     (focusTarget ?? activeRoot).focus?.();
     return {ok: true, state: currentView};
   }
@@ -330,6 +378,8 @@ export function setupGamePage() {
   let removeExploration;
   let mapAdapter;
   let activeCommands = [];
+  let activeMapCommand = null;
+  let announcedMapCommandId = null;
   let preserveViewDuringMapExit = false;
   let failNextExternalEventForDebug = false;
   const stateListeners = new Set();
@@ -355,11 +405,12 @@ export function setupGamePage() {
   let gameView;
   let pendingDispatches = 0;
   const pendingViews = new Map();
+  const defaultMinigameButtonLabel = openMinigameButton.textContent || "地图";
 
   if (!storyPanel) throw new Error("游戏页面缺少阅读面板。");
 
   function getMapCommand() {
-    return activeCommands.find((command) => command.commandType === "REQUEST_MINIGAME") ?? null;
+    return activeMapCommand;
   }
 
   function syncTopBar(currentView) {
@@ -367,6 +418,37 @@ export function setupGamePage() {
     gameMain?.setAttribute("data-view-state", currentView);
     openInventoryButton.disabled = !baseViewActive;
     openMinigameButton.disabled = !baseViewActive || !getMapCommand();
+    openMinigameButton.textContent = getMapCommand()
+      ? "复原手绘地图"
+      : defaultMinigameButtonLabel;
+  }
+
+  function openMapEntryPrompt(command) {
+    if (!command || command.commandId === announcedMapCommandId) return;
+    try {
+      gameView.openSystemPrompt(MAP_ENTRY_PROMPT_PRESENTATION, {
+        onAction(actionId) {
+          const currentCommand = getMapCommand();
+          if (currentCommand?.commandId !== command.commandId) {
+            return {ok: false, code: "MAP_COMMAND_EXPIRED"};
+          }
+          if (actionId === "enter-map-puzzle") {
+            viewCoordinator.showBase(VIEW_STATES.EXPLORATION);
+            return openMap(currentCommand);
+          }
+          if (actionId === "dismiss-map-prompt") {
+            viewCoordinator.showBase(VIEW_STATES.EXPLORATION);
+            return {ok: true};
+          }
+          return {ok: false, code: "MAP_PROMPT_ACTION_INVALID"};
+        }
+      });
+      viewCoordinator.showBase(VIEW_STATES.READING);
+      announcedMapCommandId = command.commandId;
+    } catch (error) {
+      console.error("[white-lamp:minigame-entry] 地图阅读提示打开失败", error);
+      showFeedback("三块地图碎片已经集齐，请点击“复原手绘地图”进入。", "info");
+    }
   }
 
   function updateChapterName() {
@@ -558,6 +640,8 @@ export function setupGamePage() {
     }
     try {
       mapAdapter.start(command);
+      const focusTarget = minigameRoot.querySelector(FOCUSABLE_SELECTOR);
+      (focusTarget ?? minigameRoot).focus?.();
       return {ok: true};
     } catch (error) {
       viewCoordinator.closeOverlay();
@@ -587,6 +671,13 @@ export function setupGamePage() {
       }),
       onCommandsChange: (commands) => {
         activeCommands = commands;
+        try {
+          activeMapCommand = selectMapPuzzleCommand(commands);
+        } catch (error) {
+          activeMapCommand = null;
+          console.error("[white-lamp:minigame-entry] 地图入口命令冲突", error);
+          showFeedback("地图入口暂时无法使用，请稍后重试。", "error");
+        }
         syncTopBar(viewCoordinator.getState());
       },
       commandHandlers: {
@@ -599,6 +690,9 @@ export function setupGamePage() {
         if (preserveViewDuringMapExit) return;
         const nextView = deriveViewState(response);
         if (nextView) viewCoordinator.showBase(nextView);
+        if (response.status === "waiting-external") {
+          openMapEntryPrompt(activeMapCommand);
+        }
       }),
       onError: (error) => {
         console.error("[white-lamp:game-flow]", error.developerMessage);
@@ -697,8 +791,14 @@ export function setupGamePage() {
 
         if (returnsToPrevious) {
           viewCoordinator.closeOverlay();
-        } else if (result.ok && event.eventType === "MAP_PUZZLE_COMPLETED") {
-          mapAdapter.destroy();
+        } else if (event.eventType === "MAP_PUZZLE_COMPLETED") {
+          if (result?.ok) {
+            mapAdapter.destroy();
+          } else {
+            mapAdapter.destroy();
+            viewCoordinator.closeOverlay();
+            showFeedback("地图结果未能保存，请重新打开地图再试。", "warning");
+          }
         }
         return result;
       }

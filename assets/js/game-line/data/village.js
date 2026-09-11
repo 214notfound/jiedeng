@@ -218,7 +218,7 @@
             {
               id: "old-house-marked-on-map",
               blockType: "system",
-              text: "复原后的地图指向陈家老宅。小 X 提醒你，那把旧钥匙或许能派上用场。",
+              text: "【系统提示】恭喜你，成功解锁【陈家老宅】相关剧情。复原后的地图指向陈家老宅，小 X 提醒你，那把旧钥匙或许能派上用场。",
             },
           ],
           actionIds: ["go-old-house"],
