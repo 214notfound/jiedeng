@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   createReadingView,
   splitSpeakerLabel,
+  splitReadingText,
   validateReadingInput
 } from "../../assets/js/core/game-ui.js";
 
@@ -15,6 +16,7 @@ class FakeElement {
     this.disabled = false;
     this.parentElement = null;
     this.textContent = "";
+    this.style = {};
     this.listeners = new Map();
   }
 
@@ -75,6 +77,31 @@ function withFakeDocument(run) {
     .then(run)
     .finally(() => { globalThis.document = previousDocument; });
 }
+
+test("multi-line dialogue and narration are split into one reading outlet", () => {
+  assert.deepEqual(
+    splitReadingText("【你】我以前是做什么的？\n【小X】先别硬想，能查东西就够了。\n他把话题岔开，随后递来一把老钥匙。"),
+    [
+      {speaker: "你", text: "我以前是做什么的？"},
+      {speaker: "小X", text: "先别硬想，能查东西就够了。"},
+      {speaker: null, text: "他把话题岔开，随后递来一把老钥匙。"}
+    ]
+  );
+});
+
+test("same-line speaker labels split only at valid label boundaries", () => {
+  assert.deepEqual(
+    splitReadingText("【小X】村里有借灯的禁忌。祠堂忽然断电。 【小X】去村口问问吧。"),
+    [
+      {speaker: "小X", text: "村里有借灯的禁忌。祠堂忽然断电。"},
+      {speaker: "小X", text: "去村口问问吧。"}
+    ]
+  );
+  assert.deepEqual(
+    splitReadingText("雨声里传来【老板】的招呼。"),
+    [{speaker: null, text: "雨声里传来【老板】的招呼。"}]
+  );
+});
 
 function readingInput(overrides = {}) {
   return {
