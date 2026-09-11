@@ -196,7 +196,6 @@ body:has(.game-main[data-view-state="minigame"]) {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
-.minigame-root { background: rgba(8, 11, 17, 0.97); }
 .resource-fallback {
   color: var(--muted);
   font-size: 13px;

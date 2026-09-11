@@ -61,6 +61,11 @@ test("小游戏独占视口但保留 V2 规定的全局导航与反馈出口", (
     gameCss,
     /\.minigame-root\s*\{[\s\S]*?inset:\s*0;[\s\S]*?overflow:\s*hidden;[\s\S]*?background:\s*#080b11;[\s\S]*?border:\s*0;/
   );
+  assert.doesNotMatch(
+    gameCss,
+    /\.minigame-root\s*\{[^}]*background:\s*rgba\(/,
+    "小游戏全屏背景必须完全遮蔽基础游戏内容"
+  );
   assert.match(
     gameCss,
     /body:has\(\.game-main\[data-view-state="minigame"\]\)\s*\{[\s\S]*?overflow:\s*hidden;/
