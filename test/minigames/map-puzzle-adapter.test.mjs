@@ -19,12 +19,15 @@ function adapter() {
   return createMapPuzzleAdapter({ container, onEvent });
 }
 
-function eventHarness(createEventId) {
+function eventHarness(createEventId, eventResult = {ok: true}) {
   const events = [];
   let callbacks;
   const instance = createMapPuzzleAdapter({
     container,
-    onEvent: (event) => events.push(event),
+    onEvent: (event) => {
+      events.push(event);
+      return typeof eventResult === "function" ? eventResult(event) : eventResult;
+    },
     createEventId,
     mountView: (_container, options) => {
       callbacks = options;
@@ -67,13 +70,14 @@ test("拒绝缺失或错误的 V1 命令字段", () => {
   );
 });
 
-test("成功事件严格符合 V1 外部事件格式", () => {
+test("成功事件严格符合 V1 外部事件格式", async () => {
   const harness = eventHarness(() => "evt-success");
   for (const pieceId of harness.callbacks().level.pieceIds) {
     const slotId = harness.callbacks().level.correctMap[pieceId];
     harness.callbacks().onPlace(pieceId, slotId);
   }
-  harness.callbacks().onSolved();
+  const result = await harness.callbacks().onSolved();
+  assert.equal(result.ok, true);
   assert.deepEqual(harness.events, [{
     eventId: "evt-success",
     eventType: "MAP_PUZZLE_COMPLETED",
@@ -82,8 +86,40 @@ test("成功事件严格符合 V1 外部事件格式", () => {
     resultFactIds: ["map-puzzle-completed"],
     payload: { puzzleId: "map-puzzle" }
   }]);
-  harness.callbacks().onSolved();
+  await harness.callbacks().onSolved();
   assert.equal(harness.events.length, 1);
+});
+
+test("完成结果被协调器拒绝时不锁死适配器，可由页面退出后重新开始", async () => {
+  let eventId = 0;
+  const harness = eventHarness(() => `evt-rejected-${++eventId}`, {ok: false});
+  for (const pieceId of harness.callbacks().level.pieceIds) {
+    harness.callbacks().onPlace(pieceId, harness.callbacks().level.correctMap[pieceId]);
+  }
+
+  const rejected = await harness.callbacks().onSolved();
+  assert.equal(rejected.ok, false);
+  await harness.callbacks().onSolved();
+  assert.equal(harness.events.length, 2, "拒绝后不得把本局误标记为已提交");
+  assert.notEqual(harness.events[0].eventId, harness.events[1].eventId);
+});
+
+test("退出后重新打开会创建全新拼图局，不恢复中间摆放进度", () => {
+  const harness = eventHarness(() => "evt-cancel-and-reopen");
+  const firstView = harness.callbacks();
+  const firstPieceId = firstView.level.pieceIds[0];
+  const firstSlotId = firstView.level.correctMap[firstPieceId];
+  assert.equal(firstView.onPlace(firstPieceId, firstSlotId).locked, true);
+
+  harness.instance.cancel();
+  harness.instance.start(validCommand);
+  const reopenedView = harness.callbacks();
+  assert.deepEqual(reopenedView.lockedPairs, []);
+  assert.equal(
+    reopenedView.onPlace(firstPieceId, firstSlotId).locked,
+    true,
+    "同一拼块应能在新局中重新放置"
+  );
 });
 
 test("取消和失败事件不携带事实", () => {

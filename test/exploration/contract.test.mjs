@@ -14,11 +14,11 @@ test("谈话内容先展示，确认前不能记录完成事实",async()=>{
  assert.equal(preview.requiresConfirmation,true);assert.equal(host.getContext().state.facts.includes("surface-investigation-task-known"),false);
  await click(module,"surface-briefing");assert.equal(host.getContext().state.facts.includes("surface-investigation-task-known"),true);
 });
-test("对话进展和取消不提前发钥匙",async()=>{
+test("未约定的对话进展和取消不提前发钥匙",async()=>{
  const host=createDemoHost(),module=createInteractionModule(host);
  host.act("confirm-wake-context");await click(module,"surface-briefing");await click(module,"burned-work-id");await click(module,"blue-glass-bead");
  const command=host.getContext().commands[0];
- await module.reportProgress(command.commandId,["x-deflects-memory-question-noticed"]);
+ await assert.rejects(module.reportProgress(command.commandId,["x-deflects-memory-question-noticed"]),/不属于当前对话/);
  assert.equal(host.getContext().commands[0].commandId,command.commandId);
  assert.equal(host.getContext().state.inventory.includes("key-a"),false);
  await module.cancel(command.commandId);await click(module,"receive-key");
@@ -59,7 +59,9 @@ test("初始只有工作证和玻璃珠，没有旧录音与钥匙",()=>{
  const host=createDemoHost();const module=createInteractionModule(host);
  assert.deepEqual(module.listItems().map(i=>i.id),["burned-work-id","blue-glass-bead"]);
  assert.equal(module.getSceneView("shrine").interactions.length,0);
- assert.equal(ITEMS.length,11);assert.equal(ITEMS.some(i=>i.name.includes("A")),false);
+ assert.equal("playerStart" in module.getLayout(),false);
+ assert.equal(ITEMS.some(i=>i.name.includes("A")),false);
+ assert.equal(module.listItems().some(i=>i.id==="su-he-notice"),false);
 });
 test("未确认开场不能谈话，两个物品调查后才取得交钥匙命令",async()=>{
  const host=createDemoHost(),module=createInteractionModule(host);
@@ -77,11 +79,47 @@ test("同一个探索命令可回报多个对象，回读不重复提交",async(
  await click(module,"burned-work-id");assert.equal(host.getContext().state.processedEventIds.length,count);
  assert.equal(host.getContext().commands[0].commandId,id);await click(module,"blue-glass-bead");
 });
-test("可选追问记录事实，不是必须完成的门槛",async()=>{
+test("Host 明确拒绝调查后可在同一页面直接重试",async()=>{
+ const host=createDemoHost();host.act("confirm-wake-context");
+ const setup=createInteractionModule(host);await click(setup,"surface-briefing");setup.dispose();
+ let calls=0;
+ const proxy={...host,dispatchExternalEvent:(event,meta)=>{
+  calls+=1;
+  if(calls===1)return {ok:false,message:"测试失败已触发，本次操作没有提交；请再次点击重试。"};
+  return host.dispatchExternalEvent(event,meta);
+ }};
+ const module=createInteractionModule(proxy);
+ const before=host.getContext().state;
+ const failed=await module.interact("shrine","burned-work-id");
+ assert.equal(failed.ok,false);assert.deepEqual(host.getContext().state,before);
+ const retried=await module.interact("shrine","burned-work-id");
+ assert.equal(retried.ok,true,retried.message);assert.equal(calls,2);
+ assert.equal(host.getContext().state.facts.includes("burned-work-id-investigated"),true);
+ module.dispose();
+});
+test("Host 明确拒绝对话完成后可在同一页面直接重试",async()=>{
+ const host=createDemoHost();host.act("confirm-wake-context");let calls=0;
+ const proxy={...host,dispatchExternalEvent:(event,meta)=>{
+  calls+=1;
+  if(calls===1)return {ok:false,message:"对话提交失败，请重试。"};
+  return host.dispatchExternalEvent(event,meta);
+ }};
+ const module=createInteractionModule(proxy);
+ const preview=await module.interact("shrine","surface-briefing");
+ assert.equal(preview.requiresConfirmation,true);
+ const failed=await module.interact("shrine","surface-briefing",{confirm:true});
+ assert.equal(failed.ok,false);
+ const retried=await module.interact("shrine","surface-briefing",{confirm:true});
+ assert.equal(retried.ok,true,retried.message);assert.equal(calls,2);
+ assert.equal(host.getContext().state.facts.includes("surface-investigation-task-known"),true);
+ module.dispose();
+});
+test("追问路径保留对白但只记录取得钥匙",async()=>{
  const host=createDemoHost(),module=createInteractionModule(host);
  host.act("confirm-wake-context");await click(module,"surface-briefing");await click(module,"burned-work-id");await click(module,"blue-glass-bead");
  await click(module,"ask-memory-and-receive-key");
- assert.ok(host.getContext().state.facts.includes("x-deflects-memory-question-noticed"));
+ assert.equal(host.getContext().state.facts.includes("key-a-given-by-x"),true);
+ assert.equal(host.getContext().state.facts.includes("x-deflects-memory-question-noticed"),false);
 });
 for(const order of [
  ["shopkeeper-inquiry","holdout-inquiry","elder-inquiry"],["shopkeeper-inquiry","elder-inquiry","holdout-inquiry"],
@@ -101,7 +139,12 @@ test("老宅四线索、对质、呼名、明确结束连续完成",async()=>{
  const host=createDemoHost(),module=createInteractionModule(host);await reachVillage(host,module);
  for(const id of ["elder-inquiry","holdout-inquiry","shopkeeper-inquiry"])await click(module,id);
  host.dispatchExternalEvent(mapEvent(host),{storageScope:"guest"});host.act("go-old-house");
+ assert.equal(module.getSceneView("old-house").sceneId,"old-house");
+ assert.equal(module.getSceneView("old-house").sceneVariant,"door-closed");
+ assert.match(module.getSceneView("old-house").sceneImage,/old-house-door-closed\.png$/);
  await click(module,"old-house-door");
+ assert.equal(module.getSceneView("old-house").sceneVariant,"door-open");
+ assert.match(module.getSceneView("old-house").sceneImage,/old-house-door-open\.png$/);
  for(const id of ["funeral-list","height-marks","school-uniform","old-photograph"])await click(module,id);
  assert.equal(host.getContext().state.clues.length,4);
  await click(module,"identity-conflict");await click(module,"door-call");
@@ -175,4 +218,5 @@ test("背包分类由宿主数组决定，不读取目录中的固定分类",()=
    ["map-fragment-1","restored-village-map"]);
  assert.deepEqual(module.listItems("clues").map(item=>item.id),
    ["old-photograph","school-uniform","height-marks","funeral-list"]);
+ module.dispose();
 });

@@ -49,9 +49,10 @@
 | 方法 | 参数 | 返回 |
 | --- | --- | --- |
 | `getCurrentSceneId()` | 无 | `shrine/village/old-house` |
-| `getSceneView(sceneId)` | 当前地点 ID | 名称及物体交互列表 |
-| `getLayout()` | 无 | 玩家起点和物体热点 |
+| `getSceneView(sceneId)` | 当前地点 ID | 名称、稳定场景展示字段及交互列表 |
+| `getLayout()` | 无 | 当前剧情 Node 的百分比热点；不包含玩家位置或距离门槛 |
 | `listItems(layer?)` | `items/clues`，可省略 | 已获得背包条目 |
+| `getItemDetail(itemId)` | 稳定物品/线索 ID | 已提交或已调查条目的只读详情；不可读时为 `null` |
 | `interact(sceneId, actionId)` | 当前地点和动作 ID | `{ok,message}` |
 | `cancel(commandId,errorCode?)` | 探索命令 ID、可选错误码 | 协调器结果 |
 | `getMapCommand()` | 无 | 地图命令或 `null` |
@@ -59,7 +60,9 @@
 | `subscribe(listener)` | 回调 | 清理函数 |
 | `dispose()` | 无 | 释放订阅并使实例失效 |
 
-背包目录只保存 `id/name/image/description/source`。运行时 `state.inventory` 中的 ID 返回 `layer:"items"`，`state.clues` 中的 ID 返回 `layer:"clues"`；同一 ID 同时出现在两数组会被拒绝。地图碎片和完整地图属于物品，老宅照片、校服、刻痕、名单均由真实状态作为线索提供。
+背包目录保存 `id/name/image/detailImage?/description/source`。`image` 是背包列表使用的轻量缩略图；`detailImage` 是可选正式特写，详情优先使用它，缺省时回退到 `image`。运行时 `state.inventory` 中的 ID 返回 `layer:"items"`，`state.clues` 中的 ID 返回 `layer:"clues"`；同一 ID 同时出现在两数组会被拒绝。地图碎片和完整地图属于物品，老宅照片、校服、刻痕、名单均由真实状态作为线索提供。
+
+`getSceneView(sceneId)` 额外稳定返回 `sceneId/sceneVariant/sceneImage`。普通场景的 `sceneVariant` 为 `default`；老宅只允许 `door-closed/door-open`。探索模块依据已提交的 `old-house-door-opened` 事实生成该展示字段，页面只消费结果，不得读取事实、检查热点是否消失或根据 Node 自行推断图片。
 
 ## 探索事件
 
@@ -80,11 +83,19 @@
 
 ## 页面组合
 
+### 场景人物入口的视觉边界
+
+NPC 在场景中的坐标只表示一个发光点击点。三张场景背景不绘制 NPC 的头像、半身或全身，也不依据人物头部、身体或对话框遮挡范围换算坐标。玩家点击发光点后，页面进入统一 `reading` 流程，并由探索视图中的独立人物层显示本次被点击的 NPC；退出或成功读完后清除人物层。人物展示不反向改变场景热点坐标，也不新增全局页面状态。
+
+第一周人物映射为 `companion-x`（小X）、`villager-1`（小卖部老板）、`villager-2`（拒签户）、`villager-3`（年老村民）。`unknown-caller` 是门外声音，不显示人物。A、B、苏禾和白灯客素材不在第一周探索链路中加载，避免越过当前剧情范围或提前泄露身份线。
+
+场景中的可见按钮文案只作为当前开发兜底和无障碍名称；最终视觉按页面规则显示为光点或图标，不把长标签画进场景背景。NPC 点位与物体点位若属于不同剧情 Node，不会同时渲染，不能仅凭静态坐标距离判为点击冲突。
+
 “查看当前调查状态”只显示调查待办或提示玩家按剧情区操作继续。`getExitStatus()` 保留原返回结构，不执行离场或切换 Node。
 
 `createInteractionModule(host)` 是页面适配器，组合探索和对话的只读视图并按动作归属路由，不保存业务状态。它向现有 `mountExploration` 提供统一接口，避免页面直接了解两个业务子包。
 
-`mountGamePage({host,openMap?,saveProgress?,documentRoot?})` 返回卸载函数。正式模式由游戏壳注入宿主、地图入口和保存函数；不带 `demo=1` 时不会自行创建状态。演示模式使用真实剧情引擎快照及专用 `sessionStorage`，不是正式存档。
+正式页面由 `game-page-controller.js` 将 Host、地图入口和统一页面状态交给 `mountExploration`。探索模块只挂载到正式容器，不再维护独立游戏页或第二套页面状态。
 
 `openMap(command)` 接收完整 `REQUEST_MINIGAME` 命令。地图成功事件由小游戏模块发送；探索模块不伪造成功事实，也不决定 `go-old-house`。
 
@@ -95,5 +106,6 @@
 - 账户与存档负责人以 `storageScope` 隔离游客和账户，并在挂载前完成恢复。
 - 地图负责人消费完整命令并提交 `MAP_PUZZLE_COMPLETED`；宿主在成功提交后再调用成就规则并登记成就。
 - 游戏壳渲染剧情 `presentation.actions`，探索不得接管 Node 推进。
+- 操作失败只把 `OPERATION_FAILED` 交给全局反馈映射，不在探索侧建立另一套最终玩家文案；详情的“×”、ESC 和浏览器/Android 返回继续由全局统一关闭。
 
-测试夹具和 `demo=1` 只能用于独立验收。正式接入完成前不得删除队友页面、演示、账户、剧情或小游戏文件。
+测试夹具只用于自动化验收，不驱动正式页面。账户、剧情、成就和小游戏仍保留各自入口与职责边界。

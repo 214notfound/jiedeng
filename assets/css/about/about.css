@@ -1,12 +1,4 @@
 /* 本文件定义项目、制作组和成员介绍页面共用的档案式响应布局。 */
-:root {
-  --about-bg: #0b0d0c;
-  --about-surface: rgba(17, 20, 18, 0.92);
-  --about-text: #f1f1e9;
-  --about-muted: #a7aaa2;
-  --about-line: rgba(239, 239, 227, 0.17);
-  --about-accent: #7889ff;
-}
 * { box-sizing: border-box; }
 
 html { min-width: 0; background: var(--about-bg); }
@@ -205,14 +197,14 @@ p.project-prose { margin-bottom: 0; }
 }
 
 /* V1.4 视觉重构：复用封面雨夜素材，把 About 页面变为沉浸式叙事展览。 */
-:root {
-  --about-bg: #071018;
-  --about-surface: rgba(10, 19, 27, .88);
-  --about-surface-soft: rgba(15, 29, 39, .7);
-  --about-text: #f2eee6;
-  --about-muted: #aab5bb;
-  --about-line: rgba(226, 232, 228, .16);
-  --about-accent: #e4c08d;
+.about-page {
+  --about-bg: var(--bg);
+  --about-surface: var(--panel);
+  --about-surface-soft: var(--panel-soft);
+  --about-text: var(--paper);
+  --about-muted: var(--muted);
+  --about-line: var(--line);
+  --about-accent: var(--accent);
   --about-cold: #8fb8ce;
 }
 

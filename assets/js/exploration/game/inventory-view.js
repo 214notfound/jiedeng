@@ -1,54 +1,92 @@
-// 背包视图：两类物品列表、详情弹窗与焦点恢复，独立订阅状态。
-import { element, button, region, createFeedback, playerMessage } from "./view-utils.js";
+// 背包视图：只读展示已提交物品；详情统一挂载到 controller 管理的 detail-root。
+import {element, button, region, createFeedback, playerMessage} from "./view-utils.js";
 
-let nextDialogId = 0;
-export function mountInventory({ module, root, showFeedback }) {
+export function getObtainedItem(module, itemId) {
+  if (typeof itemId !== "string" || !itemId.trim()) {
+    throw new TypeError("缺少要查看的物品或线索。");
+  }
+  const item = module.listItems().find((entry) => entry.id === itemId);
+  if (!item) throw new Error("这件物品或线索尚未获得。");
+  return item;
+}
+
+export function mountInventory({module, root, detailRoot, showFeedback, openDetail}) {
   if (typeof showFeedback !== "function") throw new TypeError("缺少反馈回调。");
+  if (!detailRoot?.append) throw new TypeError("缺少详情容器。");
+  if (typeof openDetail !== "function") throw new TypeError("缺少统一详情入口。");
+
   const container = region(root);
+  const detailMount = detailRoot.querySelector?.(".detail-card__content") ?? detailRoot;
+  const detail = region(detailMount);
   const notify = createFeedback(container, showFeedback);
   const browser = element("div", "exploration-inventory-browser");
-  const dialog = document.createElement("dialog");
-  dialog.className = "exploration-item-dialog modal";
-  const title = element("h3", "exploration-title");
-  title.id = "exploration-item-title-" + (++nextDialogId);
-  dialog.setAttribute("aria-labelledby", title.id);
-  const image = document.createElement("img");
-  image.width = 240;
-  image.height = 240;
-  const imageError = element("p", "", "图片暂不可用，仍可阅读物品说明。");
-  imageError.hidden = true;
-  image.addEventListener("error", () => { image.hidden = true; imageError.hidden = false; });
-  const description = element("p", "");
-  const source = element("p", "");
-  const close = button("关闭详情", () => dialog.close());
-  dialog.append(title, image, imageError, description, source, close);
-  container.append(browser, dialog);
+  const detailTitle = element("h2", "exploration-title", "详情");
+  const detailImage = document.createElement("img");
+  detailImage.width = 240;
+  detailImage.height = 240;
+  detailImage.alt = "";
+  const detailImageError = element(
+    "p",
+    "exploration-resource-fallback",
+    "图片暂不可用，仍可阅读物品说明。"
+  );
+  detailImageError.hidden = true;
+  detailImage.addEventListener("error", () => {
+    detailImage.hidden = true;
+    detailImageError.hidden = false;
+  });
+  const detailDescription = element("p");
+  const detailSource = element("p");
+  detail.append(detailTitle, detailImage, detailImageError, detailDescription, detailSource);
+  container.append(browser);
+
   let layer = "items";
-  let selectedId = null;
   let active = true;
 
-  dialog.addEventListener("close", () => {
-    if (!active) return;
-    const target = [...browser.querySelectorAll("[data-item-id]")].find((node) => node.dataset.itemId === selectedId);
-    (target ?? browser.querySelector("[data-layer]"))?.focus();
-    selectedId = null;
-  });
+  function renderDetail(item) {
+    detailTitle.textContent = item.name;
+    detailImage.hidden = false;
+    detailImageError.hidden = true;
+    detailImage.alt = item.name;
+    detailImage.src = item.detailImage ?? item.image;
+    detailDescription.textContent = item.description;
+    detailSource.textContent = "来源：" + item.source + (item.obtained ? " · 已获得" : " · 已查看");
+  }
+
   function openItem(itemId) {
     try {
-      const item = module.listItems().find((entry) => entry.id === itemId);
-      if (!item) throw new Error("这件物品尚未获得。");
-      selectedId = item.id;
-      title.textContent = item.name;
-      image.hidden = false;
-      imageError.hidden = true;
-      image.alt = item.name;
-      image.src = item.image;
-      description.textContent = item.description;
-      source.textContent = "来源：" + item.source + " · 已获得";
-      if (!dialog.open) dialog.showModal();
-      close.focus();
-    } catch (error) { notify(playerMessage(error.message, "暂时无法查看这项内容，请重试。"), "error"); }
+      renderDetail(getObtainedItem(module, itemId));
+      const result = openDetail(itemId);
+      if (!result?.ok) {
+        throw new Error(result?.message || "详情暂时无法打开。");
+      }
+    } catch (error) {
+      notify(
+        playerMessage(error.message, "暂时无法查看这项内容，请重试。"),
+        "error",
+        "OPERATION_FAILED"
+      );
+    }
   }
+
+  function openTarget(itemId) {
+    try {
+      const item = module.getItemDetail?.(itemId);
+      if (!item) return false;
+      renderDetail(item);
+      const result = openDetail(itemId);
+      if (!result?.ok) throw new Error(result?.message || "详情暂时无法打开。");
+      return true;
+    } catch (error) {
+      notify(
+        playerMessage(error.message, "暂时无法查看这项内容，请重试。"),
+        "error",
+        "OPERATION_FAILED"
+      );
+      return false;
+    }
+  }
+
   function render() {
     if (!active) return;
     try {
@@ -81,35 +119,63 @@ export function mountInventory({ module, root, showFeedback }) {
         thumbnail.alt = "";
         thumbnail.width = 64;
         thumbnail.height = 64;
-        entry.append(thumbnail, element("span", "", item.name),
-          element("span", "", "来源：" + item.source + " · 已获得"));
+        const thumbnailError = element(
+          "span",
+          "exploration-resource-fallback exploration-resource-fallback--thumbnail",
+          "图片暂不可用"
+        );
+        thumbnailError.hidden = true;
+        thumbnail.addEventListener("error", () => {
+          thumbnail.hidden = true;
+          thumbnailError.hidden = false;
+        }, {once: true});
+        entry.append(
+          thumbnail,
+          thumbnailError,
+          element("span", "", item.name),
+          element("span", "", "来源：" + item.source + " · 已获得")
+        );
         card.append(entry);
         list.append(card);
       }
       browser.append(list);
-      if (dialog.open && !module.listItems().some((item) => item.id === selectedId)) dialog.close();
-      if (!dialog.open) {
-        const candidate = focusedId
-          ? [...list.querySelectorAll("[data-item-id]")].find((node) => node.dataset.itemId === focusedId)
-          : focusedLayer ? controls.querySelector('[data-layer="' + focusedLayer + '"]') : null;
-        candidate?.focus();
-      }
+      const candidate = focusedId
+        ? [...list.querySelectorAll("[data-item-id]")]
+          .find((node) => node.dataset.itemId === focusedId)
+        : focusedLayer
+          ? controls.querySelector('[data-layer="' + focusedLayer + '"]')
+          : null;
+      candidate?.focus();
     } catch (error) {
-      selectedId = null;
-      if (dialog.open) dialog.close();
       browser.replaceChildren();
-      notify(playerMessage(error.message, "背包暂时无法读取，请重试。"), "error");
+      notify(
+        playerMessage(error.message, "背包暂时无法读取，请重试。"),
+        "error",
+        "OPERATION_FAILED"
+      );
     }
   }
+
   let unsubscribe;
-  try { unsubscribe = module.subscribe(render); }
-  catch (error) { container.remove(); throw error; }
-  render();
-  return () => {
-    if (!active) return;
-    active = false;
-    unsubscribe();
-    if (dialog.open) dialog.close();
+  try {
+    unsubscribe = module.subscribe(render);
+  } catch (error) {
     container.remove();
-  };
+    detail.remove();
+    throw error;
+  }
+  render();
+
+  return Object.freeze({
+    openItem,
+    openTarget,
+    dispose() {
+      if (!active) return;
+      active = false;
+      unsubscribe();
+      container.remove();
+      detail.replaceChildren();
+      detail.remove();
+    }
+  });
 }

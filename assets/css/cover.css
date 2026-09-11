@@ -221,7 +221,7 @@
 .title-main {
     font-size: clamp(5.5rem, 22vw, 12rem);
     font-weight: 700;
-    color: #f0ece6;
+    color: var(--paper);
     letter-spacing: 0.3em;
     line-height: 1;
     font-family: 'FengmianFont', '华文行楷', 'STXingkai', '楷体', serif;
@@ -266,7 +266,7 @@
 .title-sub {
     font-size: clamp(0.8rem, 1.8vw, 1.2rem);
     font-weight: 300;
-    color: #b0bccf;
+    color: var(--muted);
     letter-spacing: 0.6em;
     margin-top: 0.3rem;
     font-family: 'Arial', 'PingFang SC', sans-serif;
@@ -312,13 +312,13 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 0.4rem 1.5rem;
+    gap: .3rem 1.8rem;
     margin-bottom: 2.5rem;
     padding: 0;
-    font-family: 'Arial', 'PingFang SC', sans-serif;
-    font-size: clamp(0.7rem, 1.2vw, 0.9rem);
-    color: rgba(200, 195, 185, 0.4);
-    letter-spacing: 0.1em;
+    font-family: 'KaiTi', 'STKaiti', '楷体', serif;
+    font-size: clamp(.78rem, 1.3vw, .95rem);
+    color: rgba(216, 198, 164, .72);
+    letter-spacing: .16em;
     text-shadow: 0 2px 20px rgba(0, 0, 0, 0.8);
     animation: infoFade 1.5s ease 1.2s both;
 }
@@ -339,8 +339,8 @@
     top: 50%;
     transform: translateY(-50%);
     width: 1px;
-    height: 50%;
-    background: rgba(200, 190, 175, 0.08);
+    height: 60%;
+    background: rgba(216, 198, 164, .28);
 }
 .game-info li:last-child::after {
     display: none;
@@ -356,10 +356,10 @@
     min-height: 56px;
     font-size: clamp(1rem, 1.6vw, 1.3rem);
     font-weight: 600;
-    color: #f0ece6;
-    background: rgba(20, 30, 50, 0.25);
-    border: 1.5px solid rgba(200, 190, 175, 0.25);
-    border-radius: 4px;
+    color: var(--paper);
+    background: rgba(13, 17, 24, .72);
+    border: 1.5px solid rgba(216, 198, 164, .5);
+    border-radius: var(--radius);
     text-decoration: none;
     letter-spacing: 0.4em;
     cursor: pointer;
@@ -442,10 +442,10 @@
 .cover-footer {
     margin-top: 3rem;
     text-align: center;
-    font-family: 'Arial', 'PingFang SC', sans-serif;
-    font-size: clamp(0.55rem, 0.8vw, 0.7rem);
-    color: rgba(180, 190, 200, 0.15);
-    letter-spacing: 0.15em;
+    font-family: 'KaiTi', 'STKaiti', '楷体', serif;
+    font-size: clamp(.7rem, 1vw, .85rem);
+    color: rgba(210, 205, 190, .55);
+    letter-spacing: .35em;
     font-weight: 300;
     animation: footerFade 2s ease 2s both;
 }
