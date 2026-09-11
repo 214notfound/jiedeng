@@ -223,6 +223,7 @@
         {
           id: "destroy-all-evidence",
           label: "销毁全部证据",
+          description: "销毁四组证据，什么都不留。",
           actionType: "choice",
           availableWhen: {
             noneFacts: [
@@ -240,6 +241,7 @@
         {
           id: "publish-curated-evidence",
           label: "以白灯客名义选择性公开",
+          description: "保留旧矿难、父亲参与、集团收购与掩盖；删除王阙设计恐吓、老人跌亡后继续、不施救、白灯客删证。",
           actionType: "choice",
           availableWhen: {
             noneFacts: [
@@ -257,6 +259,7 @@
         {
           id: "publish-full-evidence",
           label: "完整公开",
+          description: "保留旧矿难、父亲、集团、小周、王阙与白灯客的全部材料。",
           actionType: "choice",
           availableWhen: {
             noneFacts: [
@@ -333,7 +336,7 @@
       requiredFact: "x-showdown-lost",
       acknowledgementFact: "ending-defeated-acknowledged",
       title: "《封井之人》",
-      text: "小周回收了证据，项目继续。知道真相并没有自动保住真相。",
+      text: "小周灭口并回收了证据，副本被清除，项目继续。知道真相并没有自动保住真相。",
     }),
     createEndingNode({
       id: "ending-erasure",
@@ -357,7 +360,7 @@
       requiredFact: "full-evidence-published",
       acknowledgementFact: "ending-full-account-acknowledged",
       title: "《不再借灯》",
-      text: "所有证据同时公开。陈晋年、王阙和白灯客第一次以同一个人的责任接受调查。",
+      text: "公司、父亲、小周、王阙与白灯客的全部行为同时公开，主角也第一次以同一个人的责任接受调查。",
     }),
   ]);
 
