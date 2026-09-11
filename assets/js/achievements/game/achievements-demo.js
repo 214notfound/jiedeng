@@ -6,7 +6,6 @@ const enterStory = await loadDemoEngine();
 const host=createEngineHost({enterStory,storage:window.sessionStorage});
 const notice=document.getElementById("demo-notice");notice.hidden=false;
 notice.textContent="独立演示进度，不代表当前账户的正式成就。";
-document.querySelector(".achievement-link").href="../exploration/game.html?demo=1";
 const stop=mountAchievementsPage({host});
 window.addEventListener("pagehide",()=>{stop();host.dispose();},{once:true});
 window.addEventListener("pageshow",event=>{if(event.persisted)window.location.reload();});

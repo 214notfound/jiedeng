@@ -95,7 +95,7 @@ NPC 在场景中的坐标只表示一个发光点击点。三张场景背景不�
 
 `createInteractionModule(host)` 是页面适配器，组合探索和对话的只读视图并按动作归属路由，不保存业务状态。它向现有 `mountExploration` 提供统一接口，避免页面直接了解两个业务子包。
 
-`mountGamePage({host,openMap?,saveProgress?,documentRoot?})` 返回卸载函数。正式模式由游戏壳注入宿主、地图入口和保存函数；不带 `demo=1` 时不会自行创建状态。演示模式使用真实剧情引擎快照及专用 `sessionStorage`，不是正式存档。
+正式页面由 `game-page-controller.js` 将 Host、地图入口和统一页面状态交给 `mountExploration`。探索模块只挂载到正式容器，不再维护独立游戏页或第二套页面状态。
 
 `openMap(command)` 接收完整 `REQUEST_MINIGAME` 命令。地图成功事件由小游戏模块发送；探索模块不伪造成功事实，也不决定 `go-old-house`。
 
@@ -108,4 +108,4 @@ NPC 在场景中的坐标只表示一个发光点击点。三张场景背景不�
 - 游戏壳渲染剧情 `presentation.actions`，探索不得接管 Node 推进。
 - 操作失败只把 `OPERATION_FAILED` 交给全局反馈映射，不在探索侧建立另一套最终玩家文案；详情的“×”、ESC 和浏览器/Android 返回继续由全局统一关闭。
 
-测试夹具和 `demo=1` 只能用于独立验收。正式接入完成前不得删除队友页面、演示、账户、剧情或小游戏文件。
+测试夹具只用于自动化验收，不驱动正式页面。账户、剧情、成就和小游戏仍保留各自入口与职责边界。
