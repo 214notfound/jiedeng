@@ -56,6 +56,39 @@ test("U1 覆盖层默认隐藏，小游戏只使用唯一空挂载点", () => {
   assert.match(controller, /createMapPuzzleAdapter\(\{[\s\S]*?container:\s*minigameRoot,/);
 });
 
+test("小游戏独占视口但保留 V2 规定的全局导航与反馈出口", () => {
+  assert.match(
+    gameCss,
+    /\.minigame-root\s*\{[\s\S]*?inset:\s*0;[\s\S]*?overflow:\s*hidden;[\s\S]*?background:\s*#080b11;[\s\S]*?border:\s*0;/
+  );
+  assert.doesNotMatch(
+    gameCss,
+    /\.minigame-root\s*\{[^}]*background:\s*rgba\(/,
+    "小游戏全屏背景必须完全遮蔽基础游戏内容"
+  );
+  assert.match(
+    gameCss,
+    /body:has\(\.game-main\[data-view-state="minigame"\]\)\s*\{[\s\S]*?overflow:\s*hidden;/
+  );
+  assert.match(
+    gameCss,
+    /\.game-shell:has\(\.game-main\[data-view-state="minigame"\]\) \.game-header\s*\{[\s\S]*?position:\s*fixed;[\s\S]*?z-index:\s*100;/
+  );
+  assert.match(
+    gameCss,
+    /\.game-shell:has\(\.game-main\[data-view-state="minigame"\]\) > \.feedback:not\(\[hidden\]\)\s*\{[\s\S]*?position:\s*fixed;[\s\S]*?z-index:\s*100;/
+  );
+  assert.doesNotMatch(
+    gameCss,
+    /data-view-state="minigame"[^}]*#(?:return-menu-button|save-button)/,
+    "小游戏状态不得隐藏返回菜单或保存入口"
+  );
+  assert.match(
+    controller,
+    /mapAdapter\.start\(command\);[\s\S]*?minigameRoot\.querySelector\(FOCUSABLE_SELECTOR\);[\s\S]*?focus/
+  );
+});
+
 test("U5 正式页面保留统一反馈区且不直接放置调试内容", () => {
   const feedbackTag = openingTagFor("feedback");
   assert.match(feedbackTag, /\srole=["']status["']/);

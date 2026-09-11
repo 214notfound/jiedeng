@@ -179,7 +179,7 @@ function coordFromId(id) {
  * @param {string} [options.artworkUrl]  正式原图 URL；缺省用 canvas 生成的占位图
  * @param {(pieceId:string, slotId:string) => Object} options.onPlace
  *    放置询问回调，返回 core 判定结果 { ok, locked, completed }
- * @param {() => void} [options.onSolved]  全部锁定完成
+ * @param {() => Promise<Object>|Object} [options.onSolved] 全部锁定后提交并返回协调器结果
  * @param {() => void} [options.onCancelled] 玩家点“放弃”
  * @returns {{ destroy: () => void }}
  */
@@ -260,6 +260,7 @@ export function mountPuzzle(container, options) {
   /* ---------- 内部状态 ---------- */
   let lockedCount = lockedPairs.length;
   let completed = false;
+  let submitting = false;
   let selectedPieceId = null;   // 点击模式选中的块
   let dragPieceId = null;       // 正在拖拽的块
   let suppressNextClick = false; // pointerup 已把“点击”消费掉，阻止 click 二次触发
@@ -311,7 +312,7 @@ export function mountPuzzle(container, options) {
 
   /* ---------- 放置逻辑(点击与拖拽共用) ---------- */
   function attemptPlace(pieceId, slotId) {
-    if (completed || !artworkReady || artworkFailed) return;
+    if (completed || submitting || !artworkReady || artworkFailed) return;
     let result;
     try {
       result = onPlace(pieceId, slotId);
@@ -335,9 +336,23 @@ export function mountPuzzle(container, options) {
       syncStatus();
 
       if (result.completed) {
-        completed = true;
-        showDone();
-        onSolved?.();
+        submitting = true;
+        status.textContent = "地图已经复原，正在确认结果……";
+        Promise.resolve(onSolved?.()).then((outcome) => {
+          if (destroyed) return;
+          if (outcome?.ok) {
+            completed = true;
+            showDone();
+            return;
+          }
+          submitting = false;
+          status.textContent = "地图结果未能保存，请返回后重新打开地图再试。";
+        }).catch((error) => {
+          if (destroyed) return;
+          submitting = false;
+          console.error("[map-puzzle] 完成结果提交失败。", error);
+          status.textContent = "地图结果未能保存，请返回后重新打开地图再试。";
+        });
       }
     } else if (result && result.ok && !result.locked) {
       // 位置不对：拼块回弹并给出玩家可理解的提示。
@@ -364,7 +379,7 @@ export function mountPuzzle(container, options) {
 
   /* ---------- 点击模式: 先选块, 再点槽 ---------- */
   function handlePieceClick(pieceId) {
-    if (completed || !artworkReady || artworkFailed) return;
+    if (completed || submitting || !artworkReady || artworkFailed) return;
     if (!pieceEls.has(pieceId)) return; // 已经锁定的块不可再选
 
     // 切换选中
@@ -394,7 +409,7 @@ export function mountPuzzle(container, options) {
   /* ---------- 拖拽模式(Pointer Events, 鼠标/触屏统一) ---------- */
   function onPointerDown(event) {
     const pieceEl = event.target.closest(".pz-piece");
-    if (!pieceEl || completed || !artworkReady || artworkFailed) return;
+    if (!pieceEl || completed || submitting || !artworkReady || artworkFailed) return;
     const pieceId = pieceEl.dataset.pieceId;
     if (!pieceEls.has(pieceId)) return; // 已锁定的块
 
