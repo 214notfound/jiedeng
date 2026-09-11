@@ -33,12 +33,30 @@ export function splitSpeakerLabel(text) {
 }
 
 export function splitReadingText(text) {
-  return Object.freeze(
-    String(text)
-      .split(/\r?\n/u)
-      .filter((line) => line.trim() !== "")
-      .map((line) => splitSpeakerLabel(line))
-  );
+  const segments = [];
+  const labelPattern = /(?:^|(?<=\s))【([^】\r\n]+)】/gu;
+
+  String(text).split(/\r?\n/u).forEach((line) => {
+    const matches = [...line.matchAll(labelPattern)];
+    if (matches.length === 0) {
+      if (line.trim() !== "") segments.push(splitSpeakerLabel(line));
+      return;
+    }
+
+    if (matches[0].index > 0) {
+      const prefix = line.slice(0, matches[0].index).trim();
+      if (prefix) segments.push(Object.freeze({speaker: null, text: prefix}));
+    }
+
+    matches.forEach((match, index) => {
+      const textStart = match.index + match[0].length;
+      const textEnd = matches[index + 1]?.index ?? line.length;
+      const content = line.slice(textStart, textEnd).trim();
+      if (content) segments.push(Object.freeze({speaker: match[1].trim(), text: content}));
+    });
+  });
+
+  return Object.freeze(segments);
 }
 
 function renderTextItem(storyElement, item) {

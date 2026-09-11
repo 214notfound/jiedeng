@@ -88,6 +88,20 @@ test("multi-line dialogue and narration are split into one reading outlet", () =
   );
 });
 
+test("same-line speaker labels split only at valid label boundaries", () => {
+  assert.deepEqual(
+    splitReadingText("【小X】村里有借灯的禁忌。祠堂忽然断电。 【小X】去村口问问吧。"),
+    [
+      {speaker: "小X", text: "村里有借灯的禁忌。祠堂忽然断电。"},
+      {speaker: "小X", text: "去村口问问吧。"}
+    ]
+  );
+  assert.deepEqual(
+    splitReadingText("雨声里传来【老板】的招呼。"),
+    [{speaker: null, text: "雨声里传来【老板】的招呼。"}]
+  );
+});
+
 function readingInput(overrides = {}) {
   return {
     mode: "story",
