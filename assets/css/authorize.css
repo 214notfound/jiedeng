@@ -1,5 +1,5 @@
 /* 本文件定义登录、注册和账户测试页共用的高保真灰度界面。 */
-:root {
+html {
   color-scheme: dark;
   --auth-background-image: none;
   --ink-950: var(--bg);
