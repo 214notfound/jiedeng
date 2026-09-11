@@ -44,9 +44,9 @@
 ## 从当前仓库目录迁移
 
 - assets/js/exploration/date 拼写应为 data。本包已使用 data；旧 date 中仍是旧剧情，不要仅重命名后与新版混用。
-- 当前 pages/exploration/game.html 的 ../assets 路径少一层，本包已改为 ../../assets，并包含资源所属模块目录。
+- 历史迁移阶段曾使用 `pages/exploration/game.html` 验证模块路径；正式 V2 接入完成后该独立演示页已退役。
 - 当前 pages/exploration/achievements.html 迁到 pages/achievements/achievements.html，成就 JS/CSS 分别迁到 assets/js/achievements 和 assets/css/achievements。
-- 当前脚本匹配 /pages/game.html 的演示条件也已改成 /pages/exploration/game.html；不再依赖缺失的 test/game/fixtures/demo-session.js。
+- 独立演示脚本已随正式 V2 接入退役；自动化测试继续使用 `test/exploration/fixtures`，不依赖旧页面入口。
 - 旧 docs/exploration-achievements-interface.md 中 type/payload、直接推进 stage、地图同时结算成就的约定已失效，由本包 exploration、conversation、achievements 三份接口说明替代。
 
 手动合并时先在仓库之外备份旧模块，再逐个比较本包文件。确认旧文件没有其他模块引用后，才由仓库维护者移除旧 date、旧成就页面/脚本以及旧接口文档。不要递归删除整个 assets、pages、docs、test，也不要改动 test/authorize 或队友 demo。

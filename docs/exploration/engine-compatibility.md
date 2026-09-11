@@ -19,7 +19,7 @@
 7. assets/js/game-line/game/story-request.js
 8. assets/js/game-line/game/story-engine.js
 
-入口是 window.WhiteLamp.story.enterStory(request)。以上是仓库根目录相对路径；在 pages/exploration/game.html 中引用时前缀应为 ../../。这些为普通脚本，有固定顺序；探索自身为 ES Module，不依赖剧情内部全局对象。
+入口是 window.WhiteLamp.story.enterStory(request)。以上是仓库根目录相对路径，由正式 `pages/game.html` 按既定顺序加载。这些为普通脚本，有固定顺序；探索自身为 ES Module，不依赖剧情内部全局对象。
 
 唯一调用者是协调器。探索服务、背包、成就服务均不直接调用该入口。当前包提供挂载接口，实际协调器和状态实现仍由相应负责人维护。
 
@@ -63,10 +63,8 @@ goals[].goalId 是里程碑 ID，resultFactIds 是事实 ID，例如 burned-work
 
 来源清单按文件原始字节计算 SHA-256。快照目录内的 `.gitattributes` 使用 `*.js -text`，防止 Git 在不同平台检出时转换换行并使哈希失效。提交前必须在一次干净的 Git 重新检出后再次运行哈希测试。
 
-## 演示与正式系统的区别
+## 测试夹具与正式系统的区别
 
-- demo=1：加载原样真实剧情引擎；engine-host.js 模拟协调器、状态提交和 sessionStorage。旧 story-fixture.js 只用于隔离单元测试，不驱动当前浏览器演示。
-- 演示地图只用确认框注入成功/取消事件，不提供队友的拼图玩法。
-- 演示保存键是 jiedeng:demo:engine-handoff:v3:<storageScope>，不读写正式账户存档。刷新恢复调用真实 resume。
-- 不带 demo=1：等待正式宿主。未注入时不可游玩，不能当作已接入账户/存档。
-- 正式接入后才可移除演示脚本和其测试依赖；删除前确认页面不会加载它们，不删除队友 demo。
+- `engine-host.js`、`story-fixture.js` 和 vendor 快照只用于自动化测试，不驱动正式页面，也不读写正式账户存档。
+- 正式页面只使用 `pages/game.html`、正式 Host、统一页面协调器和队友提供的地图拼图。
+- 早期独立探索演示入口及其确认框地图模拟已退役；测试仍验证真实剧情引擎兼容、失败重试和完整 E1–E5 链路。
