@@ -74,6 +74,28 @@ export function selectMapPuzzleCommand(commands) {
   return command;
 }
 
+const MAP_ENTRY_PROMPT_PRESENTATION = Object.freeze({
+  presentationId: "ui-map-puzzle-entry",
+  sceneId: "village",
+  blocks: Object.freeze([Object.freeze({
+    blockId: "map-puzzle-entry-message",
+    blockType: "system",
+    text: "【系统提示】三块地图碎片已经集齐，是否现在复原地图？"
+  })]),
+  actions: Object.freeze([
+    Object.freeze({
+      actionId: "enter-map-puzzle",
+      label: "进入游戏",
+      actionType: "choice"
+    }),
+    Object.freeze({
+      actionId: "dismiss-map-prompt",
+      label: "稍后再说",
+      actionType: "choice"
+    })
+  ])
+});
+
 const BASE_VIEW_STATES = new Set([VIEW_STATES.READING, VIEW_STATES.EXPLORATION]);
 const OVERLAY_VIEW_STATES = new Set([
   VIEW_STATES.DETAIL,
@@ -357,7 +379,6 @@ export function setupGamePage() {
   let activeCommands = [];
   let activeMapCommand = null;
   let announcedMapCommandId = null;
-  let mapAnnouncementTimer = null;
   let preserveViewDuringMapExit = false;
   let failNextExternalEventForDebug = false;
   const stateListeners = new Set();
@@ -401,18 +422,32 @@ export function setupGamePage() {
       : defaultMinigameButtonLabel;
   }
 
-  function scheduleMapEntryAnnouncement(command) {
+  function openMapEntryPrompt(command) {
     if (!command || command.commandId === announcedMapCommandId) return;
-    announcedMapCommandId = command.commandId;
-    if (mapAnnouncementTimer !== null) clearTimeout(mapAnnouncementTimer);
-    mapAnnouncementTimer = setTimeout(() => {
-      mapAnnouncementTimer = null;
-      if (getMapCommand()?.commandId !== command.commandId) return;
-      showFeedback(
-        "三块地图碎片已集齐。是否现在复原地图？点击“复原手绘地图”进入，也可以稍后再来。",
-        "info"
-      );
-    }, 0);
+    try {
+      gameView.openSystemPrompt(MAP_ENTRY_PROMPT_PRESENTATION, {
+        onAction(actionId) {
+          const currentCommand = getMapCommand();
+          if (currentCommand?.commandId !== command.commandId) {
+            return {ok: false, code: "MAP_COMMAND_EXPIRED"};
+          }
+          if (actionId === "enter-map-puzzle") {
+            viewCoordinator.showBase(VIEW_STATES.EXPLORATION);
+            return openMap(currentCommand);
+          }
+          if (actionId === "dismiss-map-prompt") {
+            viewCoordinator.showBase(VIEW_STATES.EXPLORATION);
+            return {ok: true};
+          }
+          return {ok: false, code: "MAP_PROMPT_ACTION_INVALID"};
+        }
+      });
+      viewCoordinator.showBase(VIEW_STATES.READING);
+      announcedMapCommandId = command.commandId;
+    } catch (error) {
+      console.error("[white-lamp:minigame-entry] 地图阅读提示打开失败", error);
+      showFeedback("三块地图碎片已经集齐，请点击“复原手绘地图”进入。", "info");
+    }
   }
 
   function updateChapterName() {
@@ -641,7 +676,6 @@ export function setupGamePage() {
           showFeedback("地图入口暂时无法使用，请稍后重试。", "error");
         }
         syncTopBar(viewCoordinator.getState());
-        scheduleMapEntryAnnouncement(activeMapCommand);
       },
       commandHandlers: {
         REQUEST_EXPLORATION: () => {},
@@ -653,6 +687,9 @@ export function setupGamePage() {
         if (preserveViewDuringMapExit) return;
         const nextView = deriveViewState(response);
         if (nextView) viewCoordinator.showBase(nextView);
+        if (response.status === "waiting-external") {
+          openMapEntryPrompt(activeMapCommand);
+        }
       }),
       onError: (error) => {
         console.error("[white-lamp:game-flow]", error.developerMessage);
@@ -754,7 +791,6 @@ export function setupGamePage() {
         } else if (event.eventType === "MAP_PUZZLE_COMPLETED") {
           if (result?.ok) {
             mapAdapter.destroy();
-            showFeedback("地图复原成功，已解锁【陈家老宅】相关剧情。", "success");
           } else {
             mapAdapter.destroy();
             viewCoordinator.closeOverlay();
@@ -813,7 +849,6 @@ export function setupGamePage() {
       removeExploration?.();
       interactionModule?.dispose();
       mapAdapter?.destroy();
-      if (mapAnnouncementTimer !== null) clearTimeout(mapAnnouncementTimer);
       stateListeners.clear();
       delete globalThis.WhiteLamp.gamePage;
     }, {once: true});

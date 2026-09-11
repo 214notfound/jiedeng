@@ -22,7 +22,7 @@ const storyScripts = [
 ];
 
 function createContext() {
-  const context = { console, setTimeout, clearTimeout };
+  const context = { console };
   context.window = context;
   vm.createContext(context);
   for (const relativePath of storyScripts) {
@@ -230,6 +230,7 @@ for (const entry of ["formal", "debug"]) {
     let controls, response, mapEvents;
     const rendered = [];
     const mapStarts = [];
+    const systemPrompts = [];
     const elements = new Map();
     context.URLSearchParams = URLSearchParams;
     context.location = { pathname: "/pages/game.html", search: "?mode=new&debug=1" };
@@ -280,6 +281,9 @@ for (const entry of ["formal", "debug"]) {
         return {
           renderState: (state) => rendered.push(JSON.parse(JSON.stringify(state))),
           renderResponse: (value) => { response = value; },
+          openSystemPrompt: (presentation, callbacks) => {
+            systemPrompts.push({presentation, callbacks});
+          },
           recordNotification() {}
         };
       }
@@ -321,12 +325,28 @@ for (const entry of ["formal", "debug"]) {
     }
     const command = response.commands.find(c => c.commandType === "REQUEST_MINIGAME");
     assert.ok(command, "真实主线应到达地图任务");
-    await new Promise(resolve => setTimeout(resolve, 0));
     const mapButton = elements.get("open-minigame-button");
     assert.equal(mapButton.disabled, false, "三块碎片收集完成后必须启用地图入口");
     assert.equal(mapButton.textContent, "复原手绘地图");
-    assert.match(elements.get("feedback").textContent, /三块地图碎片已集齐/);
-    mapButton.click();
+    assert.equal(systemPrompts.length, 1);
+    const systemPrompt = systemPrompts[0];
+    assert.match(systemPrompt.presentation.blocks[0].text, /三块地图碎片已经集齐/);
+    assert.deepEqual(
+      Array.from(systemPrompt.presentation.actions, action => action.label),
+      ["进入游戏", "稍后再说"]
+    );
+    assert.equal(context.WhiteLamp.gamePage.getViewState(), "reading");
+
+    if (entry === "formal") {
+      const dismissed = await systemPrompt.callbacks.onAction("dismiss-map-prompt");
+      assert.equal(dismissed.ok, true);
+      assert.equal(context.WhiteLamp.gamePage.getViewState(), "exploration");
+      assert.equal(mapStarts.length, 0, "稍后再说不得启动小游戏");
+      mapButton.click();
+    } else {
+      const entered = await systemPrompt.callbacks.onAction("enter-map-puzzle");
+      assert.equal(entered.ok, true);
+    }
     assert.equal(context.WhiteLamp.gamePage.getViewState(), "minigame");
     assert.equal(mapStarts.at(-1).commandId, command.commandId);
 
@@ -342,6 +362,7 @@ for (const entry of ["formal", "debug"]) {
     assert.equal(context.WhiteLamp.gamePage.getViewState(), "exploration");
     assert.equal(context.WhiteLamp.game.getState().facts.includes("map-puzzle-completed"), false);
     assert.equal(mapButton.disabled, false, "退出后原命令必须继续提供重开入口");
+    assert.equal(systemPrompts.length, 1, "同一地图命令取消后不得重复弹出入口提示");
     mapButton.click();
     assert.equal(mapStarts.length, 2, "重新进入必须启动新的一局");
 
@@ -375,9 +396,7 @@ for (const entry of ["formal", "debug"]) {
     assert.ok(state.inventory.includes("restored-village-map"));
     assert.ok(state.unlockedLocations.includes("old-house"));
     assert.ok(response.presentation?.actions?.some(action => action.actionId === "go-old-house"));
-    if (entry === "formal") {
-      assert.match(elements.get("feedback").textContent, /已解锁【陈家老宅】相关剧情/);
-    }
+    assert.match(response.presentation?.blocks?.[0]?.text, /恭喜你，成功解锁【陈家老宅】相关剧情/);
     assert.ok(rendered.length > 0);
     assert.ok(rendered.every(s => s.facts.includes("map-puzzle-completed") && s.achievements.includes("map-restorer")),
       "展示不能收到已完成地图但尚未结算成就的中间状态");

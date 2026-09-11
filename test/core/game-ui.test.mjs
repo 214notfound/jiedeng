@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
+  createGameView,
   createReadingView,
   splitSpeakerLabel,
   validateReadingInput
@@ -219,3 +220,55 @@ test("阅读操作异常只进控制台，页面不显示内部错误详情", as
     console.error = previousConsoleError;
   }
 }));
+
+test("系统提示复用统一阅读框并把选择交回页面控制器", async () => {
+  const previousDocument = globalThis.document;
+  const storyElement = new FakeElement("div");
+  const actionsElement = new FakeElement("div");
+  const elements = new Map([
+    ["game-story", storyElement],
+    ["game-actions", actionsElement]
+  ]);
+  globalThis.document = {
+    createElement: (tagName) => new FakeElement(tagName),
+    getElementById: (id) => elements.get(id) ?? null
+  };
+  const selectedActions = [];
+
+  try {
+    const gameView = createGameView();
+    gameView.openSystemPrompt({
+      presentationId: "ui-map-puzzle-entry",
+      sceneId: "village",
+      blocks: [{
+        blockId: "map-puzzle-entry-message",
+        blockType: "system",
+        text: "【系统提示】三块地图碎片已经集齐，是否现在复原地图？"
+      }],
+      actions: [
+        {actionId: "enter-map-puzzle", label: "进入游戏", actionType: "choice"},
+        {actionId: "dismiss-map-prompt", label: "稍后再说", actionType: "choice"}
+      ]
+    }, {
+      onAction: async (actionId) => {
+        selectedActions.push(actionId);
+        return {ok: true};
+      }
+    });
+
+    assert.equal(storyElement.children[0].textContent, "系统提示");
+    assert.match(storyElement.children.at(-1).textContent, /三块地图碎片已经集齐/);
+    assert.deepEqual(
+      actionsElement.querySelectorAll("button").map((button) => button.textContent),
+      ["读完"]
+    );
+
+    gameView.getReadingView().next();
+    const promptActions = actionsElement.querySelectorAll("button");
+    assert.deepEqual(promptActions.map((button) => button.textContent), ["进入游戏", "稍后再说"]);
+    await promptActions[1].dispatch("click");
+    assert.deepEqual(selectedActions, ["dismiss-map-prompt"]);
+  } finally {
+    globalThis.document = previousDocument;
+  }
+});
