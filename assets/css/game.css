@@ -84,6 +84,68 @@ button { font: inherit; }
   box-shadow: 0 18px 60px rgba(0, 0, 0, 0.55);
 }
 .game-overlay__close { position: sticky; z-index: 1; top: 0; display: block; margin-left: auto; }
+.minigame-root {
+  inset: 0;
+  padding: 0;
+  overflow: hidden;
+  overscroll-behavior: contain;
+  background: #080b11;
+  border: 0;
+  box-shadow: none;
+}
+.minigame-root > .pz-root {
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  padding-top: clamp(112px, 14vh, 152px);
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.game-main[data-view-state="minigame"] .pz-header {
+  top: max(82px, calc(env(safe-area-inset-top) + 70px));
+}
+body:has(.game-main[data-view-state="minigame"]) {
+  overflow: hidden;
+}
+.game-shell:has(.game-main[data-view-state="minigame"]) .game-header {
+  position: fixed;
+  z-index: 100;
+  top: max(12px, env(safe-area-inset-top));
+  right: max(12px, env(safe-area-inset-right));
+  left: max(12px, env(safe-area-inset-left));
+  width: auto;
+  max-width: none;
+  min-height: 56px;
+  margin: 0;
+  padding: 8px 10px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  background: rgba(8, 11, 17, 0.94);
+  border: 1px solid var(--line);
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.42);
+  scrollbar-width: thin;
+}
+.game-shell:has(.game-main[data-view-state="minigame"]) .game-header__title,
+.game-shell:has(.game-main[data-view-state="minigame"]) #open-inventory-button,
+.game-shell:has(.game-main[data-view-state="minigame"]) #open-minigame-button {
+  display: none;
+}
+.game-shell:has(.game-main[data-view-state="minigame"]) .chapter-name {
+  margin-right: auto;
+  white-space: nowrap;
+}
+.game-shell:has(.game-main[data-view-state="minigame"]) .game-header .button {
+  flex: 0 0 auto;
+}
+.game-shell:has(.game-main[data-view-state="minigame"]) > .feedback:not([hidden]) {
+  position: fixed;
+  z-index: 100;
+  top: max(82px, calc(env(safe-area-inset-top) + 70px));
+  right: max(12px, env(safe-area-inset-right));
+  left: max(12px, env(safe-area-inset-left));
+  width: auto;
+  margin: 0;
+}
 .detail-root {
   display: grid;
   place-items: center;
@@ -348,6 +410,10 @@ button { font: inherit; }
   .game-header__title { width: 100%; order: -1; }
   .game-header .button { flex: 1; }
   .game-overlay { inset: 118px 10px 10px; }
+  .minigame-root { inset: 0; }
+  .minigame-root > .pz-root {
+    padding-top: max(132px, calc(env(safe-area-inset-top) + 112px));
+  }
   .detail-root { inset: 0; padding: 12px; }
   .detail-card { width: min(90vw, 360px); }
   .detail-card__content { padding: 16px; }

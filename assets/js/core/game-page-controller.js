@@ -102,6 +102,7 @@ const OVERLAY_VIEW_STATES = new Set([
   VIEW_STATES.INVENTORY,
   VIEW_STATES.MINIGAME
 ]);
+const FOCUSABLE_SELECTOR = "button, [href], input, select, textarea, [tabindex]:not([tabindex='-1'])";
 const EXTERNAL_COMMAND_TYPES = new Set([
   "REQUEST_EXPLORATION",
   "REQUEST_CONVERSATION",
@@ -273,7 +274,7 @@ export function createViewCoordinator({
     const activeRoot = nextView === VIEW_STATES.DETAIL
       ? detailRoot
       : nextView === VIEW_STATES.INVENTORY ? inventoryRoot : minigameRoot;
-    const focusTarget = activeRoot.querySelector("button, [href], input, select, textarea, [tabindex]:not([tabindex='-1'])");
+    const focusTarget = activeRoot.querySelector(FOCUSABLE_SELECTOR);
     (focusTarget ?? activeRoot).focus?.();
     return {ok: true, state: currentView};
   }
@@ -639,6 +640,8 @@ export function setupGamePage() {
     }
     try {
       mapAdapter.start(command);
+      const focusTarget = minigameRoot.querySelector(FOCUSABLE_SELECTOR);
+      (focusTarget ?? minigameRoot).focus?.();
       return {ok: true};
     } catch (error) {
       viewCoordinator.closeOverlay();
