@@ -85,6 +85,22 @@ button { font: inherit; }
 }
 .game-overlay__close { position: sticky; z-index: 1; top: 0; display: block; margin-left: auto; }
 .minigame-root { background: rgba(8, 11, 17, 0.97); }
+.resource-fallback {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.resource-fallback--thumbnail {
+  display: grid;
+  width: 64px;
+  height: 64px;
+  padding: 6px;
+  place-items: center;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px dashed rgba(236, 231, 220, 0.28);
+}
+.resource-fallback[hidden] { display: none; }
 .detail-root {
   inset: 0;
   place-items: center;
