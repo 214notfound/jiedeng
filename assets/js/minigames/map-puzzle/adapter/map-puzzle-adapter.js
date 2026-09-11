@@ -30,7 +30,7 @@ let eventSequence = 0;
  *
  * @param {Object} deps
  * @param {HTMLElement} deps.container     挂载拼图视图的容器
- * @param {(event: Object) => void} deps.onEvent  把外部事件交给协调器的回调
+ * @param {(event: Object) => Promise<Object>|Object} deps.onEvent 把外部事件交给协调器并返回提交结果
  * @param {() => string} [deps.createEventId]     eventId 工厂，用于保证事件唯一
  * @param {Object} [deps.level]            可选：直接传入关卡定义（默认 3×3）
  * @param {Function} [deps.mountView]       可选：视图工厂（测试或替换渲染器）
@@ -126,8 +126,10 @@ export function createMapPuzzleAdapter({ container, onEvent, createEventId, leve
       onPlace: (pieceId, slotId) => tryPlacePiece(session, pieceId, slotId),
 
       onSolved: () => {
-        if (!isPuzzleCompleted(session)) return;
-        emitCompleted();
+        if (!isPuzzleCompleted(session)) {
+          return { ok: false, code: "PUZZLE_NOT_COMPLETED" };
+        }
+        return emitCompleted();
       },
 
       onCancelled: () => {
@@ -163,19 +165,25 @@ export function createMapPuzzleAdapter({ container, onEvent, createEventId, leve
   }
 
   /** 组装成功事件。resultFactIds 固定为登记事实（契约 4.2 / Node 清单 §5）。 */
-  function emitCompleted() {
+  async function emitCompleted() {
     if (!activeCommand || finished) return;
     finished = true;
-    onEvent({
-      eventId: requireEventId(),
-      eventType: EVENT_TYPE_COMPLETED,
-      source: EVENT_SOURCE,
-      causedByCommandId: activeCommand.commandId,
-      resultFactIds: [SUCCESS_FACT_ID],
-      payload: { puzzleId: MINIGAME_ID }
-    });
-    // 注意：成功后不 teardown——留下「已完成」画面，
-    // 由协调器在收到事件、完成状态提交后决定何时 destroy() 进入下一幕。
+    // 成功画面必须等待协调器确认；是否推进剧情仍完全由 game-flow 决定。
+    try {
+      const result = await onEvent({
+        eventId: requireEventId(),
+        eventType: EVENT_TYPE_COMPLETED,
+        source: EVENT_SOURCE,
+        causedByCommandId: activeCommand.commandId,
+        resultFactIds: [SUCCESS_FACT_ID],
+        payload: { puzzleId: MINIGAME_ID }
+      });
+      if (!result?.ok) finished = false;
+      return result;
+    } catch (error) {
+      finished = false;
+      throw error;
+    }
   }
 
   /** 组装取消事件：resultFactIds 必须为空数组（契约 4.3）。 */
