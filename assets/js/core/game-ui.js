@@ -32,26 +32,36 @@ export function splitSpeakerLabel(text) {
   });
 }
 
+export function splitReadingText(text) {
+  return Object.freeze(
+    String(text)
+      .split(/\r?\n/u)
+      .filter((line) => line.trim() !== "")
+      .map((line) => splitSpeakerLabel(line))
+  );
+}
+
 function renderTextItem(storyElement, item) {
   storyElement.replaceChildren();
-  const labelledText = splitSpeakerLabel(item.text);
   const storyPanel = storyElement.closest?.(".story-panel");
 
   storyElement.dataset.contentKind = item.kind;
   if (storyPanel) storyPanel.dataset.contentKind = item.kind;
 
-  if (labelledText.speaker) {
-    const speaker = document.createElement("p");
-    speaker.className = "story-speaker";
-    speaker.textContent = labelledText.speaker;
-    storyElement.append(speaker);
-  }
+  splitReadingText(item.text).forEach((labelledText, index) => {
+    if (labelledText.speaker) {
+      const speaker = document.createElement("p");
+      speaker.className = "story-speaker";
+      speaker.textContent = labelledText.speaker;
+      storyElement.append(speaker);
+    }
 
-  const paragraph = document.createElement("p");
-  paragraph.className = `story-block story-block--${item.kind}`;
-  paragraph.dataset.contentId = item.id;
-  paragraph.textContent = labelledText.text;
-  storyElement.append(paragraph);
+    const paragraph = document.createElement("p");
+    paragraph.className = `story-block story-block--${item.kind}`;
+    paragraph.dataset.contentId = index === 0 ? item.id : `${item.id}-${index + 1}`;
+    paragraph.textContent = labelledText.text;
+    storyElement.append(paragraph);
+  });
 }
 
 function requireReadingText(value, fieldName) {

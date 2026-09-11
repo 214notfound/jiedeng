@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   createReadingView,
   splitSpeakerLabel,
+  splitReadingText,
   validateReadingInput
 } from "../../assets/js/core/game-ui.js";
 
@@ -75,6 +76,17 @@ function withFakeDocument(run) {
     .then(run)
     .finally(() => { globalThis.document = previousDocument; });
 }
+
+test("multi-line dialogue and narration are split into one reading outlet", () => {
+  assert.deepEqual(
+    splitReadingText("【你】我以前是做什么的？\n【小X】先别硬想，能查东西就够了。\n他把话题岔开，随后递来一把老钥匙。"),
+    [
+      {speaker: "你", text: "我以前是做什么的？"},
+      {speaker: "小X", text: "先别硬想，能查东西就够了。"},
+      {speaker: null, text: "他把话题岔开，随后递来一把老钥匙。"}
+    ]
+  );
+});
 
 function readingInput(overrides = {}) {
   return {
