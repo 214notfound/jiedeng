@@ -99,15 +99,16 @@ export function adaptStoryPresentation(presentation) {
   });
 }
 
-export function adaptConversationInput({
-  conversation,
-  conversationId,
-  npcId,
-  actionId,
-  commandId
-}) {
-  if (!conversation || typeof conversation !== "object") {
+export function adaptConversationInput(input) {
+  if (!input || typeof input !== "object" || Array.isArray(input)) {
     throw new TypeError("NPC 对话输入必须是对象");
+  }
+  const {conversation, conversationId, npcId, actionId, commandId} = input;
+  if (!conversation || typeof conversation !== "object") {
+    throw new TypeError("conversation 必须是对象");
+  }
+  if (!Array.isArray(conversation.dialogues)) {
+    throw new TypeError("conversation.dialogues 必须是数组");
   }
 
   const speaker = requireNonEmptyString(conversation.speaker, "conversation.speaker");
@@ -136,6 +137,37 @@ export function adaptConversationInput({
       conversationId: requireNonEmptyString(conversationId, "conversationId"),
       npcId: requireNonEmptyString(npcId, "npcId"),
       actionId: requireNonEmptyString(actionId, "actionId"),
+      commandId: requireNonEmptyString(commandId, "commandId")
+    })
+  });
+}
+
+export function adaptConversationChoiceInput(input) {
+  if (!input || typeof input !== "object" || Array.isArray(input)) {
+    throw new TypeError("NPC Choice 输入必须是对象");
+  }
+  const {prompt, choices, conversationId, npcId, commandId} = input;
+  const normalizedPrompt = normalizeItems([{
+    id: prompt?.lineId,
+    text: prompt?.text,
+    kind: "dialogue"
+  }], "conversation.choicePrompt", "dialogue");
+  const actions = normalizeActions(choices);
+  if (actions.length < 2 || actions.length > 4) {
+    throw new TypeError("NPC Choice 必须包含 2 至 4 个选项");
+  }
+  if (actions.some((action) => action.actionType !== "choice")) {
+    throw new TypeError("NPC Choice 的 actionType 必须是 choice");
+  }
+
+  return Object.freeze({
+    mode: "conversation",
+    readingState: "choice",
+    items: normalizedPrompt,
+    actions,
+    metadata: Object.freeze({
+      conversationId: requireNonEmptyString(conversationId, "conversationId"),
+      npcId: requireNonEmptyString(npcId, "npcId"),
       commandId: requireNonEmptyString(commandId, "commandId")
     })
   });

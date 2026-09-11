@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
+  adaptConversationChoiceInput,
   adaptConversationInput,
   adaptStoryPresentation
 } from "../../assets/js/core/reading-contract.js";
@@ -49,6 +50,25 @@ test("NPC dialogues 保留顺序和业务身份", () => {
   assert.equal(result.metadata.npcId, "villager-1");
 });
 
+test("NPC Choice 输入只提供分支选项，不伪装成已完成对白", () => {
+  const result = adaptConversationChoiceInput({
+    prompt: {lineId: "key-choice", text: "【小X】他把钥匙递到你面前。"},
+    choices: [
+      {actionId: "receive-key", label: "直接接过钥匙", actionType: "choice"},
+      {actionId: "ask-memory", label: "追问过去", actionType: "choice"}
+    ],
+    conversationId: "prologue-key-and-memory",
+    npcId: "companion-x",
+    commandId: "cmd-prologue-belongings-prologue-key-and-memory"
+  });
+
+  assert.equal(result.mode, "conversation");
+  assert.equal(result.readingState, "choice");
+  assert.deepEqual(result.actions.map((action) => action.actionId), ["receive-key", "ask-memory"]);
+  assert.equal(result.items.length, 1);
+  assert.equal("actionId" in result.metadata, false);
+});
+
 test("正式 V2 老板资产保留 15 段顺序", () => {
   const conversation = V2_CONVERSATIONS["shopkeeper-inquiry"];
   const result = adaptConversationInput({
@@ -74,6 +94,16 @@ test("适配器拒绝缺失或重复字段", () => {
   );
   assert.throws(
     () => adaptConversationInput({
+      conversation: {speaker: "老板"},
+      conversationId: "conversation",
+      npcId: "npc",
+      actionId: "action",
+      commandId: "command"
+    }),
+    /conversation\.dialogues/
+  );
+  assert.throws(
+    () => adaptConversationInput({
       conversation: {speaker: "老板", dialogues: [
         {lineId: "same", text: "一"},
         {lineId: "same", text: "二"}
@@ -84,5 +114,15 @@ test("适配器拒绝缺失或重复字段", () => {
       commandId: "command"
     }),
     /不能重复/
+  );
+  assert.throws(
+    () => adaptConversationChoiceInput({
+      prompt: {lineId: "choice", text: "请选择。"},
+      choices: [{actionId: "only-one", label: "唯一选项", actionType: "choice"}],
+      conversationId: "conversation",
+      npcId: "npc",
+      commandId: "command"
+    }),
+    /2 至 4/
   );
 });

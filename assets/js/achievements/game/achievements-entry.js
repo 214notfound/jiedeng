@@ -1,6 +1,7 @@
 // 正式成就页面入口：恢复当前身份的存档并挂载只读成就视图。
 import { loadGame } from "../../core/storage.js";
 import { mountAchievementsPage } from "./achievements-page.js";
+import { resolveAchievementLoadResult } from "./achievement-load-policy.js";
 
 const auth = globalThis.WhiteLamp?.auth;
 const feedback = document.getElementById("achievement-feedback");
@@ -22,18 +23,12 @@ async function start() {
 
   const { storageScope } = sessionResult.data;
   const loadResult = loadGame(storageScope);
-  if (!loadResult.ok) {
-    const messages = {
-      SAVE_NOT_FOUND: "当前还没有游戏存档。",
-      SAVE_INVALID: "游戏存档损坏，暂时无法读取成就。",
-      SAVE_VERSION_UNSUPPORTED: "游戏存档版本不兼容，暂时无法读取成就。",
-      SAVE_SCOPE_MISMATCH: "当前登录身份与游戏存档不匹配。",
-      STORAGE_UNAVAILABLE: "浏览器存储不可用，暂时无法读取成就。"
-    };
-    showError(messages[loadResult.code] || "暂时无法读取成就，请返回主菜单重试。");
+  const resolution = resolveAchievementLoadResult(loadResult);
+  if (!resolution.ok) {
+    showError(resolution.message);
     return;
   }
-  const state = loadResult.data;
+  const state = resolution.state;
   const listeners = new Set();
   const host = {
     getContext: () => ({storageScope, state}),
@@ -43,6 +38,7 @@ async function start() {
     }
   };
   mountAchievementsPage({host});
+  if (resolution.notice) showError(resolution.notice);
 }
 
 start().catch((error) => showError("暂时无法读取成就，请返回主菜单重试。", error));

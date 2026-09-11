@@ -35,6 +35,10 @@ export function splitSpeakerLabel(text) {
 function renderTextItem(storyElement, item) {
   storyElement.replaceChildren();
   const labelledText = splitSpeakerLabel(item.text);
+  const storyPanel = storyElement.closest?.(".story-panel");
+
+  storyElement.dataset.contentKind = item.kind;
+  if (storyPanel) storyPanel.dataset.contentKind = item.kind;
 
   if (labelledText.speaker) {
     const speaker = document.createElement("p");
@@ -50,6 +54,85 @@ function renderTextItem(storyElement, item) {
   storyElement.append(paragraph);
 }
 
+function requireReadingText(value, fieldName) {
+  if (typeof value !== "string" || value.trim() === "") {
+    throw new TypeError(`${fieldName} 必须是非空字符串`);
+  }
+}
+
+export function validateReadingInput(nextInput) {
+  if (!nextInput || typeof nextInput !== "object" || Array.isArray(nextInput)) {
+    throw new TypeError("阅读输入必须是对象");
+  }
+  if (!["story", "conversation"].includes(nextInput.mode)) {
+    throw new TypeError(`不支持的阅读模式：${String(nextInput.mode)}`);
+  }
+  if (!Array.isArray(nextInput.items)) {
+    throw new TypeError("阅读输入.items 必须是数组");
+  }
+  if (!Array.isArray(nextInput.actions)) {
+    throw new TypeError("阅读输入.actions 必须是数组");
+  }
+  if (!nextInput.metadata || typeof nextInput.metadata !== "object"
+    || Array.isArray(nextInput.metadata)) {
+    throw new TypeError("阅读输入.metadata 必须是对象");
+  }
+  if (nextInput.readingState !== undefined && nextInput.readingState !== "choice") {
+    throw new TypeError(`不支持的阅读内部状态：${String(nextInput.readingState)}`);
+  }
+
+  const allowedKinds = nextInput.mode === "story"
+    ? new Set(["narration", "system"])
+    : new Set(["dialogue"]);
+  const itemIds = new Set();
+  nextInput.items.forEach((item, index) => {
+    if (!item || typeof item !== "object" || Array.isArray(item)) {
+      throw new TypeError(`阅读输入.items[${index}] 必须是对象`);
+    }
+    requireReadingText(item.id, `阅读输入.items[${index}].id`);
+    requireReadingText(item.kind, `阅读输入.items[${index}].kind`);
+    requireReadingText(item.text, `阅读输入.items[${index}].text`);
+    if (!allowedKinds.has(item.kind)) {
+      throw new TypeError(`阅读输入.items[${index}].kind 与 mode 不匹配`);
+    }
+    if (itemIds.has(item.id)) {
+      throw new TypeError("阅读输入.items 的 id 不能重复");
+    }
+    itemIds.add(item.id);
+  });
+
+  const actionIds = new Set();
+  nextInput.actions.forEach((action, index) => {
+    if (!action || typeof action !== "object" || Array.isArray(action)) {
+      throw new TypeError(`阅读输入.actions[${index}] 必须是对象`);
+    }
+    requireReadingText(action.actionId, `阅读输入.actions[${index}].actionId`);
+    requireReadingText(action.label, `阅读输入.actions[${index}].label`);
+    requireReadingText(action.actionType, `阅读输入.actions[${index}].actionType`);
+    if (actionIds.has(action.actionId)) {
+      throw new TypeError("阅读输入.actions 的 actionId 不能重复");
+    }
+    actionIds.add(action.actionId);
+  });
+
+  if (nextInput.readingState === "choice") {
+    if (nextInput.mode !== "conversation") {
+      throw new TypeError("NPC Choice 只能用于 conversation 模式");
+    }
+    if (nextInput.items.length !== 1) {
+      throw new TypeError("NPC Choice 必须提供一个提示文本");
+    }
+    if (nextInput.actions.length < 2 || nextInput.actions.length > 4) {
+      throw new TypeError("NPC Choice 必须提供 2 至 4 个选项");
+    }
+    if (nextInput.actions.some((action) => action.actionType !== "choice")) {
+      throw new TypeError("NPC Choice 的 actionType 必须是 choice");
+    }
+  }
+
+  return nextInput;
+}
+
 export function createReadingView({
   storyElement = requiredElement("game-story"),
   actionsElement = requiredElement("game-actions"),
@@ -57,14 +140,20 @@ export function createReadingView({
   onAction,
   onClose
 } = {}) {
+  const storyPanel = storyElement.closest?.(".story-panel");
   let input = null;
   let currentIndex = 0;
   let completed = false;
   let busy = false;
+  let actionStatus = null;
 
   function clear() {
     storyElement.replaceChildren();
     actionsElement.replaceChildren();
+    actionStatus = null;
+    actionsElement.setAttribute("aria-busy", "false");
+    storyElement.removeAttribute("data-content-kind");
+    storyPanel?.removeAttribute("data-content-kind");
   }
 
   function setButtonsDisabled(disabled) {
@@ -73,8 +162,23 @@ export function createReadingView({
     });
   }
 
+  function showActionStatus(message, state) {
+    actionStatus?.remove();
+    actionStatus = document.createElement("p");
+    actionStatus.className = `story-action-status story-action-status--${state}`;
+    actionStatus.setAttribute("role", "status");
+    actionStatus.textContent = message;
+    actionsElement.append(actionStatus);
+  }
+
+  function clearActionStatus() {
+    actionStatus?.remove();
+    actionStatus = null;
+  }
+
   function renderActions() {
     actionsElement.replaceChildren();
+    actionStatus = null;
     if (!input) return;
 
     if (!completed) {
@@ -145,32 +249,46 @@ export function createReadingView({
 
   async function runAction(actionId) {
     if (!input || !completed || busy) return;
+    const actionInput = input;
     busy = true;
+    actionsElement.setAttribute("aria-busy", "true");
     setButtonsDisabled(true);
+    showActionStatus("正在处理，请稍候……", "busy");
     try {
-      await onAction?.(actionId, input.metadata);
+      const result = await onAction?.(actionId, actionInput.metadata);
+      if (input === actionInput) {
+        if (result && result.ok === false) {
+          showActionStatus("操作没有完成，请重试。", "error");
+        } else {
+          clearActionStatus();
+        }
+      }
+      return result;
+    } catch (error) {
+      console.error("[white-lamp:reading-action] 阅读操作失败", error);
+      if (input === actionInput) {
+        showActionStatus("操作没有完成，请重试。", "error");
+      }
+      return {ok: false};
     } finally {
-      busy = false;
-      setButtonsDisabled(false);
+      if (input === actionInput) {
+        busy = false;
+        actionsElement.setAttribute("aria-busy", "false");
+        setButtonsDisabled(false);
+      }
     }
   }
 
   function open(nextInput) {
-    if (!nextInput || typeof nextInput !== "object") {
-      throw new TypeError("阅读输入必须是对象");
-    }
-    if (!Array.isArray(nextInput.items)) {
-      throw new TypeError("阅读输入.items 必须是数组");
-    }
-    if (!["story", "conversation"].includes(nextInput.mode)) {
-      throw new TypeError(`不支持的阅读模式：${String(nextInput.mode)}`);
-    }
+    validateReadingInput(nextInput);
 
     input = nextInput;
     currentIndex = 0;
-    completed = false;
+    completed = input.readingState === "choice";
     busy = false;
     clear();
+    storyElement.dataset.readingMode = input.mode;
+    if (storyPanel) storyPanel.dataset.readingMode = input.mode;
 
     if (input.items.length === 0) {
       complete();
@@ -190,6 +308,8 @@ export function createReadingView({
     completed = false;
     busy = false;
     clear();
+    storyElement.removeAttribute("data-reading-mode");
+    storyPanel?.removeAttribute("data-reading-mode");
     onClose?.();
   }
 
@@ -201,12 +321,14 @@ export function createGameView({onStoryAction} = {}) {
   const actionsElement = requiredElement("game-actions");
   let readingView;
   let onReadingComplete = () => {};
+  let onReadingAction = (actionId) => onStoryAction?.(actionId);
   let onReadingClose = () => {};
 
   function renderState() {}
 
   function renderResponse(response) {
     onReadingComplete = () => {};
+    onReadingAction = (actionId) => onStoryAction?.(actionId);
     onReadingClose = () => {};
     if (!response.presentation) {
       readingView?.close();
@@ -231,7 +353,7 @@ export function createGameView({onStoryAction} = {}) {
   readingView = createReadingView({
     storyElement,
     actionsElement,
-    onAction: (actionId) => onStoryAction?.(actionId),
+    onAction: (actionId, metadata) => onReadingAction(actionId, metadata),
     onComplete: (result) => onReadingComplete(result),
     onClose: () => onReadingClose()
   });
@@ -245,8 +367,13 @@ export function createGameView({onStoryAction} = {}) {
         button.disabled = disabled;
       });
     },
-    openConversation(input, {onComplete = () => {}, onClose = () => {}} = {}) {
+    openConversation(input, {
+      onComplete = () => {},
+      onAction = () => {},
+      onClose = () => {}
+    } = {}) {
       onReadingComplete = onComplete;
+      onReadingAction = onAction;
       onReadingClose = onClose;
       readingView.open({...input, allowClose: true});
     },

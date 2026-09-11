@@ -84,6 +84,56 @@ button { font: inherit; }
   box-shadow: 0 18px 60px rgba(0, 0, 0, 0.55);
 }
 .game-overlay__close { position: sticky; z-index: 1; top: 0; display: block; margin-left: auto; }
+.detail-root {
+  display: grid;
+  place-items: center;
+  inset: 0;
+  padding: clamp(16px, 4vw, 40px);
+  background: rgba(8, 11, 17, 0.92);
+  border: 0;
+}
+.detail-card {
+  position: relative;
+  width: min(560px, 90vw);
+  max-height: 85vh;
+  overflow: hidden;
+  background: rgba(12, 16, 23, 0.98);
+  border: 1px solid var(--line);
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.62);
+}
+.detail-card__content {
+  max-height: 85vh;
+  padding: 20px;
+  overflow: auto;
+}
+.detail-card__content .exploration-module { padding: 0; color: var(--paper); background: transparent; }
+.detail-card__content .exploration-title { min-height: 44px; padding-right: 56px; }
+.detail-card__close {
+  position: absolute;
+  z-index: 2;
+  top: 16px;
+  right: 16px;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0;
+  color: var(--paper);
+  background: rgba(8, 11, 17, 0.78);
+  border: 1px solid rgba(236, 231, 220, 0.5);
+  border-radius: 50%;
+  font-size: 24px;
+  line-height: 1;
+}
+.detail-card__close:hover,
+.detail-card__close:focus-visible {
+  background: rgba(28, 34, 44, 0.96);
+  border-color: var(--accent);
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
 .minigame-root { background: rgba(8, 11, 17, 0.97); }
 .resource-fallback {
   color: var(--muted);
@@ -101,6 +151,107 @@ button { font: inherit; }
   border: 1px dashed rgba(236, 231, 220, 0.28);
 }
 .resource-fallback[hidden] { display: none; }
+.detail-root {
+  inset: 0;
+  place-items: center;
+  padding: clamp(18px, 5vw, 48px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  background: rgba(3, 5, 8, 0.72);
+  border: 0;
+  box-shadow: none;
+}
+.detail-root:not([hidden]) { display: grid; }
+.detail-root > .detail-card,
+.detail-root > .exploration-module {
+  grid-area: 1 / 1;
+  width: min(100%, 680px);
+  max-height: min(82vh, 760px);
+  max-height: min(82dvh, 760px);
+}
+.detail-card {
+  position: relative;
+  z-index: 2;
+  align-self: stretch;
+  min-height: 180px;
+  pointer-events: none;
+}
+.detail-card__close {
+  position: absolute;
+  z-index: 3;
+  top: 16px;
+  right: 16px;
+  display: grid;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  place-items: center;
+  color: var(--paper);
+  background: rgba(8, 11, 17, 0.84);
+  border: 1px solid rgba(236, 231, 220, 0.42);
+  border-radius: 50%;
+  cursor: pointer;
+  pointer-events: auto;
+  font: 400 24px/1 Inter, "Microsoft YaHei", system-ui, sans-serif;
+}
+.detail-card__close:hover,
+.detail-card__close:focus-visible {
+  background: rgba(24, 29, 38, 0.98);
+  border-color: var(--accent);
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.detail-root > .exploration-module {
+  z-index: 1;
+  min-height: 180px;
+  padding: 28px clamp(22px, 4vw, 40px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  color: var(--paper);
+  background: rgba(12, 16, 23, 0.98);
+  border: 1px solid rgba(216, 198, 164, 0.58);
+  border-radius: 12px;
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.62);
+}
+.detail-root > .exploration-module .exploration-title {
+  min-height: 44px;
+  padding-right: 56px;
+}
+.detail-root > .exploration-module img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: min(52vh, 480px);
+  max-height: min(52dvh, 480px);
+  margin-inline: auto;
+  object-fit: contain;
+}
+.detail-root > .exploration-module p {
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+/* 正式详情内容嵌在卡片内，关闭按钮保持在滚动区域之外。 */
+.detail-root > .detail-card:has(.detail-card__content) {
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  pointer-events: auto;
+}
+.detail-card__content {
+  min-height: 0;
+  overscroll-behavior: contain;
+}
+.detail-card__content .exploration-module img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: min(52dvh, 480px);
+  margin-inline: auto;
+  object-fit: contain;
+}
 .scene-panel { position: relative; min-height: 300px; overflow: hidden; background: linear-gradient(145deg, rgba(13, 18, 27, 0.45), rgba(13, 18, 27, 0.88)); border: 1px solid var(--line); }
 .scene-panel::before { position: absolute; inset: 0; background: radial-gradient(circle at 72% 28%, rgba(225, 217, 192, 0.17), transparent 22%); content: ""; }
 .scene-name { position: absolute; left: 20px; bottom: 18px; z-index: 1; display: grid; gap: 5px; }
@@ -116,9 +267,10 @@ button { font: inherit; }
   left: clamp(14px, 4vw, 58px);
   display: grid;
   grid-template-rows: minmax(0, 1fr) auto;
-  min-height: clamp(190px, 23vw, 286px);
-  max-height: min(44%, 320px);
-  padding: clamp(28px, 4vw, 46px) clamp(22px, 4.5vw, 58px) clamp(20px, 3vw, 34px);
+  gap: clamp(8px, 1.2vw, 14px);
+  min-height: clamp(138px, 15vw, 190px);
+  max-height: min(38vh, 260px);
+  padding: clamp(22px, 2.7vw, 32px) clamp(20px, 4vw, 52px) clamp(14px, 2vw, 22px);
   overflow: visible;
   background:
     linear-gradient(100deg, rgba(7, 10, 15, 0.97), rgba(15, 19, 27, 0.91)),
@@ -140,15 +292,7 @@ button { font: inherit; }
 .game-main[data-view-state="reading"] #game-story {
   min-height: 0;
   margin: 0;
-  overflow-x: hidden;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  scrollbar-gutter: stable;
-}
-.game-main[data-view-state="reading"] .exploration-hotspots {
-  visibility: hidden;
-  opacity: 0;
-  pointer-events: none;
+  overflow: auto;
 }
 .story-panel h2, .side-panel h2 { margin: 0; font-size: 12px; letter-spacing: 0.26em; text-transform: uppercase; color: var(--muted); }
 #game-story { min-height: 128px; margin-top: 26px; }
@@ -175,6 +319,14 @@ button { font: inherit; }
 .story-placeholder { color: var(--muted); line-height: 1.8; }
 
 .game-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; }
+.story-action-status {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  text-align: right;
+}
+.story-action-status--error { color: #e0aaa5; }
 .story-action { min-width: 112px; }
 .story-action--continue { position: relative; padding-right: 34px; }
 .story-action--continue::after { position: absolute; right: 14px; content: "›"; font-size: 20px; line-height: 1; }
@@ -196,23 +348,101 @@ button { font: inherit; }
   .game-header__title { width: 100%; order: -1; }
   .game-header .button { flex: 1; }
   .game-overlay { inset: 118px 10px 10px; }
+  .detail-root { inset: 0; padding: 12px; }
+  .detail-card { width: min(90vw, 360px); }
+  .detail-card__content { padding: 16px; }
+  .detail-card__close { top: 12px; right: 12px; }
   .story-panel { padding: 22px 18px; }
-}
-
-@media (max-width: 520px) {
+  .detail-root {
+    inset: 0;
+    padding: 12px;
+  }
+  .detail-card__close {
+    top: 12px;
+    right: 12px;
+  }
+  .detail-root > .detail-card,
+  .detail-root > .exploration-module {
+    max-height: calc(100vh - 24px);
+    max-height: calc(100dvh - 24px);
+  }
+  .detail-root > .exploration-module {
+    padding: 24px 18px;
+  }
+  .detail-root > .exploration-module img {
+    max-height: min(48vh, 420px);
+    max-height: min(48dvh, 420px);
+  }
   .game-main[data-view-state="reading"] .story-panel {
     position: relative;
     right: auto;
     bottom: auto;
     left: auto;
-    z-index: 10;
-    min-height: 190px;
-    max-height: min(52vh, 420px);
-    margin: -16px 8px 0;
-    padding: 28px 18px 16px;
+    min-height: 0;
+    max-height: min(38vh, 260px);
+    margin-top: -10px;
+    padding: 24px 18px 14px;
   }
   .game-main[data-view-state="reading"] .story-speaker { left: 18px; }
   .story-block { font-size: 16px; line-height: 1.72; }
   .game-actions { gap: 8px; }
+  .game-actions:has(.story-action--plot) { display: grid; grid-template-columns: 1fr; }
+  .game-actions:has(.story-action--plot) .story-action { width: 100%; max-width: 100%; white-space: normal; }
   .story-action { min-width: 96px; min-height: 38px; padding-block: 7px; }
+}
+
+@media (max-width: 520px) {
+  body {
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+  .game-shell {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding-bottom: 0;
+  }
+  .game-layout {
+    flex: 1 0 auto;
+    width: 100%;
+    min-height: 0;
+    margin: 0 auto;
+  }
+  .game-main[data-view-state="reading"] {
+    min-height: 100%;
+    grid-template-rows: auto auto minmax(190px, 1fr);
+    align-content: stretch;
+  }
+  .game-main[data-view-state="reading"] .story-panel {
+    align-self: stretch;
+    min-height: 190px;
+    max-height: none;
+    overflow: visible;
+  }
+  .game-main[data-view-state="reading"] #game-story {
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .game-main[data-view-state="reading"]
+    .exploration-module
+    .exploration-character-visual:not([hidden]) {
+    top: auto;
+    bottom: 0;
+    width: 54%;
+    height: 96%;
+    max-width: none;
+    object-position: center bottom;
+  }
+  .game-main[data-view-state="reading"]
+    .exploration-character-visual[data-placement="left"] {
+    right: auto;
+    left: 2%;
+  }
+  .game-main[data-view-state="reading"]
+    .exploration-character-visual[data-placement="right"] {
+    right: 2%;
+    left: auto;
+  }
 }

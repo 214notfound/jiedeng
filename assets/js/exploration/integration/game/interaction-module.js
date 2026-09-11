@@ -24,18 +24,28 @@ export function createInteractionModule(host) {
     if (sceneId !== sameScene()) throw new Error("地点已经变化。");
     const explored = exploration.getSceneView(sceneId);
     const talked = conversation.getSceneView(sceneId);
-    return {name: explored.name, interactions: [...explored.interactions, ...talked.interactions]};
+    return {...explored, interactions: [...explored.interactions, ...talked.interactions]};
   }
 
   function getLayout() {
     const explored = exploration.getLayout();
     const talked = conversation.getLayout();
-    return {playerStart: explored.playerStart, hotspots: [...explored.hotspots, ...talked.hotspots]};
+    return {hotspots: [...explored.hotspots, ...talked.hotspots]};
   }
 
   function getReadingInput(sceneId, actionId) {
     if (sceneId !== sameScene()) throw new Error("地点已经变化。");
     return conversation.getReadingInput(sceneId, actionId);
+  }
+
+  function completeReading(sceneId, actionId, result) {
+    if (sceneId !== sameScene()) throw new Error("地点已经变化。");
+    return conversation.completeReading(sceneId, actionId, result);
+  }
+
+  function getReadingChoiceInput(sceneId, actionIds) {
+    if (sceneId !== sameScene()) throw new Error("地点已经变化。");
+    return conversation.getReadingChoiceInput(sceneId, actionIds);
   }
 
   async function interact(sceneId, actionId, options) {
@@ -87,8 +97,11 @@ export function createInteractionModule(host) {
     getCurrentSceneId: sameScene,
     getSceneView,
     getLayout,
+    getReadingChoiceInput,
     getReadingInput,
+    completeReading,
     listItems: exploration.listItems,
+    getItemDetail: exploration.getItemDetail,
     interact,
     cancel: conversation.cancel,
     reportProgress: conversation.reportProgress,

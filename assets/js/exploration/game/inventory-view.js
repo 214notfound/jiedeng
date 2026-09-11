@@ -1,13 +1,23 @@
 // 背包视图：只读展示已提交物品；详情统一挂载到 controller 管理的 detail-root。
 import {element, button, region, createFeedback, playerMessage} from "./view-utils.js";
 
+export function getObtainedItem(module, itemId) {
+  if (typeof itemId !== "string" || !itemId.trim()) {
+    throw new TypeError("缺少要查看的物品或线索。");
+  }
+  const item = module.listItems().find((entry) => entry.id === itemId);
+  if (!item) throw new Error("这件物品或线索尚未获得。");
+  return item;
+}
+
 export function mountInventory({module, root, detailRoot, showFeedback, openDetail}) {
   if (typeof showFeedback !== "function") throw new TypeError("缺少反馈回调。");
   if (!detailRoot?.append) throw new TypeError("缺少详情容器。");
   if (typeof openDetail !== "function") throw new TypeError("缺少统一详情入口。");
 
   const container = region(root);
-  const detail = region(detailRoot);
+  const detailMount = detailRoot.querySelector?.(".detail-card__content") ?? detailRoot;
+  const detail = region(detailMount);
   const notify = createFeedback(container, showFeedback);
   const browser = element("div", "exploration-inventory-browser");
   const detailTitle = element("h2", "exploration-title", "详情");
@@ -15,7 +25,11 @@ export function mountInventory({module, root, detailRoot, showFeedback, openDeta
   detailImage.width = 240;
   detailImage.height = 240;
   detailImage.alt = "";
-  const detailImageError = element("p", "resource-fallback", "图片暂不可用，仍可阅读物品说明。");
+  const detailImageError = element(
+    "p",
+    "exploration-resource-fallback",
+    "图片暂不可用，仍可阅读物品说明。"
+  );
   detailImageError.hidden = true;
   detailImage.addEventListener("error", () => {
     detailImage.hidden = true;
@@ -29,28 +43,47 @@ export function mountInventory({module, root, detailRoot, showFeedback, openDeta
   let layer = "items";
   let active = true;
 
-  function renderDetail(itemId) {
-    const item = module.listItems().find((entry) => entry.id === itemId);
-    if (!item) throw new Error("这件物品尚未获得。");
-
+  function renderDetail(item) {
     detailTitle.textContent = item.name;
     detailImage.hidden = false;
     detailImageError.hidden = true;
     detailImage.alt = item.name;
-    detailImage.src = item.image;
+    detailImage.src = item.detailImage ?? item.image;
     detailDescription.textContent = item.description;
-    detailSource.textContent = "来源：" + item.source + " · 已获得";
+    detailSource.textContent = "来源：" + item.source + (item.obtained ? " · 已获得" : " · 已查看");
   }
 
   function openItem(itemId) {
     try {
-      renderDetail(itemId);
+      renderDetail(getObtainedItem(module, itemId));
       const result = openDetail(itemId);
       if (!result?.ok) {
         throw new Error(result?.message || "详情暂时无法打开。");
       }
     } catch (error) {
-      notify(playerMessage(error.message, "暂时无法查看这项内容，请重试。"), "error");
+      notify(
+        playerMessage(error.message, "暂时无法查看这项内容，请重试。"),
+        "error",
+        "OPERATION_FAILED"
+      );
+    }
+  }
+
+  function openTarget(itemId) {
+    try {
+      const item = module.getItemDetail?.(itemId);
+      if (!item) return false;
+      renderDetail(item);
+      const result = openDetail(itemId);
+      if (!result?.ok) throw new Error(result?.message || "详情暂时无法打开。");
+      return true;
+    } catch (error) {
+      notify(
+        playerMessage(error.message, "暂时无法查看这项内容，请重试。"),
+        "error",
+        "OPERATION_FAILED"
+      );
+      return false;
     }
   }
 
@@ -88,7 +121,7 @@ export function mountInventory({module, root, detailRoot, showFeedback, openDeta
         thumbnail.height = 64;
         const thumbnailError = element(
           "span",
-          "resource-fallback resource-fallback--thumbnail",
+          "exploration-resource-fallback exploration-resource-fallback--thumbnail",
           "图片暂不可用"
         );
         thumbnailError.hidden = true;
@@ -115,7 +148,11 @@ export function mountInventory({module, root, detailRoot, showFeedback, openDeta
       candidate?.focus();
     } catch (error) {
       browser.replaceChildren();
-      notify(playerMessage(error.message, "背包暂时无法读取，请重试。"), "error");
+      notify(
+        playerMessage(error.message, "背包暂时无法读取，请重试。"),
+        "error",
+        "OPERATION_FAILED"
+      );
     }
   }
 
@@ -129,12 +166,16 @@ export function mountInventory({module, root, detailRoot, showFeedback, openDeta
   }
   render();
 
-  return () => {
-    if (!active) return;
-    active = false;
-    unsubscribe();
-    container.remove();
-    detail.replaceChildren();
-    detail.remove();
-  };
+  return Object.freeze({
+    openItem,
+    openTarget,
+    dispose() {
+      if (!active) return;
+      active = false;
+      unsubscribe();
+      container.remove();
+      detail.replaceChildren();
+      detail.remove();
+    }
+  });
 }

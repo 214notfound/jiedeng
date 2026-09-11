@@ -5,6 +5,7 @@ import {
 } from "../data/exploration.js";
 import {NODE_SCENES, sceneName} from "../core/story-scenes.js";
 import {ITEMS} from "../data/items.js";
+import {scenePresentationFor} from "../data/scene-assets.js";
 import {bindHost, requireIds} from "../core/host-binding.js";
 
 function validateEnvelope(context) {
@@ -47,7 +48,8 @@ export function validateExplorationContext(context) {
   for (const command of context.commands) {
     if (command.commandType === "REQUEST_EXPLORATION") {
       const task = explorationTaskFor(command);
-      if (!task || task.node !== checkpoint.nodeId || !Array.isArray(command.payload.goals)) {
+      if (!task || task.node !== checkpoint.nodeId || task.interactionType !== "item"
+        || !Array.isArray(command.payload.goals)) {
         throw new Error("未知或不属于当前 Node 的探索任务。");
       }
     }
@@ -87,7 +89,8 @@ export function createExploration(host) {
           .filter((action) => command || action.facts.every((fact) => facts.includes(fact)))
           .map((action) => {
             const completed = action.facts.every((fact) => facts.includes(fact));
-            return {...action, task, command, completed, available: completed || Boolean(command)};
+            return {...action, interactionType: task.interactionType,
+              task, command, completed, available: completed || Boolean(command)};
           });
       });
   }
@@ -101,12 +104,19 @@ export function createExploration(host) {
     if (sceneId !== NODE_SCENES[context.state.storyCheckpoint.nodeId]) {
       throw new Error("地点已经变化。");
     }
-    return {name: sceneName(sceneId), interactions: entries(context)};
+    const presentation = scenePresentationFor(sceneId, {facts: context.state.facts});
+    if (!presentation) throw new Error("场景展示资源不存在。");
+    return {
+      name: sceneName(sceneId),
+      sceneId: presentation.sceneId,
+      sceneVariant: presentation.variantId,
+      sceneImage: presentation.image,
+      interactions: entries(context)
+    };
   }
 
   function getLayout() {
     return {
-      playerStart: {x: 50, y: 92},
       hotspots: entries(bound.read()).map((action) => ({
         id: action.id,
         x: action.x,
@@ -132,6 +142,21 @@ export function createExploration(host) {
     });
   }
 
+  function getItemDetail(itemId) {
+    const {state} = bound.read();
+    const item = ITEMS.find((entry) => entry.id === itemId);
+    if (!item) return null;
+    const stateLayer = state.inventory.includes(itemId)
+      ? "items"
+      : state.clues.includes(itemId) ? "clues" : null;
+    const action = EXPLORATION_TASKS
+      .flatMap((task) => task.actions)
+      .find((entry) => entry.id === itemId);
+    const inspected = Boolean(action?.facts.every((fact) => state.facts.includes(fact)));
+    if (!stateLayer && !inspected) return null;
+    return {...item, layer: stateLayer, obtained: Boolean(stateLayer), inspected};
+  }
+
   async function send(task, command, actionId, eventType, facts, payload) {
     if (busy || uncertain) throw new Error("上一操作尚未确认，请等待或重新进入。");
     busy = true;
@@ -148,21 +173,30 @@ export function createExploration(host) {
         resultFactIds: [...facts],
         payload
       };
-      const result = await host.dispatchExternalEvent(event, {storageScope: bound.scope});
-      const after = bound.read();
+      let result;
+      try {
+        result = await host.dispatchExternalEvent(event, {storageScope: bound.scope});
+      } catch (error) {
+        uncertain = true;
+        throw error;
+      }
       if (!result || typeof result.ok !== "boolean") {
         uncertain = true;
         throw new Error("操作结果无法确认，请重新进入。");
       }
-      if (!result.ok) throw new Error(result.message || "操作未提交，请重新进入。");
+      if (!result.ok) throw new Error(result.message || "操作未提交，请重试。");
+      let after;
+      try {
+        after = bound.read();
+      } catch (error) {
+        uncertain = true;
+        throw error;
+      }
       if (!facts.every((fact) => after.state.facts.includes(fact))) {
         uncertain = true;
         throw new Error("事实尚未提交，暂时停止后续操作。");
       }
       return result;
-    } catch (error) {
-      uncertain = true;
-      throw error;
     } finally {
       busy = false;
     }
@@ -218,6 +252,7 @@ export function createExploration(host) {
     getSceneView,
     getLayout,
     listItems,
+    getItemDetail,
     interact,
     cancel,
     pendingLabels,

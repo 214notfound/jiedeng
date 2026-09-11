@@ -9,7 +9,6 @@ import { createMapPuzzleAdapter } from "../minigames/map-puzzle/adapter/map-puzz
 import { getAchievementEvents } from "../achievements/game/achievements.js";
 import { saveGame } from "./storage.js";
 import { STORY_FACT_DEFINITIONS } from "./game-contract.js";
-import { playerFacingFeedback, storageResultFeedback } from "./player-feedback.js";
 
 export const VIEW_STATES = Object.freeze({
   READING: "reading",
@@ -18,6 +17,37 @@ export const VIEW_STATES = Object.freeze({
   INVENTORY: "inventory",
   MINIGAME: "minigame"
 });
+
+export const PLAYER_FEEDBACK_RESULTS = Object.freeze({
+  SAVE_NOT_FOUND: Object.freeze({
+    message: "没有找到可继续的存档。请返回主菜单，选择“开始新游戏”。",
+    nextAction: "返回主菜单并开始新游戏"
+  }),
+  SAVE_INVALID: Object.freeze({
+    message: "存档已损坏，暂时无法继续。原存档已保留，请返回主菜单后重新开始。",
+    nextAction: "返回主菜单并重新开始"
+  }),
+  SAVE_VERSION_UNSUPPORTED: Object.freeze({
+    message: "这个存档来自不兼容的旧版本，暂时无法继续。旧存档已保留，请返回主菜单开始新游戏。",
+    nextAction: "返回主菜单并开始新游戏"
+  }),
+  STORAGE_UNAVAILABLE: Object.freeze({
+    message: "浏览器存储暂时不可用。请检查浏览器存储设置后重试；仍然失败时请重新登录。",
+    nextAction: "检查设置并重试，或重新登录"
+  }),
+  OPERATION_FAILED: Object.freeze({
+    message: "操作没有完成，请重试；仍无法继续时请返回主菜单。",
+    nextAction: "重试，或返回主菜单"
+  }),
+  SAVE_SUCCESS: Object.freeze({
+    message: "进度已保存，可以继续游戏。",
+    nextAction: "继续游戏"
+  })
+});
+
+export function feedbackForResult(code) {
+  return PLAYER_FEEDBACK_RESULTS[code] ?? PLAYER_FEEDBACK_RESULTS.OPERATION_FAILED;
+}
 
 const BASE_VIEW_STATES = new Set([VIEW_STATES.READING, VIEW_STATES.EXPLORATION]);
 const OVERLAY_VIEW_STATES = new Set([
@@ -30,9 +60,23 @@ const EXTERNAL_COMMAND_TYPES = new Set([
   "REQUEST_CONVERSATION",
   "REQUEST_MINIGAME"
 ]);
-function showFeedback(message, type = "info") {
+const TECHNICAL_FEEDBACK_PATTERN = /(?:\b(?:Node|command|event|payload|source|state|localStorage|storageScope|schemaVersion|storyCheckpoint|pendingCommands|resultFactIds)\b|[A-Z]{2,}(?:_[A-Z0-9]+)+|\b[a-z]+(?:-[a-z0-9]+){2,}\b|模块|接口|挂载|订阅|存储域|结构不正确|检查点与命令|格式无效|无权产生)/;
+
+function playerFacingFeedback(message, type) {
+  if (typeof message !== "string" || !message.trim()) {
+    return "操作没有完成，请重试；仍无法继续时请返回主菜单。";
+  }
+  if (["error", "warning"].includes(type) && TECHNICAL_FEEDBACK_PATTERN.test(message)) {
+    console.error("[white-lamp:player-feedback] 已隐藏内部错误详情", message);
+    return "操作没有完成，请重试；仍无法继续时请返回主菜单。";
+  }
+  return message;
+}
+
+function showFeedback(message, type = "info", resultCode) {
   const element = document.getElementById("feedback");
-  const visibleMessage = playerFacingFeedback(message, {type});
+  const mappedMessage = resultCode ? feedbackForResult(resultCode).message : message;
+  const visibleMessage = playerFacingFeedback(mappedMessage, type);
 
   if (!element) {
     console.log(`[white-lamp:${type}] ${visibleMessage}`);
@@ -126,6 +170,7 @@ export function createViewCoordinator({
 
   function render() {
     const visible = visibleStates();
+    sceneRoot.closest?.(".game-main")?.setAttribute("data-view-state", currentView);
     setLayerState(sceneRoot, {
       visible: visible.has(VIEW_STATES.EXPLORATION) || currentView === VIEW_STATES.READING,
       interactive: currentView === VIEW_STATES.EXPLORATION
@@ -212,6 +257,73 @@ export function createViewCoordinator({
   });
 }
 
+export function createDetailDismissController({
+  viewCoordinator,
+  keyTarget = globalThis.document,
+  navigationTarget = globalThis,
+  historyTarget = globalThis.history
+}) {
+  if (!viewCoordinator || typeof viewCoordinator.getState !== "function"
+    || typeof viewCoordinator.closeOverlay !== "function") {
+    throw new TypeError("详情关闭控制器缺少页面状态协调器。");
+  }
+
+  let ownsHistoryEntry = false;
+  let ignoreNextPopState = false;
+
+  function closeDetail({fromHistory = false} = {}) {
+    if (viewCoordinator.getState() !== VIEW_STATES.DETAIL) {
+      return {ok: false, message: "当前没有打开详情。"};
+    }
+    const result = viewCoordinator.closeOverlay();
+    if (!result.ok) return result;
+
+    if (ownsHistoryEntry && !fromHistory && typeof historyTarget?.back === "function") {
+      ignoreNextPopState = true;
+      historyTarget.back();
+    }
+    ownsHistoryEntry = false;
+    return result;
+  }
+
+  function handleKeydown(event) {
+    if (event.key !== "Escape" || viewCoordinator.getState() !== VIEW_STATES.DETAIL) return;
+    event.preventDefault?.();
+    closeDetail();
+  }
+
+  function handlePopState() {
+    if (ignoreNextPopState) {
+      ignoreNextPopState = false;
+      return;
+    }
+    if (viewCoordinator.getState() === VIEW_STATES.DETAIL) {
+      closeDetail({fromHistory: true});
+    }
+  }
+
+  keyTarget?.addEventListener?.("keydown", handleKeydown);
+  navigationTarget?.addEventListener?.("popstate", handlePopState);
+
+  return Object.freeze({
+    markDetailOpened() {
+      if (viewCoordinator.getState() !== VIEW_STATES.DETAIL || ownsHistoryEntry) return;
+      if (typeof historyTarget?.pushState === "function") {
+        historyTarget.pushState({
+          ...(historyTarget.state && typeof historyTarget.state === "object" ? historyTarget.state : {}),
+          whiteLampOverlay: VIEW_STATES.DETAIL
+        }, "");
+        ownsHistoryEntry = true;
+      }
+    },
+    closeDetail,
+    destroy() {
+      keyTarget?.removeEventListener?.("keydown", handleKeydown);
+      navigationTarget?.removeEventListener?.("popstate", handlePopState);
+    }
+  });
+}
+
 export function setupGamePage() {
   let gameFlow;
   let interactionModule;
@@ -279,6 +391,7 @@ export function setupGamePage() {
     minigameRoot,
     onChange: syncTopBar
   });
+  const detailDismissController = createDetailDismissController({viewCoordinator});
 
   // 外部结果与成就均登记后再刷新展示，展示端不参与状态决策。
   function updateView(key, render) {
@@ -412,7 +525,7 @@ export function setupGamePage() {
     if (!result.ok) showFeedback(result.message, "warning");
   };
   const handleCloseInventory = () => viewCoordinator.closeOverlay();
-  const handleCloseDetail = () => viewCoordinator.closeOverlay();
+  const handleCloseDetail = () => detailDismissController.closeDetail();
   const handleOpenMinigame = () => {
     const command = getMapCommand();
     if (!command) {
@@ -426,7 +539,9 @@ export function setupGamePage() {
       return {ok: false, message: "缺少要查看的线索。"};
     }
     detailRoot.dataset.targetId = targetId;
-    return viewCoordinator.openOverlay(VIEW_STATES.DETAIL);
+    const result = viewCoordinator.openOverlay(VIEW_STATES.DETAIL);
+    if (result.ok) detailDismissController.markDetailOpened();
+    return result;
   };
 
   returnMenuButton.addEventListener("click", handleReturnMenu);
@@ -487,11 +602,7 @@ export function setupGamePage() {
       }),
       onError: (error) => {
         console.error("[white-lamp:game-flow]", error.developerMessage);
-        showFeedback(storageResultFeedback({
-          ok: false,
-          code: error.errorCode,
-          message: error.userMessage
-        }), "error");
+        showFeedback(error.userMessage, "error", error.errorCode);
       }
     });
 
@@ -500,12 +611,12 @@ export function setupGamePage() {
       const saveResult = saveGame(gameFlow.getState(), storageScope);
 
       if (!saveResult.ok) {
-        showFeedback(storageResultFeedback(saveResult, {operation: "save"}), "error");
+        showFeedback(saveResult.message, "error", saveResult.code);
         return saveResult;
       }
 
       gameFlow.replaceState(saveResult.data.state);
-      showFeedback(storageResultFeedback(saveResult, {operation: "save"}), "success");
+      showFeedback("进度已保存。", "success", "SAVE_SUCCESS");
       return saveResult;
     }
 
@@ -606,6 +717,7 @@ export function setupGamePage() {
       openConversation(input, callbacks = {}) {
         viewCoordinator.showBase(VIEW_STATES.READING);
         gameView.openConversation(input, {
+          onAction: callbacks.onAction,
           onComplete: async (result) => {
             try {
               const outcome = await callbacks.onComplete?.(result);
@@ -635,6 +747,7 @@ export function setupGamePage() {
       closeInventoryButton.removeEventListener("click", handleCloseInventory);
       openMinigameButton.removeEventListener("click", handleOpenMinigame);
       closeDetailButton.removeEventListener("click", handleCloseDetail);
+      detailDismissController.destroy();
       saveButton.removeEventListener("click", handleSave);
       removeExploration?.();
       interactionModule?.dispose();
