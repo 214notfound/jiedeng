@@ -16,6 +16,7 @@ class FakeElement {
     this.disabled = false;
     this.parentElement = null;
     this.textContent = "";
+    this.style = {};
     this.listeners = new Map();
   }
 

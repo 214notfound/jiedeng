@@ -62,14 +62,19 @@ export function splitReadingText(text) {
 function renderTextItem(storyElement, item) {
   storyElement.replaceChildren();
   const storyPanel = storyElement.closest?.(".story-panel");
+  const segments = splitReadingText(item.text);
 
   storyElement.dataset.contentKind = item.kind;
   if (storyPanel) storyPanel.dataset.contentKind = item.kind;
 
-  splitReadingText(item.text).forEach((labelledText, index) => {
+  segments.forEach((labelledText, index) => {
     if (labelledText.speaker) {
       const speaker = document.createElement("p");
       speaker.className = "story-speaker";
+      if (segments.length > 1) {
+        speaker.style.position = "static";
+        speaker.style.transform = "none";
+      }
       speaker.textContent = labelledText.speaker;
       storyElement.append(speaker);
     }
