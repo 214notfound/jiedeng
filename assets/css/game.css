@@ -322,6 +322,41 @@ button { font: inherit; }
 .side-panel ul { display: grid; gap: 8px; margin: 16px 0 0; padding: 0; list-style: none; }
 .side-panel li { padding: 9px 10px; color: var(--muted); background: rgba(255, 255, 255, 0.03); border-left: 2px solid var(--line); font-size: 13px; }
 .side-panel .empty-item { opacity: 0.6; font-style: italic; }
+
+/*
+ * 桌面端的 16:9 场景同时受页面宽度和可用视口高度约束。
+ * 这里只收窄现有场景容器；场景图与热点仍共享原坐标空间，避免热点漂移。
+ */
+@media (min-width: 768px) {
+  .game-main {
+    --game-stage-height-budget: max(320px, calc(100vh - 216px));
+    --game-stage-height-budget: max(320px, calc(100dvh - 216px));
+    --game-scene-fit-width: min(
+      100%,
+      calc(var(--game-stage-height-budget) * 16 / 9 + 34px)
+    );
+    --game-story-safe-inline: clamp(14px, 4vw, 58px);
+  }
+  .game-shell:has(> .feedback:not([hidden])) .game-main {
+    --game-stage-height-budget: max(320px, calc(100vh - 270px));
+    --game-stage-height-budget: max(320px, calc(100dvh - 270px));
+  }
+  .game-main > .scene-panel {
+    width: var(--game-scene-fit-width);
+    margin-inline: auto;
+  }
+  .game-main[data-view-state="reading"] .story-panel {
+    right: auto;
+    left: 50%;
+    width: calc(
+      var(--game-scene-fit-width)
+      - var(--game-story-safe-inline)
+      - var(--game-story-safe-inline)
+    );
+    transform: translateX(-50%);
+  }
+}
+
 @media (max-width: 860px) {
   .scene-panel { min-height: 230px; }
 }
