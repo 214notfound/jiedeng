@@ -323,15 +323,15 @@ async function run() {
     assert.equal(narrationPanel.kind, "narration");
     assert.equal(narrationPanel.storyMode, "story");
     assert.equal(narrationPanel.storyKind, "narration");
-    assert.ok(narrationPanel.height <= 260);
-    assert.equal(narrationPanel.maxHeight, "260px");
+    assert.ok(narrationPanel.height <= 220);
+    assert.equal(narrationPanel.maxHeight, "220px");
     const narrationBlock = page.locator("#game-story .story-block");
     const narrationText = await narrationBlock.textContent();
     await narrationBlock.evaluate((node, text) => {
       node.textContent = text.repeat(24);
     }, narrationText);
     const longNarrationPanel = await readingPanelLayout();
-    assert.ok(longNarrationPanel.height <= 260);
+    assert.ok(longNarrationPanel.height <= 220);
     assert.ok(longNarrationPanel.storyScrollHeight > longNarrationPanel.storyClientHeight);
     assert.equal(longNarrationPanel.actionsInside, true);
     await narrationBlock.evaluate((node, text) => {
