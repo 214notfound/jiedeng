@@ -36,8 +36,8 @@ export function commandsFor(state){
    commandType:t.type==="exploration"?"REQUEST_EXPLORATION":"REQUEST_CONVERSATION",
    payload:{[t.type==="exploration"?"explorationId":"conversationId"]:t.target,
      ...(t.type==="conversation"?{npcIds:t.npc==="unknown-caller"?["unknown-caller","companion-x"]:[t.npc,...(t.npc!=="companion-x"?["companion-x"]:[])]}:{}),
-     goals:[...(t.type==="exploration"?t.actions.flatMap(a=>a.facts):t.actions[0].facts).map(f=>({goalId:f,description:t.label})),
-       ...(t.target==="prologue-key-and-memory"?[{goalId:"x-memory-deflection-noticed",description:"可选追问"}]:[])]}}));
+     goals:(t.type==="exploration"?t.actions.flatMap(a=>a.facts):t.actions[0].facts)
+       .map(f=>({goalId:f,description:t.label}))}}));
  if(node.id==="village-map-and-route"&&!has(state,["map-puzzle-completed"])&&has(state,["map-fragment-1-acquired","map-fragment-2-acquired","map-fragment-3-acquired"]))
  commands.push({commandId:"cmd-village-map-and-route-map-puzzle",commandType:"REQUEST_MINIGAME",payload:{minigameId:"map-puzzle",successFactId:"map-puzzle-completed"}});
  return commands;
@@ -73,5 +73,4 @@ export function settle(state){
    completedStageIds:["prologue","village","old-house"].filter(stage=>NODES.filter(n=>n.stage===stage).every(n=>has(state,n.needs))),
    pendingCommands:[]};
  state.storyCheckpoint.pendingCommands=commandsFor(state).map(c=>({commandId:c.commandId,commandType:c.commandType,targetId:c.payload.explorationId??c.payload.conversationId??c.payload.minigameId}));
- if(current.id==="prologue-belongings"&&state.facts.includes("x-deflects-memory-question-noticed"))state.storyCheckpoint.completedMilestoneIds.push("x-memory-deflection-noticed");
 }

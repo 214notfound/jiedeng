@@ -271,6 +271,27 @@
   text-align: center;
 }
 
+.pz-root[data-resource-state="loading"] .pz-board,
+.pz-root[data-resource-state="loading"] .pz-tray {
+  opacity: 0.42;
+  pointer-events: none;
+}
+
+.pz-root[data-resource-state="error"] .pz-board,
+.pz-root[data-resource-state="error"] .pz-tray {
+  display: none;
+}
+
+.pz-root[data-resource-state="error"] .pz-status {
+  max-width: 32rem;
+  margin: auto;
+  padding: 24px;
+  color: var(--pz-text);
+  border: 1px solid rgba(239, 239, 227, 0.18);
+  line-height: 1.8;
+  letter-spacing: 0.08em;
+}
+
 /* 降低动效偏好时关闭晃动用例 */
 @media (prefers-reduced-motion: reduce) {
   .pz-piece, .pz-slot::after, .pz-cancel__arrow {
