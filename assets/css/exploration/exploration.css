@@ -3,8 +3,8 @@
   box-sizing: border-box;
   max-width: 100%;
   padding: 1rem;
-  color: #222;
-  background: #f5f5f5;
+  color: var(--paper);
+  background: transparent;
   overflow-wrap: anywhere;
 }
 .exploration-module * {
@@ -13,34 +13,107 @@
 .exploration-module .exploration-title {
   margin: 0 0 .75rem;
 }
+.exploration-module .exploration-subscene-return {
+  position: relative;
+  z-index: 3;
+  min-height: 44px;
+  margin-bottom: 8px;
+  color: #f4eedf;
+  background: #202831;
+  border: 1px solid #66717e;
+}
+.game-main:not([data-view-state="exploration"]) .exploration-subscene-return {
+  visibility: hidden;
+}
 .exploration-module .exploration-stage {
   position: relative;
-  height: 420px;
-  background: #e9e9e9;
-  border: 1px solid #888;
+  aspect-ratio: 16 / 9;
+  min-height: 0;
+  height: auto;
+  background: #11151c;
+  outline: 1px solid #888;
+}
+.exploration-module .exploration-scene-image {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: contain;
+  pointer-events: none;
+}
+.exploration-module .exploration-character-visual {
+  position: absolute;
+  z-index: 2;
+  top: auto;
+  bottom: -2%;
+  width: min(38%, 390px);
+  height: 92%;
+  max-width: none;
+  object-fit: contain;
+  object-position: center top;
+  opacity: 0;
+  filter: drop-shadow(0 14px 22px rgb(0 0 0 / 72%));
+  pointer-events: none;
+  transition: opacity 140ms ease-out;
+}
+.exploration-module .exploration-character-visual[data-placement="left"] { left: 5%; }
+.exploration-module .exploration-character-visual[data-placement="right"] { right: 5%; }
+.game-main[data-view-state="reading"] .exploration-character-visual:not([hidden]) {
+  opacity: 1;
+}
+.exploration-module .scene-coordinate-space {
+  width: 100%;
+  overflow: hidden;
+}
+.exploration-module .scene-coordinate-space::before {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(145deg, rgb(13 18 27 / 8%), rgb(13 18 27 / 18%)),
+    radial-gradient(circle at 72% 28%, rgb(245 240 227 / 8%), transparent 22%);
+  z-index: 1;
+  content: "";
+  pointer-events: none;
+}
+.exploration-module .exploration-hotspots {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
 }
 .exploration-module .scene-hotspot {
   position: absolute;
   transform: translate(-50%, -50%);
-  max-width: 120px;
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
   min-height: 44px;
-  padding: .5rem;
-  font: inherit;
-  background: #fff;
-  color: #222;
-  border: 1px solid #555;
-  border-radius: .4rem;
+  padding: 0;
+  overflow: hidden;
+  color: transparent;
+  background: radial-gradient(circle, #fff9c4 0 10%, #f5d76e 11% 22%, rgb(245 215 110 / 32%) 23% 42%, transparent 68%);
+  border: 0;
+  border-radius: 50%;
+  box-shadow: 0 0 13px rgb(245 215 110 / 88%);
   cursor: pointer;
+  font-size: 0;
 }
 .exploration-module .scene-hotspot:hover {
-  background: #ddd;
+  background: radial-gradient(circle, #fff 0 12%, #ffe58d 13% 26%, rgb(245 215 110 / 42%) 27% 48%, transparent 70%);
+  box-shadow: 0 0 19px rgb(255 229 141 / 100%);
 }
 .exploration-module .is-completed {
-  border-style: dashed;
+  opacity: .62;
 }
 .exploration-module .is-disabled {
-  color: #666;
-  background: #ddd;
+  filter: grayscale(1);
+}
+.game-main[data-view-state="reading"] .exploration-hotspots {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
 }
 .exploration-module .exploration-controls {
   display: flex;
@@ -68,9 +141,9 @@
 }
 .exploration-module .content-card {
   padding: .75rem;
-  border: 1px solid #aaa;
+  border: 1px solid var(--line);
   margin-top: .5rem;
-  background: white;
+  background: var(--panel-soft);
 }
 .exploration-module img {
   object-fit: contain;
@@ -87,15 +160,30 @@
   background: transparent;
   color: inherit;
 }
+.exploration-module .exploration-resource-fallback {
+  color: inherit;
+  line-height: 1.5;
+}
+.exploration-module .exploration-resource-fallback--thumbnail {
+  display: grid;
+  width: 64px;
+  height: 64px;
+  padding: .375rem;
+  place-items: center;
+  box-sizing: border-box;
+  border: 1px dashed currentColor;
+  text-align: center;
+  font-size: .75rem;
+}
 .exploration-module .exploration-item-dialog {
   width: min(90vw, 560px);
   max-height: 85vh;
   overflow: auto;
-  border: 1px solid #555;
-  border-radius: .5rem;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-lg);
   padding: 1rem;
-  background: #fff;
-  color: #222;
+  background: var(--bg-elevated);
+  color: var(--paper);
 }
 .exploration-module .exploration-item-dialog::backdrop {
   background: rgb(0 0 0 / 55%);
@@ -112,12 +200,17 @@
     padding: .5rem;
   }
   .exploration-module .exploration-stage {
-    height: 540px;
+    aspect-ratio: 16 / 9;
   }
   .exploration-module .scene-hotspot {
-    max-width: 72px;
-    padding: .35rem;
-    font-size: .75rem;
-    line-height: 1.35;
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+  }
+  .exploration-module .exploration-character-visual {
+    top: auto;
+    bottom: -2%;
+    width: 42%;
+    height: 96%;
   }
 }

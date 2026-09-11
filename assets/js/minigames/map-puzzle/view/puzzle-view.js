@@ -22,6 +22,40 @@ const DEFAULT_ARTWORK_URL = new URL(
   import.meta.url
 ).href;
 
+export function watchArtworkResource(url, {
+  ImageConstructor = globalThis.Image,
+  onLoad = () => {},
+  onError = () => {}
+} = {}) {
+  let active = true;
+  let probe = null;
+  const finish = (callback) => {
+    if (!active) return;
+    active = false;
+    callback();
+  };
+
+  if (typeof url !== "string" || !url.trim()) {
+    finish(onError);
+  } else if (url.startsWith("data:")) {
+    finish(onLoad);
+  } else if (typeof ImageConstructor !== "function") {
+    finish(onError);
+  } else {
+    probe = new ImageConstructor();
+    probe.onload = () => finish(onLoad);
+    probe.onerror = () => finish(onError);
+    probe.src = url;
+  }
+
+  return () => {
+    active = false;
+    if (!probe) return;
+    probe.onload = null;
+    probe.onerror = null;
+  };
+}
+
 /**
  * 生成一张「占位地图原图」。
  * 绘制内容故意横跨多个格子(河流、山形、建筑)，让玩家能通过连续图案拼合。
@@ -217,6 +251,8 @@ export function mountPuzzle(container, options) {
   // 状态行
   const status = document.createElement("div");
   status.className = "pz-status";
+  status.setAttribute("role", "status");
+  status.setAttribute("aria-live", "polite");
 
   root.append(header, board, tray, status);
   container.appendChild(root);
@@ -227,10 +263,41 @@ export function mountPuzzle(container, options) {
   let selectedPieceId = null;   // 点击模式选中的块
   let dragPieceId = null;       // 正在拖拽的块
   let suppressNextClick = false; // pointerup 已把“点击”消费掉，阻止 click 二次触发
+  let artworkReady = false;
+  let artworkFailed = false;
+  let stopArtworkWatch = () => {};
+  let destroyed = false;
 
   const syncStatus = () => {
+    if (artworkFailed) {
+      status.textContent = "地图图片暂时无法加载，请返回后重试。";
+      return;
+    }
+    if (!artworkReady) {
+      status.textContent = "地图正在加载……";
+      return;
+    }
     status.textContent = `已拼好 ${lockedCount} / ${level.pieceIds.length} 块`;
   };
+
+  function finishArtworkLoad(ok) {
+    if (destroyed) return;
+    artworkReady = ok;
+    artworkFailed = !ok;
+    root.dataset.resourceState = ok ? "ready" : "error";
+    board.hidden = !ok;
+    tray.hidden = !ok;
+    syncStatus();
+  }
+
+  function startArtworkLoad() {
+    root.dataset.resourceState = "loading";
+    syncStatus();
+    stopArtworkWatch = watchArtworkResource(artwork, {
+      onLoad: () => finishArtworkLoad(true),
+      onError: () => finishArtworkLoad(false)
+    });
+  }
 
   // 已有锁定(读档恢复场景)：直接把拼块放进对应槽
   lockedPairs.forEach(({ pieceId, slotId }) => {
@@ -244,7 +311,7 @@ export function mountPuzzle(container, options) {
 
   /* ---------- 放置逻辑(点击与拖拽共用) ---------- */
   function attemptPlace(pieceId, slotId) {
-    if (completed) return;
+    if (completed || !artworkReady || artworkFailed) return;
     let result;
     try {
       result = onPlace(pieceId, slotId);
@@ -297,7 +364,7 @@ export function mountPuzzle(container, options) {
 
   /* ---------- 点击模式: 先选块, 再点槽 ---------- */
   function handlePieceClick(pieceId) {
-    if (completed) return;
+    if (completed || !artworkReady || artworkFailed) return;
     if (!pieceEls.has(pieceId)) return; // 已经锁定的块不可再选
 
     // 切换选中
@@ -315,7 +382,7 @@ export function mountPuzzle(container, options) {
   }
 
   function handleSlotClick(slotId) {
-    if (!selectedPieceId) return;
+    if (!artworkReady || artworkFailed || !selectedPieceId) return;
     const pieceId = selectedPieceId;
     selectedPieceId = null;
     if (pieceEls.has(pieceId)) {
@@ -327,7 +394,7 @@ export function mountPuzzle(container, options) {
   /* ---------- 拖拽模式(Pointer Events, 鼠标/触屏统一) ---------- */
   function onPointerDown(event) {
     const pieceEl = event.target.closest(".pz-piece");
-    if (!pieceEl || completed) return;
+    if (!pieceEl || completed || !artworkReady || artworkFailed) return;
     const pieceId = pieceEl.dataset.pieceId;
     if (!pieceEls.has(pieceId)) return; // 已锁定的块
 
@@ -461,11 +528,13 @@ export function mountPuzzle(container, options) {
   }
   root.addEventListener("click", onClick);
 
-  syncStatus();
+  startArtworkLoad();
 
   /* ---------- 卸载 ---------- */
   return {
     destroy() {
+      destroyed = true;
+      stopArtworkWatch();
       resetDraggedPiece();
       root.removeEventListener("pointerdown", onPointerDown);
       root.removeEventListener("pointermove", onPointerMove);

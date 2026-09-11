@@ -19,7 +19,7 @@
 7. assets/js/game-line/game/story-request.js
 8. assets/js/game-line/game/story-engine.js
 
-入口是 window.WhiteLamp.story.enterStory(request)。以上是仓库根目录相对路径；在 pages/exploration/game.html 中引用时前缀应为 ../../。这些为普通脚本，有固定顺序；探索自身为 ES Module，不依赖剧情内部全局对象。
+入口是 window.WhiteLamp.story.enterStory(request)。以上是仓库根目录相对路径，由正式 `pages/game.html` 按既定顺序加载。这些为普通脚本，有固定顺序；探索自身为 ES Module，不依赖剧情内部全局对象。
 
 唯一调用者是协调器。探索服务、背包、成就服务均不直接调用该入口。当前包提供挂载接口，实际协调器和状态实现仍由相应负责人维护。
 
@@ -43,30 +43,28 @@ goals[].goalId 是里程碑 ID，resultFactIds 是事实 ID，例如 burned-work
 
 已取消的 trust-x/doubt-x 不再添加。本包不揭露后续身份答案。
 
-## 当前上游缺口：可选记忆事实
+## 已确认规则：追问对白不记录可选记忆事实
 
-文档允许 x-deflects-memory-question-noticed。但当前 data/prologue.js 的 prologue-key-and-memory 只有 key-received-from-x 一个 goalId；story-runtime.js 的 getHandoffFactIds 只从 goalIds 取允许事实，story-request.js 因此拒绝可选记忆事实。
+剧情与探索侧已确认采用方案 A。`prologue-key-and-memory` 只以 `key-received-from-x` 为目标；“追问过去，再接过钥匙”只改变本次展示的对白路径，不产生或保存 `x-deflects-memory-question-noticed`。
 
 本包行为：
 
 - 玩家仍能选择追问过去，内容正常展示。
 - 确认后只报告当前命令支持的 key-a-given-by-x，完成交钥匙并推进。
-- 不把没有提交的可选事实假装已经保存。
-- reportProgress 明确拒绝上游尚未开放的可选事实，也不允许用“中途进展”提交完整谈话。
+- 不把追问选择或对白展示解释为新增剧情事实。
+- `reportProgress` 拒绝这项未约定的事实，也不允许用“中途进展”提交完整谈话。
 - 原引擎快照保持不变；有专门回归测试固定上述行为。
 
-需要剧情负责人区分“允许回报的可选事实”和“决定 handoff 完成的必需目标”。不能简单把可选里程碑加入当前 goalIds，因为引擎把 goalIds 全部当作完成条件，会把可选追问变为必选。修复时明确返回给外部模块的能力信息，并同步调整本模块的可选事实适配及测试。
+不要把可选里程碑加入当前 `goalIds`，也不要由对话模块越权补记事实。若未来产品重新要求保存这项选择，必须先由剧情合同提供不会将可选项变成必选条件的正式能力，再同步调整数据和测试；该扩展不属于当前版本。
 
-因此：必需主线和两个模块展示已兼容当前引擎；可选追问的事实持久化尚受上游限制，不能宣称该项完全通过。
+因此：当前必需主线、追问展示和保存语义已经统一，不再把此项列为待解决的上游缺口。
 
 ## 快照检出稳定性
 
 来源清单按文件原始字节计算 SHA-256。快照目录内的 `.gitattributes` 使用 `*.js -text`，防止 Git 在不同平台检出时转换换行并使哈希失效。提交前必须在一次干净的 Git 重新检出后再次运行哈希测试。
 
-## 演示与正式系统的区别
+## 测试夹具与正式系统的区别
 
-- demo=1：加载原样真实剧情引擎；engine-host.js 模拟协调器、状态提交和 sessionStorage。旧 story-fixture.js 只用于隔离单元测试，不驱动当前浏览器演示。
-- 演示地图只用确认框注入成功/取消事件，不提供队友的拼图玩法。
-- 演示保存键是 jiedeng:demo:engine-handoff:v3:<storageScope>，不读写正式账户存档。刷新恢复调用真实 resume。
-- 不带 demo=1：等待正式宿主。未注入时不可游玩，不能当作已接入账户/存档。
-- 正式接入后才可移除演示脚本和其测试依赖；删除前确认页面不会加载它们，不删除队友 demo。
+- `engine-host.js`、`story-fixture.js` 和 vendor 快照只用于自动化测试，不驱动正式页面，也不读写正式账户存档。
+- 正式页面只使用 `pages/game.html`、正式 Host、统一页面协调器和队友提供的地图拼图。
+- 早期独立探索演示入口及其确认框地图模拟已退役；测试仍验证真实剧情引擎兼容、失败重试和完整 E1–E5 链路。
