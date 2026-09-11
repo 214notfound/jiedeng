@@ -197,7 +197,7 @@ p.project-prose { margin-bottom: 0; }
 }
 
 /* V1.4 视觉重构：复用封面雨夜素材，把 About 页面变为沉浸式叙事展览。 */
-:root {
+.about-page {
   --about-bg: var(--bg);
   --about-surface: var(--panel);
   --about-surface-soft: var(--panel-soft);

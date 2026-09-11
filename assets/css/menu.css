@@ -84,7 +84,7 @@ button, a { font: inherit; }
 .menu-footer { display: flex; justify-content: space-between; gap: 16px; margin-top: 30px; color: #777c86; font-size: 11px; }
 .quiet-button { padding: 0; color: inherit; background: none; border: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 4px; }
 .quiet-button:hover, .quiet-button:focus-visible { color: var(--paper); outline: none; }
-.noscript-message { margin: 0; padding: 12px; color: #111; background: #fff; }
+.noscript-message { margin: 0; padding: 12px; color: var(--paper); background: var(--bg-elevated); }
 
 @keyframes rain-drift { to { transform: translate3d(-90px, 160px, 0); } }
 
