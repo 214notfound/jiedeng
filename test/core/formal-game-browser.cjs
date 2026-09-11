@@ -172,7 +172,7 @@ async function assertPlayerSafe(page) {
       const context = await createContext(browser, {storageEntries: [[saveKey, broken]]});
       const page = await context.newPage();
       await page.goto(base + "/pages/game.html?mode=continue");
-      assert.match(await visibleFeedback(page), /存档无法读取/);
+      assert.match(await visibleFeedback(page), /存档已损坏/);
       assert.equal(await page.evaluate((key) => localStorage.getItem(key), saveKey), broken);
       await assertPlayerSafe(page);
       completed.push("C08");
@@ -185,7 +185,7 @@ async function assertPlayerSafe(page) {
       const context = await createContext(browser, {storageEntries: [[legacySaveKey, legacy]]});
       const page = await context.newPage();
       await page.goto(base + "/pages/game.html?mode=continue");
-      assert.match(await visibleFeedback(page), /旧版存档/);
+      assert.match(await visibleFeedback(page), /不兼容的旧版本/);
       assert.equal(await page.evaluate((key) => localStorage.getItem(key), legacySaveKey), legacy);
       await assertPlayerSafe(page);
       completed.push("C09");
@@ -211,7 +211,7 @@ async function assertPlayerSafe(page) {
       await page.locator("#game-story .story-block").waitFor();
       await page.getByRole("button", {name: "保存进度"}).click();
       const message = await visibleFeedback(page);
-      assert.match(message, /保存失败/);
+      assert.match(message, /浏览器存储暂时不可用/);
       assert.doesNotMatch(message, /进度已保存/);
       await assertPlayerSafe(page);
       completed.push("C12");
@@ -225,7 +225,7 @@ async function assertPlayerSafe(page) {
       await page.goto(base + "/pages/game.html?mode=new");
       await page.locator("#game-story .story-block").waitFor();
       await page.getByRole("button", {name: "保存进度"}).click();
-      assert.equal(await visibleFeedback(page), "进度已保存。");
+      assert.equal(await visibleFeedback(page), "进度已保存，可以继续游戏。");
       validSave = await page.evaluate((key) => localStorage.getItem(key), saveKey);
       assert.ok(validSave);
       await assertPlayerSafe(page);
@@ -259,9 +259,9 @@ async function assertPlayerSafe(page) {
       await page.getByRole("button", {name: "背包", exact: true}).click();
       const itemEntry = page.locator('[data-item-id="key-a"]');
       await itemEntry.waitFor();
-      await page.locator(".resource-fallback--thumbnail:not([hidden])").waitFor();
+      await page.locator(".exploration-resource-fallback--thumbnail:not([hidden])").waitFor();
       await itemEntry.click();
-      await page.locator("#detail-root:not([hidden]) .resource-fallback:not([hidden])").waitFor();
+      await page.locator("#detail-root:not([hidden]) .exploration-resource-fallback:not([hidden])").waitFor();
       assert.match(await page.locator("#detail-root").innerText(), /图片暂不可用|旧钥匙/);
       await assertPlayerSafe(page);
       completed.push("C20-item");
@@ -291,7 +291,7 @@ async function assertPlayerSafe(page) {
       const context = await createContext(browser, {storageEntries: [[saveKey, mismatchedSave]]});
       const page = await context.newPage();
       await page.goto(base + "/pages/game.html?mode=continue");
-      assert.match(await visibleFeedback(page), /不属于此账户/);
+      assert.match(await visibleFeedback(page), /重试|返回主菜单/);
       assert.equal(await page.evaluate((key) => localStorage.getItem(key), saveKey), mismatchedSave);
       await assertPlayerSafe(page);
       completed.push("C10");
