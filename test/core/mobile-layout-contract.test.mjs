@@ -42,3 +42,17 @@ test("U4 手机布局继续复用探索模块的 16:9 场景坐标空间", async
   assert.match(css, /\.exploration-module \.exploration-stage\s*\{[\s\S]*?aspect-ratio:\s*16 \/ 9;/);
   assert.match(css, /\.exploration-scene-image\s*\{[\s\S]*?object-fit:\s*contain;/);
 });
+
+test("390px 小游戏保持全屏、内部滚动并给固定顶栏留出安全空间", async () => {
+  const css = await readFile(gameCssUrl, "utf8");
+
+  assert.match(css, /\.minigame-root > \.pz-root\s*\{[\s\S]*?height:\s*100%;[\s\S]*?overflow:\s*auto;/);
+  assert.match(
+    css,
+    /@media \(max-width: 560px\)[\s\S]*?\.minigame-root\s*\{\s*inset:\s*0;\s*\}[\s\S]*?\.minigame-root > \.pz-root\s*\{[\s\S]*?padding-top:\s*max\(132px, calc\(env\(safe-area-inset-top\) \+ 112px\)\);/
+  );
+  assert.match(
+    css,
+    /\.game-shell:has\(\.game-main\[data-view-state="minigame"\]\) \.game-header[\s\S]*?overflow-x:\s*auto;/
+  );
+});

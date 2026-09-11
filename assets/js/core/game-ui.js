@@ -410,6 +410,16 @@ export function createGameView({onStoryAction} = {}) {
       onReadingClose = onClose;
       readingView.open({...input, allowClose: true});
     },
+    openSystemPrompt(presentation, {
+      onComplete = () => {},
+      onAction = () => {},
+      onClose = () => {}
+    } = {}) {
+      onReadingComplete = onComplete;
+      onReadingAction = onAction;
+      onReadingClose = onClose;
+      readingView.open(adaptStoryPresentation(presentation));
+    },
     getReadingView: () => readingView
   });
 }
