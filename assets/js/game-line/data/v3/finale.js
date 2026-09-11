@@ -39,7 +39,25 @@
         },
       ],
       actions: [],
-      presentations: [],
+      presentations: [
+        {
+          id: "server-evidence-entry",
+          sceneId: "data-center",
+          blocks: [
+            {
+              id: "server-not-scrubbed",
+              blockType: "narration",
+              text: "集团的原始服务器，没有像纸面档案那样被清洗过。",
+            },
+            {
+              id: "cross-verify-server-evidence",
+              blockType: "system",
+              text: "用原始记录互证旧矿难、恐吓、封井和记忆操控的证据。",
+            },
+          ],
+          actionIds: [],
+        },
+      ],
       onComplete: [],
       transitions: [
         { id: "continue-to-x-recovery", to: "x-recovery-confrontation" },
@@ -179,7 +197,25 @@
         },
       ],
       actions: [],
-      presentations: [],
+      presentations: [
+        {
+          id: "x-showdown-entry",
+          sceneId: "data-center",
+          blocks: [
+            {
+              id: "zhou-closes-in",
+              blockType: "narration",
+              text: "小周追了上来。装置的规则，你早就摸清了。",
+            },
+            {
+              id: "escape-zhou-chase",
+              blockType: "system",
+              text: "用装置的规则逃离小周的追逐，别让证据被回收。",
+            },
+          ],
+          actionIds: [],
+        },
+      ],
       onComplete: [],
       transitions: [
         {

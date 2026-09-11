@@ -39,7 +39,25 @@
         },
       ],
       actions: [],
-      presentations: [],
+      presentations: [
+        {
+          id: "b-designer-entry",
+          sceneId: "mine-control-room",
+          blocks: [
+            {
+              id: "debug-tape-figure",
+              blockType: "narration",
+              text: "控制室里的调试录像还在，画面里那个熟悉的身影，操作着每一条恐吓指令。",
+            },
+            {
+              id: "confirm-b-and-authorship",
+              blockType: "system",
+              text: "用操作习惯、伤疤和调试录像，确认主角就是王阙，并证明恐吓方案由他主动设计。",
+            },
+          ],
+          actionIds: [],
+        },
+      ],
       onComplete: [],
       transitions: [
         { id: "continue-to-chen-survival", to: "a-survival-revealed" },
@@ -81,7 +99,25 @@
         },
       ],
       actions: [],
-      presentations: [],
+      presentations: [
+        {
+          id: "a-survival-entry",
+          sceneId: "old-clinic",
+          blocks: [
+            {
+              id: "empty-grave-no-body",
+              blockType: "narration",
+              text: "空坟里没有遗体。诊所的伤情图和户籍变更，把两个本不该相连的名字连在了一起。",
+            },
+            {
+              id: "confirm-chen-survival",
+              blockType: "system",
+              text: "确认陈晋年毁容生还、改名王阙，并查清他私自带妹妹离院的经过。",
+            },
+          ],
+          actionIds: [],
+        },
+      ],
       onComplete: [],
       transitions: [
         { id: "continue-to-father-truth", to: "father-company-truth" },
@@ -143,7 +179,25 @@
         },
       ],
       actions: [],
-      presentations: [],
+      presentations: [
+        {
+          id: "father-company-entry",
+          sceneId: "father-house",
+          blocks: [
+            {
+              id: "father-name-twice",
+              blockType: "narration",
+              text: "旧矿难的档案里，父亲的名字出现了两次：一次是被迫，一次是主动。",
+            },
+            {
+              id: "prove-company-succession",
+              blockType: "system",
+              text: "还原父亲的被迫与帮凶，证明现集团承接了旧公司的矿权和秘密。",
+            },
+          ],
+          actionIds: [],
+        },
+      ],
       onComplete: [],
       transitions: [
         { id: "continue-to-white-lamp-identity", to: "white-lamp-identity-revealed" },
@@ -203,7 +257,25 @@
         },
       ],
       actions: [],
-      presentations: [],
+      presentations: [
+        {
+          id: "white-lamp-identity-entry",
+          sceneId: "anonymous-hideout",
+          blocks: [
+            {
+              id: "report-missing-clues",
+              blockType: "narration",
+              text: "白灯客寄来的材料看似公允，却独独漏掉了恐吓、封井和苏禾。",
+            },
+            {
+              id: "confirm-white-lamp-and-bypass",
+              blockType: "system",
+              text: "确认白灯客就是王阙，并找到可绕开封墙的排水洞坐标。",
+            },
+          ],
+          actionIds: [],
+        },
+      ],
       onComplete: [],
       transitions: [
         { id: "continue-to-mine-route", to: "mine-route-restored" },

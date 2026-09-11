@@ -39,7 +39,25 @@
         },
       ],
       actions: [],
-      presentations: [],
+      presentations: [
+        {
+          id: "mine-route-entry",
+          sceneId: "sealed-mine",
+          blocks: [
+            {
+              id: "route-from-map",
+              blockType: "narration",
+              text: "旧矿图、坠沟地形和排水洞坐标，在纸上拼成了一条绕开封墙的路。",
+            },
+            {
+              id: "bypass-sealed-mine",
+              blockType: "system",
+              text: "绕过唯一公开入口的封墙，进入矿井内部平台。",
+            },
+          ],
+          actionIds: [],
+        },
+      ],
       onComplete: [],
       transitions: [
         { id: "continue-to-su-death", to: "su-he-death-reconstructed" },
@@ -99,7 +117,25 @@
         },
       ],
       actions: [],
-      presentations: [],
+      presentations: [
+        {
+          id: "su-death-entry",
+          sceneId: "sealed-mine",
+          blocks: [
+            {
+              id: "shaft-records-remain",
+              blockType: "narration",
+              text: "内部竖井边，苏禾的录音、封墙和夜间施工记录都还留在原地。",
+            },
+            {
+              id: "reconstruct-su-death-chain",
+              blockType: "system",
+              text: "还原小周推人、王阙拒绝施救、集团掩盖的完整证据链。",
+            },
+          ],
+          actionIds: [],
+        },
+      ],
       onComplete: [],
       transitions: [
         { id: "continue-to-server", to: "server-evidence-recovered" },

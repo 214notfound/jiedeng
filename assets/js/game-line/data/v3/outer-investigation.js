@@ -72,7 +72,25 @@
         },
       ],
       actions: [],
-      presentations: [],
+      presentations: [
+        {
+          id: "four-threads-open",
+          sceneId: "village",
+          blocks: [
+            {
+              id: "four-threads-emerge",
+              blockType: "narration",
+              text: "老宅里的线索告一段落，四条线索几乎同时浮出水面。",
+            },
+            {
+              id: "investigate-four-threads",
+              blockType: "system",
+              text: "陈晋年的坠沟、王阙的项目记录、苏禾的失踪、白灯客的材料，四条线可以按任意顺序追查。",
+            },
+          ],
+          actionIds: [],
+        },
+      ],
       onComplete: [],
       transitions: [
         { id: "continue-to-dismantling", to: "haunting-system-dismantled" },
@@ -113,7 +131,25 @@
         },
       ],
       actions: [],
-      presentations: [],
+      presentations: [
+        {
+          id: "haunting-network-entry",
+          sceneId: "haunting-network",
+          blocks: [
+            {
+              id: "three-signs-one-web",
+              blockType: "narration",
+              text: "白灯、深夜广播、湿脚印——三样异象都指向同一张看不见的网。",
+            },
+            {
+              id: "decrypt-haunting-network",
+              blockType: "system",
+              text: "还原白灯、广播和湿脚印的物理网络，证明它们都来自可控的人工系统。",
+            },
+          ],
+          actionIds: [],
+        },
+      ],
       onComplete: [],
       transitions: [
         { id: "continue-to-b-designer", to: "b-designer-revealed" },
