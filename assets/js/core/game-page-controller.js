@@ -815,6 +815,11 @@ export function setupGamePage() {
       openMap,
       openDetail: handleOpenDetail,
       openConversation(input, callbacks = {}) {
+        const feedback = document.getElementById("feedback");
+        if (feedback) {
+          feedback.hidden = true;
+          feedback.textContent = "";
+        }
         viewCoordinator.showBase(VIEW_STATES.READING);
         gameView.openConversation(input, {
           onAction: callbacks.onAction,
@@ -834,6 +839,21 @@ export function setupGamePage() {
             callbacks.onClose?.();
             viewCoordinator.showBase(VIEW_STATES.EXPLORATION);
           }
+        });
+      },
+      openReading(presentation, callbacks = {}) {
+        const feedback = document.getElementById("feedback");
+        if (feedback) {
+          feedback.hidden = true;
+          feedback.textContent = "";
+        }
+        viewCoordinator.showBase(VIEW_STATES.READING);
+        gameView.openSystemPrompt(presentation, {
+          onClose: () => {
+            callbacks.onClose?.();
+            viewCoordinator.showBase(VIEW_STATES.EXPLORATION);
+          },
+          allowClose: true
         });
       }
     });
