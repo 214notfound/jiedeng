@@ -322,3 +322,25 @@ test("系统提示复用统一阅读框并把选择交回页面控制器", async
     globalThis.document = previousDocument;
   }
 });
+
+test("剧情结束状态以系统阅读框呈现，不混入 NPC 对话或尾部标签", async () => {
+  const previousDocument = globalThis.document;
+  const storyElement = new FakeElement("div");
+  const actionsElement = new FakeElement("div");
+  globalThis.document = {
+    createElement: (tagName) => new FakeElement(tagName),
+    getElementById: (id) => ({"game-story": storyElement, "game-actions": actionsElement}[id] ?? null)
+  };
+
+  try {
+    const gameView = createGameView();
+    gameView.renderResponse({status: "ended"});
+    assert.equal(storyElement.children.length, 1);
+    assert.equal(storyElement.children[0].className, "story-block story-block--system");
+    assert.match(storyElement.children[0].textContent, /调查暂告一段落/);
+    assert.deepEqual(actionsElement.querySelectorAll("button").map((button) => button.textContent), ["读完"]);
+    assert.equal(actionsElement.children.some((child) => child.className === "ending-label"), false);
+  } finally {
+    globalThis.document = previousDocument;
+  }
+});

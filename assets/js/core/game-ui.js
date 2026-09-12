@@ -377,19 +377,15 @@ export function createGameView({onStoryAction} = {}) {
     onReadingAction = (actionId) => onStoryAction?.(actionId);
     onReadingClose = () => {};
     if (!response.presentation) {
-      readingView?.close();
-      const message = document.createElement("p");
-      message.className = "story-placeholder";
-      message.textContent = response.status === "ended"
-        ? "第一周的调查暂告一段落。"
+      const text = response.status === "ended"
+        ? "这一阶段的调查暂告一段落。"
         : "当前剧情正在等待外部交互完成。";
-      storyElement.append(message);
-      if (response.status === "ended") {
-        const ending = document.createElement("p");
-        ending.className = "ending-label";
-        ending.textContent = "这一阶段的调查暂告一段落。";
-        actionsElement.append(ending);
-      }
+      readingView?.open({
+        mode: "story",
+        items: [{id: "story-status", kind: "system", text}],
+        actions: [],
+        metadata: {source: "story-status"}
+      });
       return;
     }
 
