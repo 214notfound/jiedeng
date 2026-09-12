@@ -378,6 +378,7 @@ export function setupGamePage() {
   let removeExploration;
   let mapAdapter;
   let activeCommands = [];
+  let activeMinigameCommand = null;
   let activeMapCommand = null;
   let announcedMapCommandId = null;
   let preserveViewDuringMapExit = false;
@@ -413,11 +414,27 @@ export function setupGamePage() {
     return activeMapCommand;
   }
 
+  function selectActiveMinigameCommand(commands) {
+    if (!Array.isArray(commands)) throw new TypeError("V3 mini-game command list is invalid");
+    const minigameCommands = commands.filter(
+      (command) => command?.commandType === "REQUEST_MINIGAME"
+    );
+    if (minigameCommands.length > 1) throw new TypeError("multiple V3 mini-game commands");
+    const command = minigameCommands[0] ?? null;
+    if (!command) return null;
+    if (typeof command.commandId !== "string" || !command.commandId.trim()
+      || typeof command.payload?.minigameId !== "string"
+      || typeof command.payload?.successFactId !== "string") {
+      throw new TypeError("V3 mini-game command is incomplete");
+    }
+    return command;
+  }
+
   function syncTopBar(currentView) {
     const baseViewActive = BASE_VIEW_STATES.has(currentView);
     gameMain?.setAttribute("data-view-state", currentView);
     openInventoryButton.disabled = !baseViewActive;
-    openMinigameButton.disabled = !baseViewActive || !getMapCommand();
+    openMinigameButton.disabled = !baseViewActive || !activeMinigameCommand;
     openMinigameButton.textContent = getMapCommand()
       ? "复原手绘地图"
       : defaultMinigameButtonLabel;
@@ -609,9 +626,13 @@ export function setupGamePage() {
   const handleCloseInventory = () => viewCoordinator.closeOverlay();
   const handleCloseDetail = () => detailDismissController.closeDetail();
   const handleOpenMinigame = () => {
-    const command = getMapCommand();
+    const command = activeMinigameCommand;
     if (!command) {
       showFeedback("现在还不能打开地图，请先完成当前调查。", "warning");
+      return;
+    }
+    if (command.payload.minigameId !== "map-puzzle") {
+      showFeedback("V3 mini-game entry is not connected yet", "info");
       return;
     }
     openMap(command);
@@ -672,8 +693,12 @@ export function setupGamePage() {
       onCommandsChange: (commands) => {
         activeCommands = commands;
         try {
-          activeMapCommand = selectMapPuzzleCommand(commands);
+          activeMinigameCommand = selectActiveMinigameCommand(commands);
+          activeMapCommand = activeMinigameCommand?.payload?.minigameId === "map-puzzle"
+            ? selectMapPuzzleCommand(commands)
+            : null;
         } catch (error) {
+          activeMinigameCommand = null;
           activeMapCommand = null;
           console.error("[white-lamp:minigame-entry] 地图入口命令冲突", error);
           showFeedback("地图入口暂时无法使用，请稍后重试。", "error");
@@ -691,7 +716,7 @@ export function setupGamePage() {
         const nextView = deriveViewState(response);
         if (nextView) viewCoordinator.showBase(nextView);
         if (response.status === "waiting-external") {
-          openMapEntryPrompt(activeMapCommand);
+          if (activeMapCommand) openMapEntryPrompt(activeMapCommand);
         }
       }),
       onError: (error) => {
