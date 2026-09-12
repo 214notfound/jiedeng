@@ -78,6 +78,7 @@ export function validateExplorationContext(context) {
         || !["puzzle", "chase"].includes(command.payload.gameStyle)
         || !Array.isArray(command.payload.allowedResultFactIds)
         || command.payload.allowedResultFactIds.length !== allowedFacts.length
+        || new Set(command.payload.allowedResultFactIds).size !== allowedFacts.length
         || allowedFacts.some((factId) => !command.payload.allowedResultFactIds.includes(factId))) {
         throw new Error("未知小游戏命令。");
       }

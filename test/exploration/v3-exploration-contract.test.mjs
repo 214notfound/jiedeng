@@ -1,6 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {createExploration} from "../../assets/js/exploration/game/exploration.js";
+import {
+  createExploration,
+  validateExplorationContext
+} from "../../assets/js/exploration/game/exploration.js";
 import {EXPLORATION_TASKS} from "../../assets/js/exploration/data/exploration.js";
 import {CONVERSATION_TASKS} from "../../assets/js/exploration/conversation/data/conversations.js";
 import {
@@ -53,6 +56,39 @@ test("V3 x recovery and showdown nodes use the data-center scene", () => {
   assert.match(scenePresentationFor("data-center", {
     facts: [], nodeId: "x-showdown"
   }).image, /v3\/x-showdown-entry\.jpg$/);
+});
+
+test("V3 exploration context rejects duplicate allowed result facts", () => {
+  const command = {
+    commandId: "cmd-x-showdown-x-showdown-chase",
+    commandType: "REQUEST_MINIGAME",
+    payload: {
+      minigameId: "x-showdown-chase",
+      gameStyle: "chase",
+      allowedResultFactIds: ["x-showdown-survived", "x-showdown-survived"]
+    }
+  };
+  const context = {
+    state: {
+      facts: [],
+      inventory: [],
+      clues: [],
+      storyCheckpoint: {
+        nodeId: "x-showdown",
+        nodeRevision: 1,
+        completedMilestoneIds: [],
+        completedNodeIds: [],
+        completedStageIds: [],
+        pendingCommands: [{
+          commandId: command.commandId,
+          commandType: command.commandType,
+          targetId: command.payload.minigameId
+        }]
+      }
+    },
+    commands: [command]
+  };
+  assert.throws(() => validateExplorationContext(context), /小游戏/);
 });
 
 test("outer investigation subscene projection preserves variant and return target", () => {
