@@ -1,6 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {createExploration} from "../../assets/js/exploration/game/exploration.js";
+import {
+  createExploration,
+  validateExplorationContext
+} from "../../assets/js/exploration/game/exploration.js";
 import {EXPLORATION_TASKS} from "../../assets/js/exploration/data/exploration.js";
 import {CONVERSATION_TASKS} from "../../assets/js/exploration/conversation/data/conversations.js";
 import {
@@ -8,6 +11,7 @@ import {
   projectOuterInvestigationScene
 } from "../../assets/js/exploration/data/outer-investigation-subscenes.js";
 import {scenePresentationFor} from "../../assets/js/exploration/data/scene-assets.js";
+import {NODE_SCENES} from "../../assets/js/exploration/core/story-scenes.js";
 
 const OUTER_TARGETS = [
   ["investigate-gorge-and-grave", "a-gorge-thread-complete"],
@@ -39,6 +43,69 @@ const V3_EXPLORATION_HANDOFFS = Object.freeze({
     "night-sealing-coverup-proven", "su-death-chain-complete"
   ]],
   "investigate-company-server": ["server-evidence-recovered", ["full-evidence-package-ready"]]
+});
+
+test("V3 x recovery and showdown nodes use the data-center scene", () => {
+  assert.equal(NODE_SCENES["x-recovery-confrontation"], "data-center");
+  assert.equal(NODE_SCENES["x-showdown"], "data-center");
+  assert.notEqual(NODE_SCENES["x-recovery-confrontation"], "village-exit");
+  assert.notEqual(NODE_SCENES["x-showdown"], "village-exit");
+  assert.match(scenePresentationFor("data-center", {
+    facts: [], nodeId: "x-recovery-confrontation"
+  }).image, /v3\/x-showdown-entry\.jpg$/);
+  assert.match(scenePresentationFor("data-center", {
+    facts: [], nodeId: "x-showdown"
+  }).image, /v3\/x-showdown-entry\.jpg$/);
+});
+
+test("V3 exploration context rejects duplicate allowed result facts", () => {
+  const command = {
+    commandId: "cmd-x-showdown-x-showdown-chase",
+    commandType: "REQUEST_MINIGAME",
+    payload: {
+      minigameId: "x-showdown-chase",
+      gameStyle: "chase",
+      allowedResultFactIds: ["x-showdown-survived", "x-showdown-survived"]
+    }
+  };
+  const context = {
+    state: {
+      facts: [],
+      inventory: [],
+      clues: [],
+      storyCheckpoint: {
+        nodeId: "x-showdown",
+        nodeRevision: 1,
+        completedMilestoneIds: [],
+        completedNodeIds: [],
+        completedStageIds: [],
+        pendingCommands: [{
+          commandId: command.commandId,
+          commandType: command.commandType,
+          targetId: command.payload.minigameId
+        }]
+      }
+    },
+    commands: [command]
+  };
+  assert.throws(() => validateExplorationContext(context), /小游戏/);
+});
+
+test("outer investigation subscene projection preserves variant and return target", () => {
+  const host = createOuterHost();
+  const module = createExploration(host);
+  const baseView = module.getSceneView("outer-investigation-hub");
+  const baseLayout = module.getLayout();
+  for (const entry of OUTER_INVESTIGATION_SUBSCENES) {
+    const projected = projectOuterInvestigationScene(baseView, baseLayout, entry.sceneId);
+    assert.equal(projected.selected.sceneId, entry.sceneId);
+    assert.equal(projected.view.sceneVariant, entry.variantId);
+    assert.equal(projected.view.interactions[0].id, entry.actionId);
+    assert.equal(projected.layout.hotspots.length, 1);
+    assert.deepEqual(projected.layout.hotspots[0].interactionIds, [entry.actionId]);
+  }
+  assert.equal(projectOuterInvestigationScene(baseView, baseLayout, null).layout.hotspots.length, 4);
+  module.dispose();
 });
 
 function command(target) {

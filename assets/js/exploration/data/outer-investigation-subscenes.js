@@ -6,10 +6,14 @@ export const OUTER_INVESTIGATION_SUBSCENES = Object.freeze([
   {sceneId: "project-records", name: "村委旧楼", returnLabel: "返回外围调查", actionId: "investigate-project-records", x: 77, y: 36},
   {sceneId: "su-trail", name: "废弃小学", returnLabel: "返回外围调查", actionId: "investigate-su-trail", x: 23, y: 75},
   {sceneId: "white-lamp-mail", name: "废弃邮电所", returnLabel: "返回外围调查", actionId: "investigate-white-lamp-mail", x: 77, y: 75}
-].map((entry) => Object.freeze({
-  ...entry,
-  image: v3SceneArtFor(entry.sceneId).image
-})));
+].map((entry) => {
+  const art = v3SceneArtFor(entry.sceneId);
+  return Object.freeze({
+    ...entry,
+    image: art.image,
+    variantId: art.variantId
+  });
+}));
 
 export function projectOuterInvestigationScene(view, layout, selectedId) {
   if (view.sceneId !== "outer-investigation-hub") {
@@ -26,6 +30,7 @@ export function projectOuterInvestigationScene(view, layout, selectedId) {
       view: {
         ...view,
         sceneId: selected.sceneId,
+        sceneVariant: selected.variantId,
         name: selected.name,
         sceneImage: selected.image,
         interactions
