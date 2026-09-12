@@ -12,7 +12,9 @@ function validateEnvelope(context) {
   const state = context?.state;
   const checkpoint = state?.storyCheckpoint;
   for (const field of ["facts", "inventory", "clues"]) requireIds(state?.[field], field);
-  if (!checkpoint || !NODE_SCENES[checkpoint.nodeId] || checkpoint.nodeRevision !== 1) {
+  const isSupportedCheckpoint = checkpoint?.nodeRevision === 1
+    || (checkpoint?.nodeId === "week-one-end" && checkpoint?.nodeRevision === 2);
+  if (!checkpoint || !NODE_SCENES[checkpoint.nodeId] || !isSupportedCheckpoint) {
     throw new Error("剧情检查点不存在或版本不兼容。");
   }
   for (const field of ["completedMilestoneIds", "completedNodeIds", "completedStageIds"]) {

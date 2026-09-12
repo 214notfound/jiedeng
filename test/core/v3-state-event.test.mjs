@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {applyExternalEvent, commitStoryTransaction, createInitialGameState, getStageIdForNode} from "../../assets/js/core/state.js";
 import {EXTERNAL_EVENT_TYPES, STORY_FACT_DEFINITIONS} from "../../assets/js/core/game-contract.js";
+import {validateExplorationContext} from "../../assets/js/exploration/game/exploration.js";
 
 function stateWithCommand(commandType, targetId) {
   return commitStoryTransaction(createInitialGameState("guest"), "v3-entry", {
@@ -41,6 +42,13 @@ test("V3 core contract registers minigame event, facts, and stages", () => {
   assert.equal(definitions.get("x-showdown-survived").producer, "minigame");
   assert.equal(getStageIdForNode("outer-lines-investigation"), "outer-investigation");
   assert.equal(getStageIdForNode("ending-full-account"), "finale");
+});
+
+test("探索模块接受 week-one-end revision 2 迁移检查点", () => {
+  const state = stateWithCommand("REQUEST_EXPLORATION", "unused");
+  state.storyCheckpoint.pendingCommands = [];
+  state.storyCheckpoint.nodeRevision = 2;
+  assert.doesNotThrow(() => validateExplorationContext({state, commands: []}));
 });
 
 test("V3 MINIGAME_RESOLVED 只接受当前命令的单一结果事实", () => {

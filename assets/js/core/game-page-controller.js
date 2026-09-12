@@ -423,8 +423,16 @@ export function setupGamePage() {
     const command = minigameCommands[0] ?? null;
     if (!command) return null;
     if (typeof command.commandId !== "string" || !command.commandId.trim()
-      || typeof command.payload?.minigameId !== "string"
-      || typeof command.payload?.successFactId !== "string") {
+      || typeof command.payload?.minigameId !== "string") {
+      throw new TypeError("V3 mini-game command is incomplete");
+    }
+    const isV2MapPuzzle = command.payload.minigameId === "map-puzzle"
+      && command.payload.successFactId === "map-puzzle-completed";
+    const isV3Minigame = typeof command.payload.gameStyle === "string"
+      && Array.isArray(command.payload.allowedResultFactIds)
+      && command.payload.allowedResultFactIds.length > 0
+      && command.payload.allowedResultFactIds.every((factId) => typeof factId === "string");
+    if (!isV2MapPuzzle && !isV3Minigame) {
       throw new TypeError("V3 mini-game command is incomplete");
     }
     return command;
@@ -595,6 +603,17 @@ export function setupGamePage() {
       };
     }
 
+    if (command.payload.minigameId !== "map-puzzle") {
+      return {
+        eventId,
+        eventType: "MINIGAME_RESOLVED",
+        source: "minigame",
+        causedByCommandId: command.commandId,
+        resultFactIds: [command.payload.allowedResultFactIds[0]],
+        payload: {minigameId: command.payload.minigameId}
+      };
+    }
+
     return {
       eventId,
       eventType: "MAP_PUZZLE_COMPLETED",
@@ -632,7 +651,7 @@ export function setupGamePage() {
       return;
     }
     if (command.payload.minigameId !== "map-puzzle") {
-      showFeedback("V3 mini-game entry is not connected yet", "info");
+      showFeedback("当前小游戏入口已登记，等待对应玩法模块加载。", "info");
       return;
     }
     openMap(command);
