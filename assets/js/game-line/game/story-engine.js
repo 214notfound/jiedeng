@@ -50,6 +50,7 @@
             ["return-menu"],
           );
         }
+        request = requestBoundary.normalizeRequest(request, storyData);
         const requestError = requestBoundary.validateRequest(request, storyData);
         if (requestError) {
           return fail(
@@ -155,8 +156,9 @@
         }
 
         if (externalResult) {
-          const goalsComplete = externalResult.handoff.goalIds.every((goalId) =>
-            checkpoint.completedMilestoneIds.includes(goalId),
+          const goalsComplete = runtime.areHandoffGoalsComplete(
+            externalResult.handoff,
+            checkpoint.completedMilestoneIds,
           );
           if (externalResult.completionRequired && !goalsComplete) {
             const missing = externalResult.handoff.goalIds.filter(

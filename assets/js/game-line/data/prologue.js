@@ -14,11 +14,11 @@
       sourceRef: "P00-P01",
       stageId: "prologue",
       revision: 1,
-      intent: "玩家确认近期失忆，认识小 X 的表面身份，并接受调查村中怪事的任务。",
+      intent: "玩家确认近期失忆，认识小周的表面身份，并接受调查村中怪事的任务。",
       milestones: [
         {
           id: "wake-context-known",
-          intent: "玩家确认醒来、失忆和小 X 的表面身份。",
+          intent: "玩家确认醒来、失忆和小周的表面身份。",
           satisfiedWhen: { allFacts: ["prologue-wake-context-known"] },
         },
         {
@@ -67,7 +67,7 @@
             {
               id: "recent-memory-gap",
               blockType: "narration",
-              text: "思考和行动都没有问题，但近期的记忆只剩下一段空白。小 X 守在旁边，自称是公司的安全联络员。",
+              text: "思考和行动都没有问题，但近期的记忆只剩下一段空白。小周守在旁边，自称是公司的安全联络员。",
             },
           ],
           actionIds: ["confirm-wake-context"],
@@ -86,12 +86,12 @@
       sourceRef: "P02-P05",
       stageId: "prologue",
       revision: 1,
-      intent: "玩家检查工作证和蓝玻璃珠，从小 X 处取得无标记旧钥匙。",
+      intent: "玩家检查工作证和蓝玻璃珠，从小周处取得无标记旧钥匙。",
       enterWhen: { allFacts: ["surface-investigation-task-known"] },
       milestones: [
         {
           id: "burned-work-id-checked",
-          intent: "玩家确认烧毁的工作证仍能辨认公司标识和姓 B。",
+          intent: "玩家确认烧毁的工作证仍能辨认公司标识和王姓。",
           satisfiedWhen: { allFacts: ["burned-work-id-investigated"] },
         },
         {
@@ -101,7 +101,7 @@
         },
         {
           id: "key-received-from-x",
-          intent: "小 X 把在出事地点附近捡到的旧钥匙交给玩家。",
+          intent: "小周把在出事地点附近捡到的旧钥匙交给玩家。",
           satisfiedWhen: { allFacts: ["key-a-given-by-x"] },
           onReach: [
             {
@@ -113,7 +113,7 @@
         },
         {
           id: "x-memory-deflection-noticed",
-          intent: "玩家追问过去时，注意到小 X 主动转移话题。",
+          intent: "玩家追问过去时，注意到小周主动转移话题。",
           satisfiedWhen: {
             allFacts: ["x-deflects-memory-question-noticed"],
           },

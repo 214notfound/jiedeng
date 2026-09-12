@@ -15,9 +15,13 @@
   const eventTypesByCapability = {
     exploration: ["OBJECT_INVESTIGATED"],
     conversation: ["NPC_TALK_PROGRESS", "NPC_TALKED"],
-    minigame: ["MAP_PUZZLE_COMPLETED"],
+    minigame: ["MAP_PUZZLE_COMPLETED", "MINIGAME_RESOLVED"],
   };
-  const completionRequiredEventTypes = ["NPC_TALKED", "MAP_PUZZLE_COMPLETED"];
+  const completionRequiredEventTypes = [
+    "NPC_TALKED",
+    "MAP_PUZZLE_COMPLETED",
+    "MINIGAME_RESOLVED",
+  ];
   const errorMessages = {
     STORY_INVALID_REQUEST: "剧情请求无效，请重试或返回主菜单。",
     STORY_INVALID_NODE_DATA: "剧情数据无法加载，请联系开发者。",
@@ -200,6 +204,39 @@
     return null;
   }
 
+  function normalizeRequest(request, storyData) {
+    if (
+      !rules.isObject(request) ||
+      request.input?.type === "new-game" ||
+      !rules.isObject(request.context) ||
+      !rules.isObject(request.context.storyCheckpoint)
+    ) {
+      return request;
+    }
+    const checkpoint = runtime.copyCheckpoint(request.context.storyCheckpoint);
+    const visited = new Set();
+    while (true) {
+      const key = `${checkpoint.nodeId}@${checkpoint.nodeRevision}`;
+      if (visited.has(key)) {
+        throw new Error(`检查点迁移存在循环：${key}`);
+      }
+      visited.add(key);
+      const migration = (storyData.checkpointMigrations || []).find(
+        (item) =>
+          item.nodeId === checkpoint.nodeId &&
+          item.fromRevision === checkpoint.nodeRevision,
+      );
+      if (!migration) {
+        break;
+      }
+      checkpoint.nodeRevision = migration.toRevision;
+    }
+    return {
+      ...request,
+      context: { ...request.context, storyCheckpoint: checkpoint },
+    };
+  }
+
   function validateExternalEvent(event, node, checkpoint, storyData, facts) {
     const pending = checkpoint.pendingCommands.find(
       (command) => command.commandId === event.causedByCommandId,
@@ -241,6 +278,24 @@
         message: `${event.eventType} 不能完成 ${handoff.capability} 命令`,
       };
     }
+    if (event.eventType === "MINIGAME_RESOLVED" && !handoff.gameStyle) {
+      return {
+        code: "STORY_INVALID_REQUEST",
+        message: "旧版小游戏命令不能使用 MINIGAME_RESOLVED",
+      };
+    }
+    if (event.eventType === "MAP_PUZZLE_COMPLETED" && handoff.gameStyle) {
+      return {
+        code: "STORY_INVALID_REQUEST",
+        message: "V3 小游戏命令必须使用 MINIGAME_RESOLVED",
+      };
+    }
+    if (event.eventType === "MINIGAME_RESOLVED" && event.resultFactIds.length !== 1) {
+      return {
+        code: "STORY_INVALID_REQUEST",
+        message: "MINIGAME_RESOLVED 必须携带且只携带一个结果事实",
+      };
+    }
     const allowedFacts = runtime.getHandoffFactIds(node, handoff);
     for (const factId of event.resultFactIds) {
       const fact = rules.findById(storyData.facts, factId);
@@ -280,6 +335,11 @@
         ? null
         : "小游戏 puzzleId 与命令不匹配";
     }
+    if (event.eventType === "MINIGAME_RESOLVED") {
+      return event.payload.minigameId === handoff.targetId
+        ? null
+        : "小游戏 minigameId 与命令不匹配";
+    }
     if (event.eventType === "EXTERNAL_INTERACTION_CANCELLED") {
       return event.payload.targetId === handoff.targetId
         ? null
@@ -296,6 +356,7 @@
 
   internal.storyRequest = {
     createErrorResponse,
+    normalizeRequest,
     validateExternalEvent,
     validateRequest,
   };
