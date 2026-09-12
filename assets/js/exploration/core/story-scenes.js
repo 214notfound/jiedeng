@@ -33,7 +33,16 @@ export const NODE_SCENES = Object.freeze({
 const SCENE_NAMES = Object.freeze({
   shrine: "祠堂",
   village: "村口",
-  "old-house": "陈家老宅"
+  "old-house": "陈家老宅",
+  "outer-investigation-hub": "外围调查",
+  "haunting-network": "广播室",
+  "mine-control-room": "矿区旧控制室",
+  "old-clinic": "邻镇旧诊所",
+  "father-house": "父亲旧屋",
+  "anonymous-hideout": "匿名藏点",
+  "sealed-mine": "封闭矿井",
+  "data-center": "新矿区数据机房",
+  "village-exit": "村口出口"
 });
 
 export function sceneName(sceneId) {

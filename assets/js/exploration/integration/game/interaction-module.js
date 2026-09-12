@@ -48,6 +48,16 @@ export function createInteractionModule(host) {
     return conversation.getReadingChoiceInput(sceneId, actionIds);
   }
 
+  function getExplorationReadingInput(sceneId, actionId) {
+    if (sceneId !== sameScene()) throw new Error("地点已经变化。");
+    return exploration.getExplorationReadingInput(sceneId, actionId);
+  }
+
+  function completeExplorationReading(sceneId, actionId, result) {
+    if (sceneId !== sameScene()) throw new Error("地点已经变化。");
+    return exploration.completeExplorationReading(sceneId, actionId, result);
+  }
+
   async function interact(sceneId, actionId, options) {
     const explorationIds = new Set(
       exploration.getSceneView(sceneId).interactions.map((item) => item.id)
@@ -100,6 +110,8 @@ export function createInteractionModule(host) {
     getReadingChoiceInput,
     getReadingInput,
     completeReading,
+    getExplorationReadingInput,
+    completeExplorationReading,
     listItems: exploration.listItems,
     getItemDetail: exploration.getItemDetail,
     interact,

@@ -4,6 +4,8 @@ import { element, button, region, createFeedback, playerMessage } from "./view-u
 import { mountInventory } from "./inventory.js";
 import { characterAssetFor } from "../data/character-assets.js";
 import { projectVillageScene } from "../data/village-subscenes.js";
+import { projectOuterInvestigationScene } from "../data/outer-investigation-subscenes.js";
+import { projectV3LayeredScene } from "../data/v3-layered-scenes.js";
 export { mountAchievements } from "../../achievements/game/achievements-view.js";
 
 export function mountExploration({
@@ -150,15 +152,62 @@ export function mountExploration({
     });
     return true;
   }
+
+  function startExplorationReading(sceneId, actionId, node) {
+    const input = module.getExplorationReadingInput?.(sceneId, actionId);
+    if (!input) return false;
+    node.disabled = true;
+    readExploration(input, {
+      onComplete: async (result) => {
+        const outcome = await module.completeExplorationReading(sceneId, actionId, result);
+        if (active && !outcome.ok) {
+          notify("调查结果未能保存，请关闭后重新调查。", "warning", "OPERATION_FAILED");
+        }
+        if (active) node.disabled = false;
+        return outcome;
+      },
+      onFailure: () => {
+        if (active) node.disabled = false;
+      },
+      onClose: () => {
+        if (active) {
+          node.disabled = false;
+          hotspots.querySelector('[data-hotspot-id="' + actionId + '"]')?.focus();
+        }
+      }
+    });
+    return true;
+  }
+
   function render() {
     if (!active) return;
     try {
       const sceneId = module.getCurrentSceneId();
-      const projected = projectVillageScene(module.getSceneView(sceneId), module.getLayout(), selectedSceneId);
+      let projected = projectVillageScene(
+        module.getSceneView(sceneId),
+        module.getLayout(),
+        selectedSceneId
+      );
+      if (!projected.selected) {
+        projected = projectOuterInvestigationScene(
+          projected.view,
+          projected.layout,
+          selectedSceneId
+        );
+      }
+      if (!projected.selected) {
+        projected = projectV3LayeredScene(
+          projected.view,
+          projected.layout,
+          selectedSceneId
+        );
+      }
       const {view, layout} = projected;
       selectedSubscene = projected.selected;
       selectedSceneId = selectedSubscene?.sceneId ?? null;
       returnButton.hidden = !selectedSubscene;
+      returnButton.textContent = selectedSubscene?.returnLabel
+        ?? (sceneId === "village" ? "返回村口" : "返回当前地点");
       if (view.sceneImage && backdrop.src !== view.sceneImage) backdrop.src = view.sceneImage;
       stage.dataset.sceneId = view.sceneId;
       stage.dataset.sceneVariant = view.sceneVariant;
@@ -188,6 +237,7 @@ export function mountExploration({
             notify("热点类型无法识别，未执行任何操作。", "error");
             return;
           }
+          if (startExplorationReading(sceneId, action.id, node)) return;
           node.disabled = true;
           const result = await module.interact(sceneId, action.id);
           if (!active) return;

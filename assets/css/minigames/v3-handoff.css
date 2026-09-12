@@ -1,0 +1,44 @@
+.v3-minigame {
+  display: grid;
+  min-height: 100%;
+  padding: clamp(92px, 12vh, 132px) clamp(14px, 4vw, 48px) 24px;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 16px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  color: var(--paper);
+  background: #080b11;
+}
+
+.v3-minigame__image {
+  display: block;
+  width: min(100%, 1280px);
+  height: auto;
+  max-height: calc(100dvh - 270px);
+  margin: auto;
+  object-fit: contain;
+  aspect-ratio: 16 / 9;
+  border: 1px solid rgba(216, 198, 164, 0.38);
+}
+
+.v3-minigame__panel {
+  width: min(100%, 900px);
+  margin-inline: auto;
+  padding: 16px;
+  background: rgba(13, 17, 24, 0.96);
+  border: 1px solid var(--line);
+}
+
+.v3-minigame__title,
+.v3-minigame__description,
+.v3-minigame__status { margin: 0; }
+.v3-minigame__description { margin-top: 6px; color: var(--muted); }
+.v3-minigame__actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+.v3-minigame__status { min-height: 1.6em; margin-top: 8px; color: var(--muted); }
+
+@media (max-width: 560px) {
+  .v3-minigame { padding: max(132px, calc(env(safe-area-inset-top) + 112px)) 10px 12px; }
+  .v3-minigame__image { max-height: 42dvh; }
+  .v3-minigame__actions { display: grid; grid-template-columns: 1fr; }
+  .v3-minigame__actions .button { width: 100%; min-height: 44px; }
+}

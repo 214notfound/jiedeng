@@ -54,8 +54,188 @@ export const EXPLORATION_TASKS = Object.freeze([
         facts: ["funeral-list-clue-known"],
         text: "旧丧葬记录表明，妹妹死于十七年前事故后的那段时间，A也被村里作为死者送葬。老人说“A早死了”，并非毫无依据。"}
     ]
-  }
+  },
+  v3Task({
+    node: "outer-lines-investigation",
+    target: "investigate-gorge-and-grave",
+    sceneId: "mountain-routes",
+    label: "调查山沟与衣冠冢",
+    marker: "调查记录",
+    x: 74,
+    y: 60,
+    facts: ["a-gorge-thread-complete"],
+    blocks: [
+      "送葬路线与当年的搜救路线在山腰旧运输道重合。坍方边缘仍能辨出当年下沟留下的旧痕。",
+      "浅沟与深排水洞通向不同落点，证明兄妹二人并没有停在同一个位置。",
+      "两座坟中，妹妹是实葬；陈晋年的坟里只有衣物和旧物，是一座衣冠冢，没有遗体。",
+      "管理房夹层里的记录显示，搜救在第三日由父亲签字终止，同时留下了一张邻镇诊所票据的编号。",
+      "小周看到票据编号后明显催促你离开。他对这条线索的关注超过了对空坟本身的关注。",
+      "归档结论：陈晋年的死亡只是村里的既有结论；邻镇诊所是继续核实其身份的下一条线索。"
+    ]
+  }),
+  v3Task({
+    node: "outer-lines-investigation",
+    target: "investigate-project-records",
+    sceneId: "project-records",
+    label: "核对项目档案",
+    marker: "项目档案",
+    x: 48,
+    y: 50,
+    facts: ["project-record-thread-complete"],
+    blocks: [
+      "村委旧楼的门禁记录和旧工作证编号互相对应，王阙曾以项目执行人员身份长期进出。",
+      "旧电脑、恐吓执行表与秘密封井任务单表明，白灯、广播和封井不是零散事故，而是项目任务。",
+      "归档结论：王阙是项目执行者，恐吓和封井属于公司任务。"
+    ]
+  }),
+  v3Task({
+    node: "outer-lines-investigation",
+    target: "investigate-su-trail",
+    sceneId: "su-trail",
+    label: "追查苏禾轨迹",
+    marker: "苏禾记录",
+    x: 77,
+    y: 67,
+    facts: ["su-thread-complete"],
+    blocks: [
+      "废弃小学里仍留着苏禾整理的广播、电路与排水线路，她把三类异象放在同一张图上核对。",
+      "旧矿图藏点、封井材料照片和手机移动记录说明，她在失踪前已经独立追查到装置与废井。",
+      "归档结论：苏禾并非偶然失踪，她的调查已经触及人工装置和封闭矿井。"
+    ]
+  }),
+  v3Task({
+    node: "outer-lines-investigation",
+    target: "investigate-white-lamp-mail",
+    sceneId: "white-lamp-mail",
+    label: "核对白灯客材料",
+    marker: "匿名材料",
+    x: 77,
+    y: 69,
+    facts: ["white-lamp-first-thread-complete"],
+    blocks: [
+      "邮电所留下的灯形条款提醒、投递日期和变声警告录音属于同一批匿名材料。",
+      "日期证明这些可验证材料都晚于苏禾失踪；举报草稿多次谈及项目，却刻意避开王阙的名字。",
+      "归档结论：白灯客在苏禾失踪后才开始留下材料，并有意识地回避王阙。"
+    ]
+  }),
+  v3Task({
+    node: "b-designer-revealed",
+    target: "investigate-control-room",
+    label: "复核控制室记录",
+    marker: "操作台",
+    x: 48,
+    y: 50,
+    facts: ["protagonist-is-b-known", "intimidation-plan-authorship"],
+    blocks: [
+      "系统图纸、操作台习惯和调试日志都指向同一名长期操作者。低清录像中的伤疤位置与你一致。",
+      "会议摘要和版本记录表明，恐吓方案由王阙提出，并在出现老人跌亡后仍继续推进。",
+      "归档结论：主角就是王阙；恐吓方案的提出与继续执行都与王阙有关。"
+    ]
+  }),
+  v3Task({
+    node: "a-survival-revealed",
+    target: "investigate-old-clinic",
+    label: "核对旧诊所档案",
+    marker: "登记桌",
+    x: 50,
+    y: 53,
+    facts: ["a-b-identity-chain-complete", "a-left-clinic-with-sister-known"],
+    blocks: [
+      "诊所账簿、伤情图、户籍变更与如今的伤疤互相吻合，把空坟后的去向接了起来。",
+      "记录同时显示，陈晋年曾在伤后私自带妹妹离院；这是当时的冲动选择，不是他已经死亡的证据。",
+      "归档结论：陈晋年到王阙的身份链成立，私自带妹妹离院的责任也被确认。"
+    ]
+  }),
+  v3Task({
+    node: "father-company-truth",
+    target: "investigate-father-and-company",
+    label: "调查父亲与公司",
+    marker: "暗层档案",
+    x: 48,
+    y: 72,
+    facts: [
+      "old-accident-coverup-proven",
+      "father-full-role-known",
+      "company-succession-chain",
+      "b-prior-mine-ignorance-established"
+    ],
+    blocks: [
+      "暗层中的原始矿图和爆破日志证明旧事故源于非法试采与违规爆破，事故记录随后被篡改。",
+      "医疗费协议、物证清单和未寄证言显示，父亲最初受到胁迫，后来又主动参与毁证。",
+      "股权沿革和收购目录把旧矿业公司与现集团的资产、档案承接关系连接起来。",
+      "风险谈话记录证明，王阙接任项目时并不知道废井就是旧事故现场。"
+    ]
+  }),
+  v3Task({
+    node: "white-lamp-identity-revealed",
+    target: "investigate-anonymous-hideout",
+    label: "调查匿名藏点",
+    marker: "匿名终端",
+    x: 48,
+    y: 56,
+    facts: ["three-identities-merged", "white-lamp-self-exculpation-known", "mine-bypass-coordinate-known"],
+    blocks: [
+      "加密入口、原文件和举报稿的写作痕迹一致，陈晋年、王阙与白灯客是同一个人在不同阶段使用的名字。",
+      "删除日志显示，白灯客主动删去了恐吓、封井和苏禾相关内容，为自己保留了免责叙事。",
+      "未发送材料中还保存着一组排水洞坐标，可以绕过矿井封墙进入内部。"
+    ]
+  }),
+  v3Task({
+    node: "su-he-death-reconstructed",
+    target: "investigate-su-death-scene",
+    label: "重建苏禾死亡现场",
+    marker: "录音与记录",
+    x: 31,
+    y: 53,
+    facts: ["x-pushed-su-known", "b-refused-rescue-recorded", "night-sealing-coverup-proven", "su-death-chain-complete"],
+    blocks: [
+      "文件袋中的录音证明，小周未经请示把苏禾推入内部竖井；录音里她仍然活着，现场具备施救条件。",
+      "小周询问是否施救，王阙亲口拒绝。封井施工记录又显示，小周提前调用了封井小队。",
+      "手机取卡痕迹、安保调度和集团服务器索引互相印证，集团随后接受并掩盖了这次封井。",
+      "归档结论：推落、拒绝施救、提前封井与集团掩盖构成完整的苏禾死亡证据链。"
+    ]
+  }),
+  v3Task({
+    node: "server-evidence-recovered",
+    target: "investigate-company-server",
+    label: "提取集团服务器证据",
+    marker: "证据索引",
+    x: 50,
+    y: 50,
+    facts: ["full-evidence-package-ready"],
+    blocks: [
+      "原始服务器保留了纸面档案中被清洗的记录：旧矿难、收购胁迫、恐吓版本史、安保封井和记忆诱导计划。",
+      "这些记录分别指向集团、父亲、小周和王阙，且能与此前取得的现场材料互证。",
+      "归档结论：完整证据包已经形成，可以进入最终交付与处置。"
+    ]
+  })
 ]);
+
+function v3Task({node, target, sceneId = null, label, marker, x, y, facts, blocks}) {
+  return {
+    node,
+    target,
+    sceneId,
+    type: "exploration",
+    interactionType: "item",
+    label,
+    actions: [{
+      id: target,
+      label,
+      marker,
+      x,
+      y,
+      facts,
+      submitAfterReading: true,
+      blocks: blocks.map((text, index) => ({
+        id: `${target}-${index + 1}`,
+        type: index === blocks.length - 1 ? "system" : "narration",
+        text
+      })),
+      text: blocks.join("\n")
+    }]
+  };
+}
 
 export function explorationTaskFor(command) {
   const target = command.payload?.explorationId;

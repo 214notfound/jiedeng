@@ -18,7 +18,9 @@ function actionCoordinates(tasks) {
 }
 
 test("E1 三场景调查锚点与 1280×720 标记草图一致", () => {
-  assert.deepEqual(actionCoordinates(EXPLORATION_TASKS), {
+  const v1Tasks = EXPLORATION_TASKS.filter((task) =>
+    task.actions.every((action) => !action.submitAfterReading));
+  assert.deepEqual(actionCoordinates(v1Tasks), {
     "burned-work-id": [25, 75],
     "blue-glass-bead": [75, 75],
     "village-decline": [15, 30],
@@ -32,7 +34,8 @@ test("E1 三场景调查锚点与 1280×720 标记草图一致", () => {
 });
 
 test("E1 NPC 发光点击点与 1280×720 标记草图一致", () => {
-  assert.deepEqual(actionCoordinates(CONVERSATION_TASKS), {
+  const v1Tasks = CONVERSATION_TASKS.filter((task) => task.node !== "x-recovery-confrontation");
+  assert.deepEqual(actionCoordinates(v1Tasks), {
     "surface-briefing": [50, 40],
     "receive-key": [50, 40],
     "ask-memory-and-receive-key": [50, 40],
