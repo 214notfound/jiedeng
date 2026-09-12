@@ -6,6 +6,7 @@ import {
   V3_SCENE_ART,
   v3SceneArtFor
 } from "../../assets/js/exploration/data/v3-scene-assets.js";
+import {scenePresentationFor} from "../../assets/js/exploration/data/scene-assets.js";
 
 function jpegDimensions(path) {
   const data = readFileSync(path);
@@ -43,6 +44,21 @@ test("V3 正式场景资源完整、唯一且全部为 1280×720", () => {
     assert.deepEqual(jpegDimensions(path), {width: 1280, height: 720}, entry.filename);
   }
   assert.equal(v3SceneArtFor("unknown"), null);
+});
+
+test("ending Node selects its matching village-exit presentation", () => {
+  for (const ending of [
+    "ending-accomplice",
+    "ending-defeated",
+    "ending-erasure",
+    "ending-curated-truth",
+    "ending-full-account"
+  ]) {
+    const presentation = scenePresentationFor("village-exit", {facts: [], nodeId: ending});
+    assert.equal(presentation.sceneId, "village-exit");
+    assert.equal(presentation.variantId, ending);
+    assert.match(presentation.image, new RegExp(`v3/${ending}\\.jpg$`));
+  }
 });
 
 test("V3 第一条外围调查链的场景和目标映射已冻结", () => {
