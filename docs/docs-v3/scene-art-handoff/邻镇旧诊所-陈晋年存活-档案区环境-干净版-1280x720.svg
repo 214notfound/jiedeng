@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720">
+  <defs>
+    <linearGradient id="room" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1a2230"/>
+      <stop offset="1" stop-color="#0e1218"/>
+    </linearGradient>
+    <radialGradient id="lamp" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#f5e9d0" stop-opacity="0.8"/>
+      <stop offset="1" stop-color="#f5e9d0" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect x="0" y="0" width="1280" height="720" fill="url(#room)"/>
+
+  <!-- 封存档案区：两侧档案柜 + 中央登记桌 -->
+  <rect x="140" y="100" width="1000" height="420" fill="#1c2430" stroke="#3a4a5c" stroke-width="2"/>
+  <rect x="140" y="520" width="1000" height="200" fill="#161e2a"/>
+
+  <!-- 左侧档案柜 -->
+  <rect x="170" y="140" width="180" height="360" fill="#232b38" stroke="#4a5568" stroke-width="2"/>
+  <rect x="188" y="160" width="144" height="36" fill="#2b3442"/>
+  <rect x="188" y="210" width="144" height="36" fill="#2b3442"/>
+  <rect x="188" y="260" width="144" height="36" fill="#2b3442"/>
+  <rect x="188" y="310" width="144" height="36" fill="#2b3442"/>
+  <rect x="188" y="360" width="144" height="36" fill="#2b3442"/>
+
+  <!-- 右侧档案柜 -->
+  <rect x="930" y="140" width="180" height="360" fill="#232b38" stroke="#4a5568" stroke-width="2"/>
+  <rect x="948" y="160" width="144" height="36" fill="#2b3442"/>
+  <rect x="948" y="210" width="144" height="36" fill="#2b3442"/>
+  <rect x="948" y="260" width="144" height="36" fill="#2b3442"/>
+  <rect x="948" y="310" width="144" height="36" fill="#2b3442"/>
+  <rect x="948" y="360" width="144" height="36" fill="#2b3442"/>
+
+  <!-- 中央登记桌（唯一入口，台灯暖光为环境光，非点击高亮） -->
+  <g>
+    <rect x="430" y="380" width="420" height="120" fill="#3a2f24" stroke="#5a4836" stroke-width="3"/>
+    <rect x="430" y="380" width="420" height="16" fill="#c8bfa8"/>
+    <circle cx="640" cy="380" r="120" fill="url(#lamp)"/>
+    <rect x="580" y="300" width="120" height="90" fill="#ece7dc" stroke="#8a7a5c" stroke-width="2" rx="2"/>
+    <rect x="594" y="314" width="80" height="8" fill="#999"/>
+    <rect x="594" y="330" width="90" height="8" fill="#999"/>
+  </g>
+</svg>

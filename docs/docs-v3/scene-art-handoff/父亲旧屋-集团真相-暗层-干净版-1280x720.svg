@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720">
+  <defs>
+    <linearGradient id="cellar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#181019"/>
+      <stop offset="1" stop-color="#0a0808"/>
+    </linearGradient>
+    <radialGradient id="lamp" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#f5e9d0" stop-opacity="0.6"/>
+      <stop offset="1" stop-color="#f5e9d0" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect x="0" y="0" width="1280" height="720" fill="url(#cellar)"/>
+
+  <!-- 暗层：证据墙 + 吊灯 -->
+  <rect x="100" y="120" width="1080" height="480" fill="#1c2028" stroke="#3a4a5c" stroke-width="2"/>
+  <rect x="100" y="120" width="1080" height="14" fill="#2b3442"/>
+  <circle cx="640" cy="150" r="120" fill="url(#lamp)"/>
+
+  <!-- F01 原始矿图/爆破日志 -->
+  <g>
+    <rect x="190" y="200" width="110" height="80" fill="#ece7dc" stroke="#8a7a5c" stroke-width="2" rx="2"/>
+    <rect x="202" y="214" width="86" height="8" fill="#999"/>
+    <rect x="202" y="230" width="70" height="8" fill="#999"/>
+    <rect x="202" y="246" width="86" height="8" fill="#c17a74"/>
+  </g>
+
+  <!-- F02 医疗费协议 -->
+  <g>
+    <rect x="470" y="200" width="110" height="80" fill="#ece7dc" stroke="#8a7a5c" stroke-width="2" rx="2"/>
+    <rect x="482" y="214" width="86" height="8" fill="#999"/>
+    <rect x="482" y="230" width="60" height="8" fill="#999"/>
+    <rect x="482" y="246" width="80" height="8" fill="#999"/>
+  </g>
+
+  <!-- F03 物证处理清单 -->
+  <g>
+    <rect x="750" y="200" width="110" height="80" fill="#ece7dc" stroke="#8a7a5c" stroke-width="2" rx="2"/>
+    <rect x="762" y="214" width="86" height="8" fill="#999"/>
+    <rect x="762" y="230" width="76" height="8" fill="#999"/>
+    <rect x="762" y="246" width="70" height="8" fill="#c17a74"/>
+  </g>
+
+  <!-- F04 搜救威胁备忘 -->
+  <g>
+    <rect x="1030" y="200" width="110" height="80" fill="#ece7dc" stroke="#8a7a5c" stroke-width="2" rx="2"/>
+    <rect x="1042" y="214" width="86" height="8" fill="#999"/>
+    <rect x="1042" y="230" width="60" height="8" fill="#999"/>
+    <rect x="1042" y="246" width="80" height="8" fill="#c17a74"/>
+  </g>
+
+  <!-- F05 未寄证言 -->
+  <g>
+    <rect x="190" y="460" width="110" height="80" fill="#ece7dc" stroke="#8a7a5c" stroke-width="2" rx="2"/>
+    <rect x="202" y="474" width="86" height="8" fill="#999"/>
+    <rect x="202" y="490" width="70" height="8" fill="#999"/>
+    <rect x="202" y="506" width="80" height="8" fill="#999"/>
+  </g>
+
+  <!-- F06 股权编号 -->
+  <g>
+    <rect x="470" y="460" width="110" height="80" fill="#ece7dc" stroke="#8a7a5c" stroke-width="2" rx="2"/>
+    <rect x="482" y="474" width="86" height="8" fill="#999"/>
+    <rect x="482" y="490" width="60" height="8" fill="#999"/>
+    <rect x="482" y="506" width="80" height="8" fill="#999"/>
+  </g>
+
+  <!-- F07 收购目录 -->
+  <g>
+    <rect x="750" y="460" width="110" height="80" fill="#ece7dc" stroke="#8a7a5c" stroke-width="2" rx="2"/>
+    <rect x="762" y="474" width="86" height="8" fill="#999"/>
+    <rect x="762" y="490" width="76" height="8" fill="#999"/>
+    <rect x="762" y="506" width="70" height="8" fill="#999"/>
+  </g>
+
+  <!-- F08 风险谈话 -->
+  <g>
+    <rect x="1030" y="460" width="110" height="80" fill="#ece7dc" stroke="#8a7a5c" stroke-width="2" rx="2"/>
+    <rect x="1042" y="474" width="86" height="8" fill="#999"/>
+    <rect x="1042" y="490" width="60" height="8" fill="#999"/>
+    <rect x="1042" y="506" width="80" height="8" fill="#c17a74"/>
+  </g>
+</svg>

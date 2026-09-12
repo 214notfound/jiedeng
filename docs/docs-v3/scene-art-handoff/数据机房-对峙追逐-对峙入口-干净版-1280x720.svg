@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720">
+  <defs>
+    <linearGradient id="dc" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0e1622"/>
+      <stop offset="1" stop-color="#06090e"/>
+    </linearGradient>
+    <radialGradient id="screen" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#5aa7ff" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#5aa7ff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect x="0" y="0" width="1280" height="720" fill="url(#dc)"/>
+
+  <rect x="110" y="100" width="1060" height="500" fill="#141c28" stroke="#3a4a5c" stroke-width="2"/>
+  <rect x="110" y="600" width="1060" height="120" fill="#0c1018"/>
+
+  <!-- T12 供电范围/延时器/排水线（左） -->
+  <g>
+    <rect x="180" y="220" width="200" height="160" fill="#0a0f16" stroke="#4a6b8a" stroke-width="3" rx="4"/>
+    <rect x="196" y="238" width="168" height="12" fill="#5aa7ff" opacity="0.6"/>
+    <rect x="196" y="260" width="130" height="12" fill="#5aa7ff" opacity="0.45"/>
+    <rect x="196" y="282" width="150" height="12" fill="#ffb347" opacity="0.6"/>
+    <rect x="196" y="304" width="100" height="12" fill="#5aa7ff" opacity="0.35"/>
+    <circle cx="300" cy="300" r="90" fill="url(#screen)"/>
+  </g>
+
+  <!-- T13 安保封锁/副本删除压力（右） -->
+  <g>
+    <rect x="900" y="220" width="200" height="160" fill="#0a0f16" stroke="#4a6b8a" stroke-width="3" rx="4"/>
+    <rect x="916" y="238" width="168" height="12" fill="#ff4757" opacity="0.6"/>
+    <rect x="916" y="260" width="130" height="12" fill="#ff4757" opacity="0.5"/>
+    <rect x="916" y="282" width="150" height="12" fill="#5aa7ff" opacity="0.4"/>
+    <rect x="916" y="304" width="100" height="12" fill="#ff4757" opacity="0.4"/>
+    <circle cx="1000" cy="300" r="90" fill="url(#screen)"/>
+  </g>
+
+</svg>

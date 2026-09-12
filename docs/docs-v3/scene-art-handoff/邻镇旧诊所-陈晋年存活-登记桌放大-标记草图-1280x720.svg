@@ -1,0 +1,122 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" font-family="Microsoft YaHei, PingFang SC, sans-serif">
+  <defs>
+    <linearGradient id="desk" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#241d16"/>
+      <stop offset="1" stop-color="#120e0a"/>
+    </linearGradient>
+    <radialGradient id="lamp" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#f5e9d0" stop-opacity="0.7"/>
+      <stop offset="1" stop-color="#f5e9d0" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect x="0" y="0" width="1280" height="720" fill="url(#desk)"/>
+  <rect x="3" y="3" width="1274" height="714" fill="none" stroke="#f5c542" stroke-width="5"/>
+  <text x="14" y="30" fill="#f5c542" font-size="16" font-weight="bold">左上角 (0,0)</text>
+  <text x="1158" y="704" fill="#f5c542" font-size="16" font-weight="bold">右下角 (100,100)</text>
+
+  <rect x="120" y="160" width="1040" height="460" fill="#3a2f24" stroke="#5a4836" stroke-width="3"/>
+  <rect x="120" y="160" width="1040" height="20" fill="#c8bfa8"/>
+  <circle cx="640" cy="200" r="100" fill="url(#lamp)"/>
+  <text x="640" y="80" fill="#b7c4d0" font-size="15" text-anchor="middle">登记桌放大（A20–A26）</text>
+
+  <!-- A20 诊所账簿｜19,36 -->
+  <g>
+    <rect x="180" y="240" width="120" height="80" fill="#ece7dc" stroke="#8a7a5c" stroke-width="2" rx="2"/>
+    <rect x="192" y="254" width="80" height="8" fill="#999"/>
+    <rect x="192" y="270" width="96" height="8" fill="#999"/>
+    <rect x="192" y="286" width="64" height="8" fill="#999"/>
+    <circle cx="240" cy="260" r="52" fill="none" stroke="#ffb347" stroke-width="3" stroke-dasharray="8 6"/>
+    <line x1="190" y1="260" x2="290" y2="260" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+    <line x1="240" y1="210" x2="240" y2="310" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+    <circle cx="240" cy="260" r="9" fill="#ff4757" stroke="#ffffff" stroke-width="3"/>
+    <text x="240" y="118" fill="#ffb347" font-size="18" font-weight="bold" text-anchor="middle">A20 · 诊所账簿｜19,36</text>
+    <text x="240" y="138" fill="#b7c4d0" font-size="13" text-anchor="middle">坠沟两日后无名少年送诊</text>
+  </g>
+
+  <!-- A21 伤情图/转诊记录｜39,36 -->
+  <g>
+    <rect x="440" y="240" width="120" height="90" fill="#ece7dc" stroke="#8a7a5c" stroke-width="2" rx="2"/>
+    <rect x="452" y="254" width="70" height="60" fill="#2b3442"/>
+    <rect x="452" y="322" width="96" height="6" fill="#999"/>
+    <circle cx="500" cy="260" r="52" fill="none" stroke="#ffb347" stroke-width="3" stroke-dasharray="8 6"/>
+    <line x1="450" y1="260" x2="550" y2="260" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+    <line x1="500" y1="210" x2="500" y2="310" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+    <circle cx="500" cy="260" r="9" fill="#ff4757" stroke="#ffffff" stroke-width="3"/>
+    <text x="500" y="118" fill="#ffb347" font-size="18" font-weight="bold" text-anchor="middle">A21 · 伤情图/转诊记录｜39,36</text>
+    <text x="500" y="138" fill="#b7c4d0" font-size="13" text-anchor="middle">头伤/划伤与主角对应</text>
+  </g>
+
+  <!-- A22 伤疤比对｜59,36 -->
+  <g>
+    <rect x="700" y="240" width="120" height="80" fill="#ece7dc" stroke="#8a7a5c" stroke-width="2" rx="2"/>
+    <circle cx="760" cy="280" r="20" fill="#2b3442" stroke="#c17a74" stroke-width="2"/>
+    <rect x="712" y="310" width="96" height="6" fill="#999"/>
+    <circle cx="760" cy="260" r="52" fill="none" stroke="#ffb347" stroke-width="3" stroke-dasharray="8 6"/>
+    <line x1="710" y1="260" x2="810" y2="260" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+    <line x1="760" y1="210" x2="760" y2="310" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+    <circle cx="760" cy="260" r="9" fill="#ff4757" stroke="#ffffff" stroke-width="3"/>
+    <text x="760" y="118" fill="#ffb347" font-size="18" font-weight="bold" text-anchor="middle">A22 · 伤疤比对｜59,36</text>
+    <text x="760" y="138" fill="#b7c4d0" font-size="13" text-anchor="middle">毁容解释村民认不出</text>
+  </g>
+
+  <!-- A23 采药人转述｜80,36 -->
+  <g>
+    <rect x="960" y="240" width="130" height="84" fill="#ece7dc" stroke="#8a7a5c" stroke-width="2" rx="2"/>
+    <rect x="974" y="254" width="100" height="8" fill="#999"/>
+    <rect x="974" y="270" width="90" height="8" fill="#999"/>
+    <rect x="974" y="286" width="102" height="8" fill="#999"/>
+    <circle cx="1020" cy="260" r="52" fill="none" stroke="#ffb347" stroke-width="3" stroke-dasharray="8 6"/>
+    <line x1="970" y1="260" x2="1070" y2="260" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+    <line x1="1020" y1="210" x2="1020" y2="310" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+    <circle cx="1020" cy="260" r="9" fill="#ff4757" stroke="#ffffff" stroke-width="3"/>
+    <text x="1020" y="118" fill="#ffb347" font-size="18" font-weight="bold" text-anchor="middle">A23 · 采药人转述｜80,36</text>
+    <text x="1020" y="138" fill="#b7c4d0" font-size="13" text-anchor="middle">从深排水洞救走陈晋年</text>
+  </g>
+
+  <!-- A24 搜救终止文件｜29,72 -->
+  <g>
+    <rect x="310" y="500" width="130" height="80" fill="#ece7dc" stroke="#8a7a5c" stroke-width="2" rx="2"/>
+    <rect x="324" y="514" width="90" height="8" fill="#999"/>
+    <rect x="324" y="530" width="100" height="8" fill="#999"/>
+    <rect x="324" y="546" width="70" height="8" fill="#c17a74"/>
+    <circle cx="370" cy="520" r="52" fill="none" stroke="#ffb347" stroke-width="3" stroke-dasharray="8 6"/>
+    <line x1="320" y1="520" x2="420" y2="520" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+    <line x1="370" y1="470" x2="370" y2="570" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+    <circle cx="370" cy="520" r="9" fill="#ff4757" stroke="#ffffff" stroke-width="3"/>
+    <text x="370" y="640" fill="#ffb347" font-size="18" font-weight="bold" text-anchor="middle">A24 · 搜救终止文件｜29,72</text>
+    <text x="370" y="660" fill="#b7c4d0" font-size="13" text-anchor="middle">父亲第三日放弃扩搜</text>
+  </g>
+
+  <!-- A25 户籍/年龄/伤痕链｜52,72 -->
+  <g>
+    <rect x="600" y="500" width="130" height="80" fill="#ece7dc" stroke="#8a7a5c" stroke-width="2" rx="2"/>
+    <rect x="614" y="514" width="100" height="8" fill="#999"/>
+    <rect x="614" y="530" width="86" height="8" fill="#999"/>
+    <rect x="614" y="546" width="100" height="8" fill="#999"/>
+    <circle cx="660" cy="520" r="52" fill="none" stroke="#ffb347" stroke-width="3" stroke-dasharray="8 6"/>
+    <line x1="610" y1="520" x2="710" y2="520" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+    <line x1="660" y1="470" x2="660" y2="570" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+    <circle cx="660" cy="520" r="9" fill="#ff4757" stroke="#ffffff" stroke-width="3"/>
+    <text x="660" y="640" fill="#ffb347" font-size="18" font-weight="bold" text-anchor="middle">A25 · 户籍/年龄/伤痕链｜52,72</text>
+    <text x="660" y="660" fill="#b7c4d0" font-size="13" text-anchor="middle">改从母姓，成为王阙</text>
+  </g>
+
+  <!-- A26 蓝玻璃珠｜74,72 -->
+  <g>
+    <circle cx="950" cy="520" r="16" fill="#5aa7ff" stroke="#ffffff" stroke-width="2"/>
+    <circle cx="946" cy="514" r="5" fill="#ffffff" opacity="0.7"/>
+    <circle cx="950" cy="520" r="48" fill="none" stroke="#5aa7ff" stroke-width="3" stroke-dasharray="8 6"/>
+    <line x1="904" y1="520" x2="996" y2="520" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+    <line x1="950" y1="474" x2="950" y2="566" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+    <circle cx="950" cy="520" r="9" fill="#ff4757" stroke="#ffffff" stroke-width="3"/>
+    <text x="950" y="640" fill="#5aa7ff" font-size="18" font-weight="bold" text-anchor="middle">A26 · 蓝玻璃珠｜74,72</text>
+    <text x="950" y="660" fill="#b7c4d0" font-size="13" text-anchor="middle">触发兄妹离院闪回</text>
+  </g>
+
+  <!-- A27 归档（非热点） -->
+  <g>
+    <rect x="400" y="610" width="480" height="56" fill="#0d1118" stroke="#f5c542" stroke-width="2" rx="6"/>
+    <text x="640" y="642" fill="#f5c542" font-size="18" font-weight="bold" text-anchor="middle">A27 · 主角说出「陈晋年和王阙是同一个人」（归档，非热点）</text>
+  </g>
+</svg>

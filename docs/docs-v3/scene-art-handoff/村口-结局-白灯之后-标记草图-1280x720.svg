@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" font-family="Microsoft YaHei, PingFang SC, sans-serif">
+  <defs>
+    <linearGradient id="night" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0d1118"/>
+      <stop offset="1" stop-color="#141c28"/>
+    </linearGradient>
+    <radialGradient id="lamp" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#f5e9d0" stop-opacity="0.8"/>
+      <stop offset="1" stop-color="#f5e9d0" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="probe" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#5aa7ff" stop-opacity="0.5"/>
+      <stop offset="1" stop-color="#5aa7ff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect x="0" y="0" width="1280" height="720" fill="url(#night)"/>
+  <rect x="3" y="3" width="1274" height="714" fill="none" stroke="#f5c542" stroke-width="5"/>
+  <text x="14" y="30" fill="#f5c542" font-size="16" font-weight="bold">左上角 (0,0)</text>
+  <text x="1158" y="704" fill="#f5c542" font-size="16" font-weight="bold">右下角 (100,100)</text>
+
+  <text x="640" y="90" fill="#b7c4d0" font-size="16" text-anchor="middle">结局四 · 白灯之后（ending-curated-truth）</text>
+
+  <g>
+    <line x1="320" y1="220" x2="320" y2="280" stroke="#5a4836" stroke-width="3"/>
+    <rect x="294" y="280" width="52" height="60" fill="#ece7dc" stroke="#8a7a5c" stroke-width="2" rx="4"/>
+    <circle cx="320" cy="310" r="100" fill="url(#lamp)"/>
+    <text x="320" y="180" fill="#f5c542" font-size="15" font-weight="bold" text-anchor="middle">白灯（仍亮）</text>
+  </g>
+
+  <circle cx="980" cy="300" r="110" fill="url(#probe)"/>
+  <rect x="940" y="400" width="80" height="160" fill="#1c2430" stroke="#4a6b8a" stroke-width="2"/>
+  <text x="980" y="180" fill="#5aa7ff" font-size="15" font-weight="bold" text-anchor="middle">调查的光（集团被调查）</text>
+
+  <g>
+    <rect x="560" y="400" width="160" height="200" fill="none" stroke="#b7c4d0" stroke-width="2" stroke-dasharray="6 4" rx="6"/>
+    <text x="640" y="610" fill="#b7c4d0" font-size="15" font-weight="bold" text-anchor="middle">主角立绘（覆盖层，非背景）· 删去自身责任</text>
+  </g>
+
+  <rect x="340" y="640" width="600" height="52" fill="#0d1118" stroke="#f5c542" stroke-width="2" rx="6"/>
+  <text x="640" y="672" fill="#f5c542" font-size="16" font-weight="bold" text-anchor="middle">条件 curated-evidence-published：集团被调查，但主角删去自身责任</text>
+</svg>

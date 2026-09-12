@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720">
+  <defs>
+    <linearGradient id="night" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#141c28"/>
+      <stop offset="1" stop-color="#0d1118"/>
+    </linearGradient>
+    <radialGradient id="lamp" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#f5e9d0" stop-opacity="0.85"/>
+      <stop offset="1" stop-color="#f5e9d0" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect x="0" y="0" width="1280" height="720" fill="url(#night)"/>
+
+  <!-- 中央村口广场（空屋 / 搬迁 / 施工痕迹） -->
+  <rect x="500" y="300" width="280" height="200" fill="#1c2430" stroke="#3a4a5c" stroke-width="2"/>
+  <rect x="520" y="330" width="90" height="70" fill="#0e1218"/>
+  <rect x="660" y="330" width="90" height="70" fill="#0e1218"/>
+  <polygon points="500,300 640,250 780,300" fill="#141c28" stroke="#3a4a5c" stroke-width="2"/>
+  <!-- 中央白灯暖光 -->
+  <circle cx="640" cy="380" r="150" fill="url(#lamp)"/>
+  <circle cx="640" cy="300" r="10" fill="#f5e9d0"/>
+
+  <!-- G 山腰 / 墓地入口（左上，通往上山路径） -->
+  <g>
+    <path d="M180,420 L360,200 L460,240 L320,460 Z" fill="#141c28" stroke="#4a5568" stroke-width="2"/>
+    <circle cx="280" cy="280" r="46" fill="url(#lamp)" opacity="0.7"/>
+    <rect x="246" y="250" width="68" height="60" fill="#232b38" stroke="#5a4836" stroke-width="2"/>
+  </g>
+
+  <!-- R 村委旧楼（右上，临时项目部） -->
+  <g>
+    <rect x="890" y="160" width="200" height="180" fill="#1c2430" stroke="#3a4a5c" stroke-width="2"/>
+    <polygon points="885,160 990,110 1095,160" fill="#141c28" stroke="#3a4a5c" stroke-width="2"/>
+    <rect x="950" y="230" width="70" height="110" fill="#0e1218" stroke="#5a4836" stroke-width="2"/>
+    <circle cx="990" cy="260" r="40" fill="url(#lamp)" opacity="0.7"/>
+  </g>
+
+  <!-- S 废弃小学（左下） -->
+  <g>
+    <rect x="180" y="450" width="220" height="160" fill="#1c2430" stroke="#3a4a5c" stroke-width="2"/>
+    <polygon points="175,450 290,400 405,450" fill="#141c28" stroke="#3a4a5c" stroke-width="2"/>
+    <rect x="250" y="510" width="80" height="100" fill="#0e1218" stroke="#5a4836" stroke-width="2"/>
+    <circle cx="300" cy="540" r="40" fill="url(#lamp)" opacity="0.7"/>
+  </g>
+
+  <!-- W 废弃邮电所 / 拒签户（右下） -->
+  <g>
+    <rect x="880" y="450" width="220" height="160" fill="#1c2430" stroke="#3a4a5c" stroke-width="2"/>
+    <polygon points="875,450 990,400 1105,450" fill="#141c28" stroke="#3a4a5c" stroke-width="2"/>
+    <rect x="950" y="510" width="80" height="100" fill="#0e1218" stroke="#5a4836" stroke-width="2"/>
+    <circle cx="990" cy="540" r="40" fill="url(#lamp)" opacity="0.7"/>
+  </g>
+</svg>

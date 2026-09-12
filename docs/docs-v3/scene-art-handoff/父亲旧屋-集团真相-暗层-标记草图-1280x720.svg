@@ -1,0 +1,140 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" font-family="Microsoft YaHei, PingFang SC, sans-serif">
+  <defs>
+    <linearGradient id="cellar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#181019"/>
+      <stop offset="1" stop-color="#0a0808"/>
+    </linearGradient>
+    <radialGradient id="lamp" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#f5e9d0" stop-opacity="0.6"/>
+      <stop offset="1" stop-color="#f5e9d0" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect x="0" y="0" width="1280" height="720" fill="url(#cellar)"/>
+  <rect x="3" y="3" width="1274" height="714" fill="none" stroke="#f5c542" stroke-width="5"/>
+  <text x="14" y="30" fill="#f5c542" font-size="16" font-weight="bold">左上角 (0,0)</text>
+  <text x="1158" y="704" fill="#f5c542" font-size="16" font-weight="bold">右下角 (100,100)</text>
+
+  <rect x="100" y="120" width="1080" height="480" fill="#1c2028" stroke="#3a4a5c" stroke-width="2"/>
+  <rect x="100" y="120" width="1080" height="14" fill="#2b3442"/>
+  <circle cx="640" cy="150" r="120" fill="url(#lamp)"/>
+  <text x="640" y="86" fill="#b7c4d0" font-size="15" text-anchor="middle">暗层 · 证据墙（F01–F08）</text>
+
+  <!-- F01 原始矿图/爆破日志｜19,33 -->
+  <g>
+    <rect x="190" y="200" width="110" height="80" fill="#ece7dc" stroke="#8a7a5c" stroke-width="2" rx="2"/>
+    <rect x="202" y="214" width="86" height="8" fill="#999"/>
+    <rect x="202" y="230" width="70" height="8" fill="#999"/>
+    <rect x="202" y="246" width="86" height="8" fill="#c17a74"/>
+    <circle cx="240" cy="240" r="52" fill="none" stroke="#ffb347" stroke-width="3" stroke-dasharray="8 6"/>
+    <line x1="190" y1="240" x2="290" y2="240" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+    <line x1="240" y1="190" x2="240" y2="290" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+    <circle cx="240" cy="240" r="9" fill="#ff4757" stroke="#ffffff" stroke-width="3"/>
+    <text x="240" y="102" fill="#ffb347" font-size="18" font-weight="bold" text-anchor="middle">F01 · 原始矿图/爆破日志｜19,33</text>
+    <text x="240" y="122" fill="#b7c4d0" font-size="13" text-anchor="middle">旧事故的原始痕迹</text>
+  </g>
+
+  <!-- F02 医疗费协议｜41,33 -->
+  <g>
+    <rect x="470" y="200" width="110" height="80" fill="#ece7dc" stroke="#8a7a5c" stroke-width="2" rx="2"/>
+    <rect x="482" y="214" width="86" height="8" fill="#999"/>
+    <rect x="482" y="230" width="60" height="8" fill="#999"/>
+    <rect x="482" y="246" width="80" height="8" fill="#999"/>
+    <circle cx="520" cy="240" r="52" fill="none" stroke="#ffb347" stroke-width="3" stroke-dasharray="8 6"/>
+    <line x1="470" y1="240" x2="570" y2="240" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+    <line x1="520" y1="190" x2="520" y2="290" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+    <circle cx="520" cy="240" r="9" fill="#ff4757" stroke="#ffffff" stroke-width="3"/>
+    <text x="520" y="102" fill="#ffb347" font-size="18" font-weight="bold" text-anchor="middle">F02 · 医疗费协议｜41,33</text>
+    <text x="520" y="122" fill="#b7c4d0" font-size="13" text-anchor="middle">父亲最初受胁迫</text>
+  </g>
+
+  <!-- F03 物证处理清单｜59,33 -->
+  <g>
+    <rect x="750" y="200" width="110" height="80" fill="#ece7dc" stroke="#8a7a5c" stroke-width="2" rx="2"/>
+    <rect x="762" y="214" width="86" height="8" fill="#999"/>
+    <rect x="762" y="230" width="76" height="8" fill="#999"/>
+    <rect x="762" y="246" width="70" height="8" fill="#c17a74"/>
+    <circle cx="800" cy="240" r="52" fill="none" stroke="#ffb347" stroke-width="3" stroke-dasharray="8 6"/>
+    <line x1="750" y1="240" x2="850" y2="240" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+    <line x1="800" y1="190" x2="800" y2="290" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+    <circle cx="800" cy="240" r="9" fill="#ff4757" stroke="#ffffff" stroke-width="3"/>
+    <text x="800" y="102" fill="#ffb347" font-size="18" font-weight="bold" text-anchor="middle">F03 · 物证处理清单｜59,33</text>
+    <text x="800" y="122" fill="#b7c4d0" font-size="13" text-anchor="middle">父亲后来主动毁证</text>
+  </g>
+
+  <!-- F04 搜救威胁备忘｜80,33 -->
+  <g>
+    <rect x="1030" y="200" width="110" height="80" fill="#ece7dc" stroke="#8a7a5c" stroke-width="2" rx="2"/>
+    <rect x="1042" y="214" width="86" height="8" fill="#999"/>
+    <rect x="1042" y="230" width="60" height="8" fill="#999"/>
+    <rect x="1042" y="246" width="80" height="8" fill="#c17a74"/>
+    <circle cx="1080" cy="240" r="52" fill="none" stroke="#ffb347" stroke-width="3" stroke-dasharray="8 6"/>
+    <line x1="1030" y1="240" x2="1130" y2="240" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+    <line x1="1080" y1="190" x2="1080" y2="290" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+    <circle cx="1080" cy="240" r="9" fill="#ff4757" stroke="#ffffff" stroke-width="3"/>
+    <text x="1080" y="102" fill="#ffb347" font-size="18" font-weight="bold" text-anchor="middle">F04 · 搜救威胁备忘｜80,33</text>
+    <text x="1080" y="122" fill="#b7c4d0" font-size="13" text-anchor="middle">胁迫搜救/扩搜</text>
+  </g>
+
+  <!-- F05 未寄证言｜19,69 -->
+  <g>
+    <rect x="190" y="460" width="110" height="80" fill="#ece7dc" stroke="#8a7a5c" stroke-width="2" rx="2"/>
+    <rect x="202" y="474" width="86" height="8" fill="#999"/>
+    <rect x="202" y="490" width="70" height="8" fill="#999"/>
+    <rect x="202" y="506" width="80" height="8" fill="#999"/>
+    <circle cx="240" cy="500" r="52" fill="none" stroke="#ffb347" stroke-width="3" stroke-dasharray="8 6"/>
+    <line x1="190" y1="500" x2="290" y2="500" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+    <line x1="240" y1="450" x2="240" y2="550" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+    <circle cx="240" cy="500" r="9" fill="#ff4757" stroke="#ffffff" stroke-width="3"/>
+    <text x="240" y="610" fill="#ffb347" font-size="18" font-weight="bold" text-anchor="middle">F05 · 未寄证言｜19,69</text>
+    <text x="240" y="630" fill="#b7c4d0" font-size="13" text-anchor="middle">父亲曾想揭发但未寄出</text>
+  </g>
+
+  <!-- F06 股权编号｜41,69 -->
+  <g>
+    <rect x="470" y="460" width="110" height="80" fill="#ece7dc" stroke="#8a7a5c" stroke-width="2" rx="2"/>
+    <rect x="482" y="474" width="86" height="8" fill="#999"/>
+    <rect x="482" y="490" width="60" height="8" fill="#999"/>
+    <rect x="482" y="506" width="80" height="8" fill="#999"/>
+    <circle cx="520" cy="500" r="52" fill="none" stroke="#ffb347" stroke-width="3" stroke-dasharray="8 6"/>
+    <line x1="470" y1="500" x2="570" y2="500" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+    <line x1="520" y1="450" x2="520" y2="550" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+    <circle cx="520" cy="500" r="9" fill="#ff4757" stroke="#ffffff" stroke-width="3"/>
+    <text x="520" y="610" fill="#ffb347" font-size="18" font-weight="bold" text-anchor="middle">F06 · 股权编号｜41,69</text>
+    <text x="520" y="630" fill="#b7c4d0" font-size="13" text-anchor="middle">集团股权继任链条</text>
+  </g>
+
+  <!-- F07 收购目录｜59,69 -->
+  <g>
+    <rect x="750" y="460" width="110" height="80" fill="#ece7dc" stroke="#8a7a5c" stroke-width="2" rx="2"/>
+    <rect x="762" y="474" width="86" height="8" fill="#999"/>
+    <rect x="762" y="490" width="76" height="8" fill="#999"/>
+    <rect x="762" y="506" width="70" height="8" fill="#999"/>
+    <circle cx="800" cy="500" r="52" fill="none" stroke="#ffb347" stroke-width="3" stroke-dasharray="8 6"/>
+    <line x1="750" y1="500" x2="850" y2="500" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+    <line x1="800" y1="450" x2="800" y2="550" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+    <circle cx="800" cy="500" r="9" fill="#ff4757" stroke="#ffffff" stroke-width="3"/>
+    <text x="800" y="610" fill="#ffb347" font-size="18" font-weight="bold" text-anchor="middle">F07 · 收购目录｜59,69</text>
+    <text x="800" y="630" fill="#b7c4d0" font-size="13" text-anchor="middle">集团收购吞并对象</text>
+  </g>
+
+  <!-- F08 风险谈话｜80,69 -->
+  <g>
+    <rect x="1030" y="460" width="110" height="80" fill="#ece7dc" stroke="#8a7a5c" stroke-width="2" rx="2"/>
+    <rect x="1042" y="474" width="86" height="8" fill="#999"/>
+    <rect x="1042" y="490" width="60" height="8" fill="#999"/>
+    <rect x="1042" y="506" width="80" height="8" fill="#c17a74"/>
+    <circle cx="1080" cy="500" r="52" fill="none" stroke="#ffb347" stroke-width="3" stroke-dasharray="8 6"/>
+    <line x1="1030" y1="500" x2="1130" y2="500" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+    <line x1="1080" y1="450" x2="1080" y2="550" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+    <circle cx="1080" cy="500" r="9" fill="#ff4757" stroke="#ffffff" stroke-width="3"/>
+    <text x="1080" y="610" fill="#ffb347" font-size="18" font-weight="bold" text-anchor="middle">F08 · 风险谈话｜80,69</text>
+    <text x="1080" y="630" fill="#b7c4d0" font-size="13" text-anchor="middle">集团与父亲的谈话/风险</text>
+  </g>
+
+  <!-- F09 归档（非热点） -->
+  <g>
+    <rect x="390" y="646" width="500" height="50" fill="#0d1118" stroke="#f5c542" stroke-width="2" rx="6"/>
+    <text x="640" y="676" fill="#f5c542" font-size="18" font-weight="bold" text-anchor="middle">F09 · 主角说出「父亲既是受害者也是帮凶」（归档，非热点）</text>
+  </g>
+</svg>

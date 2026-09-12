@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" font-family="Microsoft YaHei, PingFang SC, sans-serif">
+  <defs>
+    <linearGradient id="night" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0d1118"/>
+      <stop offset="1" stop-color="#141c28"/>
+    </linearGradient>
+    <radialGradient id="del" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#ff4757" stop-opacity="0.5"/>
+      <stop offset="1" stop-color="#ff4757" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect x="0" y="0" width="1280" height="720" fill="url(#night)"/>
+  <rect x="3" y="3" width="1274" height="714" fill="none" stroke="#f5c542" stroke-width="5"/>
+  <text x="14" y="30" fill="#f5c542" font-size="16" font-weight="bold">左上角 (0,0)</text>
+  <text x="1158" y="704" fill="#f5c542" font-size="16" font-weight="bold">右下角 (100,100)</text>
+
+  <text x="640" y="90" fill="#b7c4d0" font-size="16" text-anchor="middle">结局一 · 共犯的终点（ending-accomplice）</text>
+
+  <g>
+    <rect x="680" y="300" width="200" height="240" fill="none" stroke="#7fd1c8" stroke-width="2" stroke-dasharray="6 4" rx="6"/>
+    <text x="760" y="240" fill="#7fd1c8" font-size="18" font-weight="bold" text-anchor="middle">小周立绘（覆盖层，非背景）· 毁证并完成回收</text>
+  </g>
+
+  <g>
+    <rect x="240" y="340" width="160" height="230" fill="none" stroke="#b7c4d0" stroke-width="2" stroke-dasharray="6 4" rx="6"/>
+    <text x="320" y="580" fill="#b7c4d0" font-size="14" text-anchor="middle">主角立绘（覆盖层，非背景）· 转身离开</text>
+  </g>
+
+  <rect x="360" y="620" width="560" height="52" fill="#0d1118" stroke="#7fd1c8" stroke-width="2" rx="6"/>
+  <text x="640" y="652" fill="#7fd1c8" font-size="16" font-weight="bold" text-anchor="middle">条件 evidence-handed-to-x：交证给小周，小周毁证并完成回收</text>
+</svg>

@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720">
+  <defs>
+    <linearGradient id="dark" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#08090c"/>
+      <stop offset="1" stop-color="#04060a"/>
+    </linearGradient>
+    <radialGradient id="del" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#ff4757" stop-opacity="0.4"/>
+      <stop offset="1" stop-color="#ff4757" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect x="0" y="0" width="1280" height="720" fill="url(#dark)"/>
+
+  <!-- 被封的矿井口（副本清除） -->
+  <g>
+    <rect x="440" y="220" width="400" height="300" fill="#0a0f16" stroke="#3a4a5c" stroke-width="3"/>
+    <rect x="460" y="240" width="360" height="260" fill="#000000"/>
+    <text x="640" y="380" fill="#ff4757" font-size="24" font-weight="bold" text-anchor="middle" font-family="Microsoft YaHei, sans-serif">副本已清除</text>
+    <circle cx="640" cy="360" r="130" fill="url(#del)"/>
+  </g>
+
+</svg>

@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" font-family="Microsoft YaHei, PingFang SC, sans-serif">
+  <defs>
+    <linearGradient id="mine" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#141a24"/>
+      <stop offset="1" stop-color="#08090c"/>
+    </linearGradient>
+    <radialGradient id="lamp" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#f5e9d0" stop-opacity="0.7"/>
+      <stop offset="1" stop-color="#f5e9d0" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect x="0" y="0" width="1280" height="720" fill="url(#mine)"/>
+  <rect x="3" y="3" width="1274" height="714" fill="none" stroke="#f5c542" stroke-width="5"/>
+  <text x="14" y="30" fill="#f5c542" font-size="16" font-weight="bold">左上角 (0,0)</text>
+  <text x="1158" y="704" fill="#f5c542" font-size="16" font-weight="bold">右下角 (100,100)</text>
+
+  <rect x="120" y="120" width="1040" height="480" fill="#1a2028" stroke="#3a4a5c" stroke-width="2"/>
+  <rect x="430" y="240" width="140" height="300" fill="#2b3442" stroke="#5a4836" stroke-width="3"/>
+  <rect x="700" y="240" width="140" height="300" fill="#2b3442" stroke="#5a4836" stroke-width="3"/>
+  <rect x="430" y="240" width="410" height="40" fill="#3a4a52"/>
+  <text x="640" y="300" fill="#b7c4d0" font-size="16" text-anchor="middle">封井 · 速凝浆</text>
+  <text x="640" y="76" fill="#b7c4d0" font-size="15" text-anchor="middle">矿井 · 路线解谜（入口页）</text>
+
+  <!-- M00 原始矿图｜20,35 -->
+  <g>
+    <rect x="170" y="210" width="160" height="90" fill="#ece7dc" stroke="#8a7a5c" stroke-width="2" rx="2"/>
+    <rect x="184" y="224" width="132" height="62" fill="#2b3442" stroke="#4a6b8a" stroke-width="2"/>
+    <circle cx="250" cy="255" r="8" fill="#ffb347" opacity="0.85"/>
+    <rect x="184" y="292" width="110" height="6" fill="#999"/>
+    <circle cx="250" cy="250" r="52" fill="none" stroke="#ffb347" stroke-width="3" stroke-dasharray="8 6"/>
+    <line x1="200" y1="250" x2="300" y2="250" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+    <line x1="250" y1="200" x2="250" y2="300" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+    <circle cx="250" cy="250" r="9" fill="#ff4757" stroke="#ffffff" stroke-width="3"/>
+    <text x="250" y="168" fill="#ffb347" font-size="18" font-weight="bold" text-anchor="middle">M00 · 原始矿图/地形/坐标｜20,35</text>
+  </g>
+
+  <!-- M02 排水洞与供电盲区｜78,35 -->
+  <g>
+    <rect x="900" y="210" width="160" height="90" fill="#1c2028" stroke="#4a6b8a" stroke-width="2" rx="6"/>
+    <circle cx="980" cy="255" r="34" fill="#0a0f16" stroke="#4a6b8a" stroke-width="3"/>
+    <circle cx="980" cy="255" r="34" fill="none" stroke="#5aa7ff" stroke-width="2" stroke-dasharray="6 4"/>
+    <circle cx="1000" cy="250" r="52" fill="none" stroke="#ffb347" stroke-width="3" stroke-dasharray="8 6"/>
+    <line x1="950" y1="250" x2="1050" y2="250" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+    <line x1="1000" y1="200" x2="1000" y2="300" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+    <circle cx="1000" cy="250" r="9" fill="#ff4757" stroke="#ffffff" stroke-width="3"/>
+    <text x="1000" y="168" fill="#ffb347" font-size="18" font-weight="bold" text-anchor="middle">M02 · 排水洞/供电盲区｜78,35</text>
+  </g>
+
+  <!-- M03 两道挡墙/废石/速凝浆｜48,56 -->
+  <g>
+    <rect x="560" y="360" width="160" height="80" fill="#232b38" stroke="#5a4836" stroke-width="2" rx="3"/>
+    <rect x="574" y="374" width="60" height="24" fill="#3a2f24"/>
+    <rect x="646" y="374" width="60" height="24" fill="#3a2f24"/>
+    <rect x="574" y="408" width="132" height="14" fill="#4a5568"/>
+    <circle cx="620" cy="400" r="52" fill="none" stroke="#ffb347" stroke-width="3" stroke-dasharray="8 6"/>
+    <line x1="570" y1="400" x2="670" y2="400" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+    <line x1="620" y1="350" x2="620" y2="450" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+    <circle cx="620" cy="400" r="9" fill="#ff4757" stroke="#ffffff" stroke-width="3"/>
+    <text x="620" y="330" fill="#ffb347" font-size="18" font-weight="bold" text-anchor="middle">M03 · 两道挡墙/废石/速凝浆｜48,56</text>
+  </g>
+
+  <!-- M04 材料对比｜20,76 -->
+  <g>
+    <rect x="170" y="500" width="160" height="90" fill="#ece7dc" stroke="#8a7a5c" stroke-width="2" rx="2"/>
+    <rect x="184" y="514" width="132" height="10" fill="#999"/>
+    <rect x="184" y="532" width="100" height="10" fill="#999"/>
+    <rect x="184" y="550" width="120" height="10" fill="#c17a74"/>
+    <circle cx="250" cy="550" r="52" fill="none" stroke="#ffb347" stroke-width="3" stroke-dasharray="8 6"/>
+    <line x1="200" y1="550" x2="300" y2="550" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+    <line x1="250" y1="500" x2="250" y2="600" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+    <circle cx="250" cy="550" r="9" fill="#ff4757" stroke="#ffffff" stroke-width="3"/>
+    <text x="250" y="630" fill="#ffb347" font-size="18" font-weight="bold" text-anchor="middle">M04 · 材料对比｜20,76</text>
+  </g>
+
+  <!-- M05 内部平台｜78,76 -->
+  <g>
+    <rect x="900" y="500" width="160" height="90" fill="#1c2028" stroke="#4a6b8a" stroke-width="2" rx="3"/>
+    <rect x="914" y="514" width="132" height="62" fill="#0a0f16" stroke="#4a6b8a" stroke-width="2"/>
+    <rect x="946" y="540" width="68" height="36" fill="#2b3442"/>
+    <circle cx="1000" cy="550" r="52" fill="none" stroke="#ffb347" stroke-width="3" stroke-dasharray="8 6"/>
+    <line x1="950" y1="550" x2="1050" y2="550" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+    <line x1="1000" y1="500" x2="1000" y2="600" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+    <circle cx="1000" cy="550" r="9" fill="#ff4757" stroke="#ffffff" stroke-width="3"/>
+    <text x="1000" y="630" fill="#ffb347" font-size="18" font-weight="bold" text-anchor="middle">M05 · 内部平台｜78,76</text>
+  </g>
+
+  <!-- M01 小周立绘（覆盖层，非背景）｜建议错误山口，对白非机关 -->
+  <g>
+    <rect x="500" y="150" width="240" height="150" fill="none" stroke="#7fd1c8" stroke-width="2" stroke-dasharray="6 4" rx="4"/>
+    <text x="620" y="170" fill="#7fd1c8" font-size="15" font-weight="bold" text-anchor="middle">M01 · 小周立绘（覆盖层，非背景）· 建议错误山口（对白，非机关）</text>
+  </g>
+</svg>

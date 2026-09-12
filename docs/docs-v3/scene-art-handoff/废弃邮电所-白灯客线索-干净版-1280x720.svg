@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720">
+  <defs>
+    <linearGradient id="room" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1a2230"/>
+      <stop offset="1" stop-color="#0e1218"/>
+    </linearGradient>
+    <radialGradient id="lamp" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#f5e9d0" stop-opacity="0.7"/>
+      <stop offset="1" stop-color="#f5e9d0" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect x="0" y="0" width="1280" height="720" fill="url(#room)"/>
+
+  <!-- 邮电所室内：后墙 + 柜台 + 地面 -->
+  <rect x="140" y="110" width="1000" height="360" fill="#1c2430" stroke="#3a4a5c" stroke-width="2"/>
+  <rect x="140" y="470" width="1000" height="250" fill="#161e2a"/>
+  <circle cx="640" cy="160" r="120" fill="url(#lamp)"/>
+  <!-- 柜台 -->
+  <rect x="300" y="360" width="680" height="130" fill="#3a2f24" stroke="#5a4836" stroke-width="3"/>
+  <rect x="300" y="360" width="680" height="16" fill="#c8bfa8"/>
+
+  <!-- W00 灯形条款提醒（左墙挂件） -->
+  <g>
+    <rect x="170" y="150" width="180" height="150" fill="#ece7dc" stroke="#8a7a5c" stroke-width="2" rx="2"/>
+    <rect x="184" y="166" width="120" height="12" fill="#999"/>
+    <rect x="184" y="186" width="140" height="8" fill="#999"/>
+    <rect x="184" y="202" width="100" height="8" fill="#999"/>
+    <path d="M230,240 L250,220 L270,240 L250,262 Z" fill="#d8c6a4" opacity="0.9"/>
+    <circle cx="250" cy="242" r="8" fill="#f5e9d0"/>
+  </g>
+
+  <!-- W02 变声警告录音（左桌录音机） -->
+  <g>
+    <rect x="170" y="440" width="220" height="90" fill="#3a2f24" stroke="#5a4836" stroke-width="2"/>
+    <rect x="200" y="400" width="120" height="60" fill="#232b38" stroke="#4a5568" stroke-width="2"/>
+    <circle cx="220" cy="430" r="14" fill="#2b3442" stroke="#4a5568" stroke-width="2"/>
+    <circle cx="300" cy="430" r="14" fill="#2b3442" stroke="#4a5568" stroke-width="2"/>
+  </g>
+
+  <!-- W01 投递日期记录（柜台中央） -->
+  <g>
+    <rect x="540" y="290" width="200" height="80" fill="#ece7dc" stroke="#8a7a5c" stroke-width="2" rx="2"/>
+    <rect x="554" y="306" width="140" height="10" fill="#999"/>
+    <rect x="554" y="326" width="160" height="8" fill="#999"/>
+    <rect x="554" y="344" width="100" height="8" fill="#c17a74"/>
+  </g>
+
+  <!-- W03 匿名举报草稿（右柜台） -->
+  <g>
+    <rect x="880" y="300" width="200" height="70" fill="#ece7dc" stroke="#8a7a5c" stroke-width="2" rx="2"/>
+    <rect x="894" y="314" width="150" height="8" fill="#999"/>
+    <rect x="894" y="330" width="120" height="8" fill="#999"/>
+    <rect x="894" y="346" width="160" height="8" fill="#999"/>
+    <rect x="900" y="470" width="160" height="60" fill="#232b38" stroke="#4a5568" stroke-width="2"/>
+  </g>
+</svg>
