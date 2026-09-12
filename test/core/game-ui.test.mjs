@@ -182,6 +182,29 @@ test("阅读器逐段显示且只在末尾触发一次完成回调", async () =>
   assert.equal(completions.length, 1, "关闭不得伪装成阅读完成");
 }));
 
+test("同一条对白中的角色与旁白按段落推进，不在一个对话框内形成长滚动文本", () => withFakeDocument(() => {
+  const storyElement = new FakeElement("div");
+  const actionsElement = new FakeElement("div");
+  const view = createReadingView({storyElement, actionsElement});
+
+  view.open({
+    mode: "conversation",
+    items: [{
+      id: "key-dialogue",
+      kind: "dialogue",
+      text: "【你】我以前是做什么的？\n【小X】先别硬想。\n他把话题岔开。"
+    }],
+    actions: [],
+    metadata: {conversationId: "conversation-1", npcId: "companion-x", actionId: "key", commandId: "command-1"}
+  });
+
+  assert.equal(storyElement.children.at(-1).textContent, "我以前是做什么的？");
+  view.next();
+  assert.equal(storyElement.children.at(-1).textContent, "先别硬想。");
+  view.next();
+  assert.equal(storyElement.children.at(-1).textContent, "他把话题岔开。");
+}));
+
 test("NPC Choice 提交期间可见忙碌状态、阻止连点并在失败后允许重试", async () => withFakeDocument(async () => {
   const storyElement = new FakeElement("div");
   const actionsElement = new FakeElement("div");

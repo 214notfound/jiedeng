@@ -50,3 +50,19 @@ test("正式页面与独立演示入口保持分离", async () => {
   assert.doesNotMatch(html, /exploration-demo|achievements-demo|demo=1/);
   assert.match(html, /game-page-controller[.]js/);
 });
+
+test("剧情正文与成功状态不进入顶部全局反馈", async () => {
+  const exploration = await readFile(
+    new URL("assets/js/exploration/game/exploration-view.js", ROOT),
+    "utf8"
+  );
+  const controller = await readFile(
+    new URL("assets/js/core/game-page-controller.js", ROOT),
+    "utf8"
+  );
+
+  assert.doesNotMatch(exploration, /对话已记录/);
+  assert.doesNotMatch(exploration, /notify\(playerMessage\(result/);
+  assert.match(exploration, /if \(!result\.ok\)\s*\{[\s\S]*?调查未完成/);
+  assert.match(controller, /feedback\.hidden = true/);
+});

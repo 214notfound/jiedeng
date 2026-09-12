@@ -8,7 +8,7 @@ export { mountAchievements } from "../../achievements/game/achievements-view.js"
 
 export function mountExploration({
   module, sceneRoot, actionsRoot, inventoryRoot, detailRoot,
-  showFeedback, openDetail, openConversation
+  showFeedback, openDetail, openConversation, openReading
 }) {
   if (typeof showFeedback !== "function") {
     throw new TypeError("缺少全局反馈入口。");
@@ -22,6 +22,24 @@ export function mountExploration({
   if (typeof openConversation !== "function") {
     throw new TypeError("缺少统一阅读入口。");
   }
+  const readExploration = typeof openReading === "function"
+    ? openReading
+    : (presentation, callbacks = {}) => openConversation({
+      mode: "conversation",
+      speaker: "调查记录",
+      items: presentation.blocks.map((block) => ({
+        id: block.blockId,
+        kind: "dialogue",
+        text: block.text
+      })),
+      actions: [],
+      metadata: {
+        conversationId: presentation.presentationId,
+        npcId: "exploration-record",
+        actionId: presentation.presentationId,
+        commandId: presentation.presentationId
+      }
+    }, callbacks);
   const scene = region(sceneRoot);
   const notify = createFeedback(scene, showFeedback);
   const heading = element("h2", "exploration-title");
@@ -84,12 +102,8 @@ export function mountExploration({
     openConversation(conversationInput, {
       onComplete: async (result) => {
         const outcome = await module.completeReading(sceneId, actionId, result);
-        if (active) {
-          notify(
-            playerMessage(outcome.message, "交谈未完成，请重试。"),
-            outcome.ok ? "success" : "warning",
-            outcome.ok ? undefined : "OPERATION_FAILED"
-          );
+        if (active && !outcome.ok) {
+          notify("交谈未完成，请重试。", "warning", "OPERATION_FAILED");
         }
         if (active && outcome.ok) {
           clearCharacter();
@@ -178,13 +192,25 @@ export function mountExploration({
           const result = await module.interact(sceneId, action.id);
           if (!active) return;
           node.disabled = false;
-          notify(playerMessage(result.speaker ? "【" + result.speaker + "】" + result.message : result.message,
-            "调查未完成，请重试或稍后再来。"),
-            result.ok ? "success" : "warning",
-            result.ok ? undefined : "OPERATION_FAILED");
+          if (!result.ok) {
+            notify("调查未完成，请重试或稍后再来。", "warning", "OPERATION_FAILED");
+          }
           if (result.ok && module.getItemDetail?.(action.id)) {
             hotspots.querySelector('[data-hotspot-id="' + action.id + '"]')?.focus();
-            inventoryView.openTarget(action.id);
+            inventoryView.openTarget(action.id, {description: result.message});
+          } else if (result.ok) {
+            readExploration({
+              presentationId: "exploration-result-" + action.id,
+              sceneId,
+              blocks: [{
+                blockId: "exploration-result-" + action.id,
+                blockType: "narration",
+                text: result.message
+              }],
+              actions: []
+            }, {
+              onClose: () => hotspots.querySelector('[data-hotspot-id="' + action.id + '"]')?.focus()
+            });
           }
         }, "scene-hotspot" + (action.completed ? " is-completed" : "")
           + (!action.available ? " is-disabled" : ""));

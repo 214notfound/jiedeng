@@ -59,32 +59,30 @@ export function splitReadingText(text) {
   return Object.freeze(segments);
 }
 
-function renderTextItem(storyElement, item) {
+function renderTextItem(storyElement, item, segmentIndex = 0) {
   storyElement.replaceChildren();
   const storyPanel = storyElement.closest?.(".story-panel");
   const segments = splitReadingText(item.text);
+  const labelledText = segments[segmentIndex] ?? segments[0];
+
+  if (!labelledText) return segments.length;
 
   storyElement.dataset.contentKind = item.kind;
   if (storyPanel) storyPanel.dataset.contentKind = item.kind;
 
-  segments.forEach((labelledText, index) => {
-    if (labelledText.speaker) {
-      const speaker = document.createElement("p");
-      speaker.className = "story-speaker";
-      if (segments.length > 1) {
-        speaker.style.position = "static";
-        speaker.style.transform = "none";
-      }
-      speaker.textContent = labelledText.speaker;
-      storyElement.append(speaker);
-    }
+  if (labelledText.speaker) {
+    const speaker = document.createElement("p");
+    speaker.className = "story-speaker";
+    speaker.textContent = labelledText.speaker;
+    storyElement.append(speaker);
+  }
 
-    const paragraph = document.createElement("p");
-    paragraph.className = `story-block story-block--${item.kind}`;
-    paragraph.dataset.contentId = index === 0 ? item.id : `${item.id}-${index + 1}`;
-    paragraph.textContent = labelledText.text;
-    storyElement.append(paragraph);
-  });
+  const paragraph = document.createElement("p");
+  paragraph.className = `story-block story-block--${item.kind}`;
+  paragraph.dataset.contentId = segmentIndex === 0 ? item.id : `${item.id}-${segmentIndex + 1}`;
+  paragraph.textContent = labelledText.text;
+  storyElement.append(paragraph);
+  return segments.length;
 }
 
 function requireReadingText(value, fieldName) {
@@ -176,6 +174,7 @@ export function createReadingView({
   const storyPanel = storyElement.closest?.(".story-panel");
   let input = null;
   let currentIndex = 0;
+  let currentSegmentIndex = 0;
   let completed = false;
   let busy = false;
   let actionStatus = null;
@@ -215,7 +214,10 @@ export function createReadingView({
     if (!input) return;
 
     if (!completed) {
-      const isLastItem = currentIndex >= input.items.length - 1;
+      const currentItem = input.items[currentIndex];
+      const segmentCount = splitReadingText(currentItem?.text ?? "").length;
+      const isLastItem = currentIndex >= input.items.length - 1
+        && currentSegmentIndex >= segmentCount - 1;
       actionsElement.append(
         makeButton(
           isLastItem ? "读完" : "继续",
@@ -250,7 +252,7 @@ export function createReadingView({
   function renderCurrentItem() {
     const item = input?.items[currentIndex];
     if (item) {
-      renderTextItem(storyElement, item);
+      renderTextItem(storyElement, item, currentSegmentIndex);
     } else {
       storyElement.replaceChildren();
     }
@@ -271,8 +273,17 @@ export function createReadingView({
   function next() {
     if (!input || completed || busy) return;
 
+    const currentItem = input.items[currentIndex];
+    const segmentCount = splitReadingText(currentItem?.text ?? "").length;
+    if (currentSegmentIndex < segmentCount - 1) {
+      currentSegmentIndex += 1;
+      renderCurrentItem();
+      return;
+    }
+
     if (currentIndex < input.items.length - 1) {
       currentIndex += 1;
+      currentSegmentIndex = 0;
       renderCurrentItem();
       return;
     }
@@ -317,6 +328,7 @@ export function createReadingView({
 
     input = nextInput;
     currentIndex = 0;
+    currentSegmentIndex = 0;
     completed = input.readingState === "choice";
     busy = false;
     clear();
@@ -338,6 +350,7 @@ export function createReadingView({
   function close() {
     input = null;
     currentIndex = 0;
+    currentSegmentIndex = 0;
     completed = false;
     busy = false;
     clear();
@@ -413,12 +426,13 @@ export function createGameView({onStoryAction} = {}) {
     openSystemPrompt(presentation, {
       onComplete = () => {},
       onAction = () => {},
-      onClose = () => {}
+      onClose = () => {},
+      allowClose = false
     } = {}) {
       onReadingComplete = onComplete;
       onReadingAction = onAction;
       onReadingClose = onClose;
-      readingView.open(adaptStoryPresentation(presentation));
+      readingView.open({...adaptStoryPresentation(presentation), allowClose});
     },
     getReadingView: () => readingView
   });
