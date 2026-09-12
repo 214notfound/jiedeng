@@ -26,7 +26,7 @@ const EXTERNAL_EVENTS_BY_SOURCE = Object.freeze({
     EXTERNAL_EVENT_TYPES.NPC_TALK_PROGRESS,
     EXTERNAL_EVENT_TYPES.NPC_TALKED
   ],
-  minigame: [EXTERNAL_EVENT_TYPES.MAP_PUZZLE_COMPLETED]
+  minigame: [EXTERNAL_EVENT_TYPES.MAP_PUZZLE_COMPLETED, EXTERNAL_EVENT_TYPES.MINIGAME_RESOLVED]
 });
 
 const COMMAND_TYPE_BY_SOURCE = Object.freeze({
@@ -37,6 +37,26 @@ const COMMAND_TYPE_BY_SOURCE = Object.freeze({
 
 const V1_STAGE_IDS = Object.freeze(["prologue", "village", "old-house"]);
 
+const V3_STAGE_BY_NODE = Object.freeze({
+  "outer-lines-investigation": "outer-investigation",
+  "haunting-system-dismantled": "outer-investigation",
+  "b-designer-revealed": "identity-reconstruction",
+  "a-survival-revealed": "identity-reconstruction",
+  "father-company-truth": "identity-reconstruction",
+  "white-lamp-identity-revealed": "identity-reconstruction",
+  "mine-route-restored": "mine-return",
+  "su-he-death-reconstructed": "mine-return",
+  "server-evidence-recovered": "finale",
+  "x-recovery-confrontation": "finale",
+  "x-showdown": "finale",
+  "evidence-disposition": "finale",
+  "ending-accomplice": "finale",
+  "ending-defeated": "finale",
+  "ending-erasure": "finale",
+  "ending-curated-truth": "finale",
+  "ending-full-account": "finale"
+});
+
 export function getStageIdForNode(nodeId) {
   requireText(nodeId, "nodeId");
 
@@ -45,6 +65,7 @@ export function getStageIdForNode(nodeId) {
   if (nodeId.startsWith("old-house-") || nodeId === "week-one-end") {
     return "old-house";
   }
+  if (V3_STAGE_BY_NODE[nodeId]) return V3_STAGE_BY_NODE[nodeId];
 
   throw new Error(`无法从剧情 Node 推导阶段：${nodeId}`);
 }
@@ -450,6 +471,23 @@ export function applyExternalEvent(gameState, event) {
     nextState = {
       ...nextState,
       puzzle: { ...nextState.puzzle, mapRestored: true }
+    };
+  }
+
+  if (eventType === EXTERNAL_EVENT_TYPES.MINIGAME_RESOLVED) {
+    const minigameId = requireGameId(payload, "minigameId", eventType);
+    if (minigameId !== pendingCommand.targetId) {
+      throw new Error(`小游戏命令的 minigameId 与等待命令不匹配：${minigameId}`);
+    }
+    if (event.resultFactIds.length !== 1) {
+      throw new Error("MINIGAME_RESOLVED requires exactly one result fact");
+    }
+    nextState = {
+      ...nextState,
+      minigameState: {
+        ...nextState.minigameState,
+        [minigameId]: true
+      }
     };
   }
 
