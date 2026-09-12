@@ -34,6 +34,23 @@ test("V3 探索事实校验 externalTargetId 并记录调查对象", () => {
   assert.equal(next.investigated.includes("investigate-gorge-and-grave"), true);
 });
 
+test("V3 minigame mismatch errors include the actual minigameId", () => {
+  assert.throws(
+    () => applyExternalEvent(
+      stateWithCommand("REQUEST_MINIGAME", "haunting-network-puzzle"),
+      {
+        eventId: "evt-v3-minigame-mismatch",
+        eventType: "MINIGAME_RESOLVED",
+        source: "minigame",
+        causedByCommandId: "cmd-v3",
+        resultFactIds: ["haunting-is-engineered"],
+        payload: {minigameId: "mine-route-puzzle"}
+      }
+    ),
+    /mine-route-puzzle/
+  );
+});
+
 test("V3 core contract registers minigame event, facts, and stages", () => {
   assert.equal(EXTERNAL_EVENT_TYPES.MINIGAME_RESOLVED, "MINIGAME_RESOLVED");
   const definitions = new Map(STORY_FACT_DEFINITIONS.map((definition) => [definition.id, definition]));

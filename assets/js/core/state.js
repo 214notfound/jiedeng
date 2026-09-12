@@ -477,7 +477,7 @@ export function applyExternalEvent(gameState, event) {
   if (eventType === EXTERNAL_EVENT_TYPES.MINIGAME_RESOLVED) {
     const minigameId = requireGameId(payload, "minigameId", eventType);
     if (minigameId !== pendingCommand.targetId) {
-      throw new Error(`灏忔父鎴忓懡浠ょ殑 minigameId 涓庣瓑寰呭懡浠や笉鍖归厤锛?{minigameId}`);
+      throw new Error(`小游戏命令的 minigameId 与等待命令不匹配：${minigameId}`);
     }
     if (event.resultFactIds.length !== 1) {
       throw new Error("MINIGAME_RESOLVED requires exactly one result fact");
