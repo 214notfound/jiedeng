@@ -186,6 +186,18 @@ export function deriveViewState(response) {
   throw new TypeError(`无法识别的剧情状态：${String(response.status)}`);
 }
 
+// 有介绍文本、没有剧情按钮、但已经发布外部命令时，读完即进入业务基础页。
+// 这里只决定页面状态，不提交事实、不消费命令，也不推进 Node。
+export function shouldEnterExplorationAfterReading(response) {
+  if (response?.status !== "ready"
+    || !Array.isArray(response.presentation?.actions)
+    || response.presentation.actions.length !== 0
+    || !Array.isArray(response.commands)) {
+    return false;
+  }
+  return response.commands.some((command) => EXTERNAL_COMMAND_TYPES.has(command?.commandType));
+}
+
 function setLayerState(element, {visible, interactive}) {
   element.hidden = !visible;
   element.toggleAttribute("inert", visible && !interactive);
@@ -756,7 +768,22 @@ export function setupGamePage() {
         REQUEST_MINIGAME: () => {}
       },
       onStatusChange: (_status, response) => updateView("response", () => {
-        gameView.renderResponse(response);
+        const enterExplorationAfterReading = shouldEnterExplorationAfterReading(response);
+        const expectedCommandIds = enterExplorationAfterReading
+          ? response.commands.map((command) => command.commandId)
+          : [];
+        gameView.renderResponse(response, {
+          onComplete: () => {
+            if (!enterExplorationAfterReading) return;
+            const activeCommandIds = new Set(activeCommands.map((command) => command.commandId));
+            if (!expectedCommandIds.every((commandId) => activeCommandIds.has(commandId))) return;
+            gameView.getReadingView().close();
+            viewCoordinator.showBase(VIEW_STATES.EXPLORATION);
+            const firstHotspot = sceneRoot.querySelector(".scene-hotspot:not(.is-disabled)")
+              ?? sceneRoot.querySelector(".scene-hotspot");
+            firstHotspot?.focus();
+          }
+        });
         if (preserveViewDuringMapExit) return;
         if (preserveViewDuringV3MinigameResult) {
           pendingV3MinigameResponse = response;

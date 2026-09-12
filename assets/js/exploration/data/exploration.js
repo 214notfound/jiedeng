@@ -41,16 +41,16 @@ export const EXPLORATION_TASKS = Object.freeze([
     interactionType: "item",
     label: "核对屋内线索",
     actions: [
-      {id: "old-photograph", label: "查看家庭照片", marker: "照片", x: 20, y: 40,
+      {id: "old-photograph", label: "查看家庭照片", marker: "照片", x: 21, y: 22,
         facts: ["old-photograph-clue-known"],
         text: "照片里有A、妹妹和父亲。A当时的面容完整，与如今脸上留有伤痕的你并不相同。"},
-      {id: "school-uniform", label: "查看妹妹的校服", marker: "校服", x: 28, y: 75,
+      {id: "school-uniform", label: "查看妹妹的校服", marker: "校服", x: 22, y: 66,
         facts: ["school-uniform-clue-known"],
         text: "旧校服旁的盒子里留着妹妹拿着同款蓝玻璃珠的照片。你把掌心的珠子与照片对照，确认这种玻璃珠曾是她珍爱的东西。"},
-      {id: "height-marks", label: "查看身高刻痕", marker: "刻痕", x: 80, y: 40,
+      {id: "height-marks", label: "查看身高刻痕", marker: "刻痕", x: 84, y: 30,
         facts: ["height-marks-clue-known"],
         text: "刻痕旁的时间说明：事故发生时，A已经约十七岁，妹妹才是村小学生。"},
-      {id: "funeral-list", label: "查看送葬名单", marker: "名单", x: 72, y: 75,
+      {id: "funeral-list", label: "查看送葬名单", marker: "名单", x: 86, y: 78,
         facts: ["funeral-list-clue-known"],
         text: "旧丧葬记录表明，妹妹死于十七年前事故后的那段时间，A也被村里作为死者送葬。老人说“A早死了”，并非毫无依据。"}
     ]

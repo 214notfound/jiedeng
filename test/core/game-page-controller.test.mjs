@@ -7,7 +7,8 @@ import {
   createViewCoordinator,
   deriveViewState,
   feedbackForResult,
-  selectMapPuzzleCommand
+  selectMapPuzzleCommand,
+  shouldEnterExplorationAfterReading
 } from "../../assets/js/core/game-page-controller.js";
 
 const validMapCommand = {
@@ -83,6 +84,32 @@ test("剧情响应映射到 V2 基础页面", () => {
     deriveViewState({status: "error"}),
     null
   );
+});
+
+test("无剧情按钮但已有外部命令的介绍读完后进入探索页", () => {
+  const response = {
+    status: "ready",
+    presentation: {actions: []},
+    commands: [
+      {commandType: "REQUEST_EXPLORATION"},
+      {commandType: "REQUEST_EXPLORATION"},
+      {commandType: "REQUEST_EXPLORATION"},
+      {commandType: "REQUEST_EXPLORATION"}
+    ]
+  };
+  assert.equal(shouldEnterExplorationAfterReading(response), true);
+  assert.equal(shouldEnterExplorationAfterReading({
+    ...response,
+    presentation: {actions: [{actionId: "continue"}]}
+  }), false);
+  assert.equal(shouldEnterExplorationAfterReading({
+    ...response,
+    commands: []
+  }), false);
+  assert.equal(shouldEnterExplorationAfterReading({
+    ...response,
+    status: "ended"
+  }), false);
 });
 
 test("覆盖层只允许当前层操作，关闭后返回打开前状态", () => {

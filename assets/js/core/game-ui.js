@@ -372,10 +372,10 @@ export function createGameView({onStoryAction} = {}) {
 
   function renderState() {}
 
-  function renderResponse(response) {
-    onReadingComplete = () => {};
+  function renderResponse(response, {onComplete = () => {}, onClose = () => {}} = {}) {
+    onReadingComplete = onComplete;
     onReadingAction = (actionId) => onStoryAction?.(actionId);
-    onReadingClose = () => {};
+    onReadingClose = onClose;
     if (!response.presentation) {
       const text = response.status === "ended"
         ? "这一阶段的调查暂告一段落。"

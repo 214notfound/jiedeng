@@ -7,6 +7,7 @@ import {createInitialGameState} from "../../assets/js/core/state.js";
 import {loadGame, saveGame} from "../../assets/js/core/storage.js";
 import {createInteractionModule} from "../../assets/js/exploration/integration/game/interaction-module.js";
 import {createV3MinigameEvent} from "../../assets/js/minigames/v3-handoff/v3-minigame-gateway.js";
+import {shouldEnterExplorationAfterReading} from "../../assets/js/core/game-page-controller.js";
 
 const STORY_SCRIPTS = [
   "story-registry.js",
@@ -75,7 +76,12 @@ test("正式状态、剧情与交互模块可从 V3 入口连续到完整公开�
 
   assert.equal((await flow.runStory({type: "resume"})).ok, true);
   assert.equal(flow.getState().storyCheckpoint.nodeRevision, 2);
-  assert.equal((await flow.handleStoryAction("confirm-week-one-end")).ok, true);
+  const outerEntry = await flow.handleStoryAction("confirm-week-one-end");
+  assert.equal(outerEntry.ok, true);
+  assert.equal(outerEntry.status, "ready");
+  assert.equal(outerEntry.response.presentation.actions.length, 0);
+  assert.equal(outerEntry.response.commands.length, 4);
+  assert.equal(shouldEnterExplorationAfterReading(outerEntry.response), true);
 
   const host = {
     getContext: () => ({storageScope: "guest", state: flow.getState(), commands}),
