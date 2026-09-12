@@ -17,7 +17,6 @@ export const V2_CONVERSATIONS = Object.freeze({
       Object.freeze({lineId: "shopkeeper-12", text: "【小 X】成年人失踪不一定和项目有关。我们现在查的是村里的异常，别先把结论定死。"}),
       Object.freeze({lineId: "shopkeeper-13", text: "【旁白】老板看了小 X 一眼，没有再争。他从柜台下面拿出一块折旧的手绘地图碎片，递了过来。"}),
       Object.freeze({lineId: "shopkeeper-14", text: "【老板】我这里只有这一块。其他的，你再问问村里人。"}),
-      Object.freeze({lineId: "shopkeeper-15", text: "【系统提示】本段对话已读完。"})
     ])
   })
 });
