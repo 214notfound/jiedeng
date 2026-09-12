@@ -86,7 +86,8 @@ test("V3 色板、字体、控件尺寸和减少动态效果均已落地", () =>
 
   assert.match(authorizeCss, /"Songti SC",\s*STSong,\s*SimSun/);
   assert.match(authorizeCss, /"Kaiti SC",\s*STKaiti,\s*KaiTi/);
-  assert.match(authorizeCss, /\.auth-page--login \.brand-title\s*\{[^}]*font-size:\s*24px/s);
+  assert.match(authorizeCss, /\.auth-page--login \.brand-title\s*\{[^}]*font-size:\s*clamp\(52px,\s*6vw,\s*76px\)/s);
+  assert.match(authorizeCss, /\.auth-page--login \.auth-brand\s*\{[\s\S]*radial-gradient\(ellipse/);
   assert.match(authorizeCss, /\.auth-page--login \.button\s*\{[^}]*min-height:\s*44px/s);
   assert.match(authorizeCss, /@keyframes auth-rain-fall/);
   assert.match(authorizeCss, /@keyframes auth-lamp-breathe/);

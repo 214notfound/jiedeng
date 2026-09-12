@@ -703,7 +703,11 @@ a {
   min-height: 100%;
   padding: clamp(32px, 4.5vw, 64px);
   color: var(--color-paper);
-  background: linear-gradient(90deg, rgba(7, 9, 14, 0.82), rgba(7, 9, 14, 0.35));
+  background:
+    linear-gradient(90deg, rgba(7, 9, 14, 0.88), rgba(7, 9, 14, 0.42)),
+    radial-gradient(ellipse 24% 58% at 66% 18%, rgba(245, 240, 227, 0.24), transparent 72%),
+    linear-gradient(104deg, transparent 0 54%, rgba(245, 240, 227, 0.08) 55% 61%, transparent 62%),
+    rgba(7, 9, 14, 0.58);
   border-right: 1px solid var(--color-line);
 }
 
@@ -754,11 +758,11 @@ a {
 .auth-page--login .brand-title {
   color: var(--color-lamp);
   font-family: "Songti SC", STSong, SimSun, serif;
-  font-size: 24px;
+  font-size: clamp(52px, 6vw, 76px);
   font-weight: 700;
   letter-spacing: 0.18em;
   line-height: 1.05;
-  text-shadow: 0 0 28px rgba(245, 240, 227, 0.2);
+  text-shadow: 0 0 28px rgba(245, 240, 227, 0.28);
 }
 
 .auth-page--login .brand-description {
