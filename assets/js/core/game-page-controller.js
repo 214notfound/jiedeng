@@ -8,7 +8,8 @@ import { mountExploration } from "../exploration/game/exploration-view.js";
 import { createMapPuzzleAdapter } from "../minigames/map-puzzle/adapter/map-puzzle-adapter.js";
 import {
   createV3MinigameGateway,
-  v3MinigameDefinitionFor
+  v3MinigameDefinitionFor,
+  validateV3MinigameCommand
 } from "../minigames/v3-handoff/v3-minigame-gateway.js";
 import { getAchievementEvents } from "../achievements/game/achievements.js";
 import { saveGame } from "./storage.js";
@@ -447,11 +448,10 @@ export function setupGamePage() {
     }
     const isV2MapPuzzle = command.payload.minigameId === "map-puzzle"
       && command.payload.successFactId === "map-puzzle-completed";
-    const isV3Minigame = typeof command.payload.gameStyle === "string"
-      && Array.isArray(command.payload.allowedResultFactIds)
-      && command.payload.allowedResultFactIds.length > 0
-      && command.payload.allowedResultFactIds.every((factId) => typeof factId === "string");
-    if (!isV2MapPuzzle && !isV3Minigame) {
+    if (isV2MapPuzzle) return command;
+    try {
+      validateV3MinigameCommand(command);
+    } catch {
       throw new TypeError("V3 mini-game command is incomplete");
     }
     return command;
