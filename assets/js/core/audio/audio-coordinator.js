@@ -9,7 +9,9 @@ function result(ok, code, extra = {}) {
 export function createAudioCoordinator({
   AudioCtor = globalThis.Audio,
   onError = () => {},
-  volume = DEFAULT_VOLUME
+  volume = DEFAULT_VOLUME,
+  storage = globalThis.sessionStorage,
+  storageKey = "white-lamp.audio.bgm-main"
 } = {}) {
   let audio = null;
   let activeTrackId = null;
@@ -52,7 +54,17 @@ export function createAudioCoordinator({
     if (activeTrackId !== trackId || audio.src !== track.src) {
       audio.src = track.src;
       activeTrackId = trackId;
-      audio.currentTime = 0;
+      let savedPosition = 0;
+      try {
+        savedPosition = Number(storage?.getItem(storageKey)) || 0;
+      } catch (error) {
+        reportError(error, trackId);
+      }
+      try {
+        audio.currentTime = savedPosition >= 0 ? savedPosition : 0;
+      } catch (error) {
+        reportError(error, trackId);
+      }
     }
     try {
       await audio.play();
@@ -96,6 +108,13 @@ export function createAudioCoordinator({
   function destroy() {
     if (destroyed) return result(true, "AUDIO_DESTROYED");
     audio?.pause();
+    if (audio && activeTrackId) {
+      try {
+        storage?.setItem(storageKey, String(Math.max(0, Number(audio.currentTime) || 0)));
+      } catch (error) {
+        reportError(error, activeTrackId);
+      }
+    }
     audio?.removeAttribute?.("src");
     audio?.load?.();
     audio = null;

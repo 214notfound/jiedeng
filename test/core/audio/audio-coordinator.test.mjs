@@ -63,3 +63,19 @@ test("静音、暂停、恢复和停止不写入业务状态", async () => {
   assert.equal(coordinator.stop().ok, true);
   coordinator.destroy();
 });
+
+test("跨页面销毁与重建时恢复 BGM 播放位置", async () => {
+  const values = new Map();
+  const storage = {
+    getItem(key) { return values.get(key) ?? null; },
+    setItem(key, value) { values.set(key, value); }
+  };
+  const first = createAudioCoordinator({AudioCtor: FakeAudio, storage});
+  await first.playBgm("bgm-main");
+  FakeAudio.instances.at(-1).currentTime = 37.5;
+  first.destroy();
+  const second = createAudioCoordinator({AudioCtor: FakeAudio, storage});
+  await second.playBgm("bgm-main");
+  assert.equal(FakeAudio.instances.at(-1).currentTime, 37.5);
+  second.destroy();
+});
