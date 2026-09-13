@@ -45,6 +45,7 @@ button { font: inherit; }
   cursor: pointer;
 }
 .button--link { display: inline-flex; align-items: center; text-decoration: none; }
+.audio-toggle-button { min-width: 44px; padding-inline: 10px; font-size: 19px; line-height: 1; }
 .button:hover, .button:focus-visible, .story-action:hover, .story-action:focus-visible { border-color: var(--accent); outline: none; }
 .button--primary, .story-action { color: #11151c; background: var(--paper); border-color: var(--paper); font-weight: 700; }
 .button:disabled, .story-action:disabled { cursor: wait; opacity: 0.5; }
