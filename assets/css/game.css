@@ -1,4 +1,5 @@
 * { box-sizing: border-box; }
+html { height: 100%; }
 [hidden] { display: none !important; }
 .visually-hidden {
   position: absolute !important;
@@ -14,8 +15,9 @@
 
 body {
   min-height: 100vh;
+  height: 100%;
   margin: 0;
-  overflow-x: hidden;
+  overflow: hidden;
   color: var(--paper);
   background: var(--bg) url("../images/backgrounds/cover.jpg") center / cover fixed;
 }
@@ -30,8 +32,8 @@ body::before {
 
 button { font: inherit; }
 
-.game-shell { position: relative; z-index: 1; display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh; padding: 12px; }
-.game-header { position: relative; z-index: 100; display: flex; align-items: center; gap: 12px; max-width: 1440px; margin: 0 auto 14px; }
+.game-shell { position: relative; z-index: 1; display: flex; flex-direction: column; width: 100%; height: 100%; min-height: 100vh; min-height: 100dvh; padding: 12px; overflow: hidden; }
+.game-header { position: relative; z-index: 100; display: flex; align-items: center; gap: 12px; width: 100%; max-width: none; margin: 0 0 14px; }
 .game-header__title { margin-right: auto; }
 .game-header__title strong { display: block; font-family: "Songti SC", SimSun, serif; font-size: 24px; letter-spacing: 0.18em; }
 .game-header__title small { color: var(--muted); font-size: 11px; letter-spacing: 0.15em; }
@@ -55,8 +57,8 @@ button { font: inherit; }
 .feedback--success { border-color: #91ad95; }
 .feedback--warning { border-color: #c5a36d; }
 
-.game-layout { display: grid; flex: 1 1 auto; width: 100%; grid-template-columns: minmax(0, 1fr); gap: 14px; max-width: none; min-height: 0; margin: 0 auto; }
-.game-main { position: relative; display: grid; width: 100%; min-width: 0; min-height: 0; gap: 14px; }
+.game-layout { display: grid; flex: 1 1 0; width: 100%; grid-template-columns: minmax(0, 1fr); gap: 14px; max-width: none; min-height: 0; margin: 0; overflow: hidden; }
+.game-main { position: relative; display: grid; width: 100%; min-width: 0; min-height: 0; gap: 14px; overflow: hidden; }
 .exploration-actions, .minigame-root { min-width: 0; }
 .chapter-name { color: var(--muted); font-size: 13px; }
 .is-view-locked { pointer-events: none; user-select: none; }

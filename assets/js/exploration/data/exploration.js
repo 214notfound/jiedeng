@@ -33,7 +33,7 @@ export const EXPLORATION_TASKS = Object.freeze([
     actions: [
       {id: "old-house-door", label: "用旧钥匙打开宅门", marker: "宅门", x: 50, y: 30,
         facts: ["old-house-door-opened"], requiredItems: ["key-a"],
-        text: "小X交出的旧钥匙转动了门锁。你还不知道他为什么会有这把钥匙。"}
+        text: "小周交出的旧钥匙转动了门锁。你还不知道他为什么会有这把钥匙。"}
     ]
   },
   {

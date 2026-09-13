@@ -83,7 +83,7 @@ test("正式 V2 老板资产保留 15 段顺序", () => {
   assert.equal(result.items[0].id, "shopkeeper-01");
   assert.equal(result.items.at(-1).id, "shopkeeper-14");
   assert.equal(result.items.some((item) => item.text.includes("本段对话已读完")), false);
-  assert.equal(result.items[11].text.startsWith("【小 X】"), true);
+  assert.equal(result.items[11].text.startsWith("【小周】"), true);
 });
 
 test("适配器拒绝缺失或重复字段", () => {
