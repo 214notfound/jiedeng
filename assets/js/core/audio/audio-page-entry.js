@@ -51,3 +51,7 @@ if (document.readyState === "loading") {
   bindPageAudio();
 }
 globalThis.addEventListener("pagehide", () => coordinator.destroy(), {once: true});
+globalThis.addEventListener("pageshow", startFromUserGesture, {passive: true});
+globalThis.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") startFromUserGesture();
+}, {passive: true});
