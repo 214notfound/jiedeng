@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720">
+  <defs>
+    <linearGradient id="dawn" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1c2530"/>
+      <stop offset="1" stop-color="#2a3a4a"/>
+    </linearGradient>
+    <radialGradient id="full" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#f5e9d0" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#f5e9d0" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect x="0" y="0" width="1280" height="720" fill="url(#dawn)"/>
+
+  <!-- 被放下的白灯（不再借灯） -->
+  <g>
+    <rect x="300" y="400" width="60" height="80" fill="#ece7dc" stroke="#8a7a5c" stroke-width="2" rx="4"/>
+    <rect x="316" y="420" width="28" height="60" fill="#f5c542" opacity="0.4"/>
+  </g>
+
+  <!-- 全亮的光（全部责任公开） -->
+  <circle cx="980" cy="340" r="180" fill="url(#full)"/>
+  <rect x="940" y="420" width="80" height="140" fill="#1c2430" stroke="#8a7a5c" stroke-width="2"/>
+</svg>

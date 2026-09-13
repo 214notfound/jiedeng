@@ -17,22 +17,39 @@ function actionCoordinates(tasks) {
   );
 }
 
-test("E1 三场景调查锚点与 1280×720 标记草图一致", () => {
-  assert.deepEqual(actionCoordinates(EXPLORATION_TASKS), {
+test("E1 三场景调查锚点与当前正式 16:9 场景一致", () => {
+  const v1Tasks = EXPLORATION_TASKS.filter((task) =>
+    task.actions.every((action) => !action.submitAfterReading));
+  assert.deepEqual(actionCoordinates(v1Tasks), {
     "burned-work-id": [25, 75],
     "blue-glass-bead": [75, 75],
     "village-decline": [15, 30],
     "su-he-notice": [85, 30],
     "old-house-door": [50, 30],
-    "old-photograph": [20, 40],
-    "school-uniform": [28, 75],
-    "height-marks": [80, 40],
-    "funeral-list": [72, 75]
+    "old-photograph": [21, 22],
+    "school-uniform": [22, 66],
+    "height-marks": [84, 30],
+    "funeral-list": [86, 78]
   });
 });
 
+test("老宅四类线索热点对齐正式门开场景中的可见物体", () => {
+  const coordinates = actionCoordinates(EXPLORATION_TASKS);
+  assert.deepEqual(coordinates["old-photograph"], [21, 22]);
+  assert.deepEqual(coordinates["school-uniform"], [22, 66]);
+  assert.deepEqual(coordinates["height-marks"], [84, 30]);
+  assert.deepEqual(coordinates["funeral-list"], [86, 78]);
+  assert.equal(new Set([
+    coordinates["old-photograph"].join(","),
+    coordinates["school-uniform"].join(","),
+    coordinates["height-marks"].join(","),
+    coordinates["funeral-list"].join(",")
+  ]).size, 4);
+});
+
 test("E1 NPC 发光点击点与 1280×720 标记草图一致", () => {
-  assert.deepEqual(actionCoordinates(CONVERSATION_TASKS), {
+  const v1Tasks = CONVERSATION_TASKS.filter((task) => task.node !== "x-recovery-confrontation");
+  assert.deepEqual(actionCoordinates(v1Tasks), {
     "surface-briefing": [50, 40],
     "receive-key": [50, 40],
     "ask-memory-and-receive-key": [50, 40],

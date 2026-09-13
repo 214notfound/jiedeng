@@ -55,7 +55,13 @@ export const CONVERSATION_TASKS = Object.freeze([
     npc: "unknown-caller", label: "听门外的声音", marker: "门外", x: 50, y: 30,
     actions: [{id: "door-call", label: "听门外呼名",
       facts: ["door-call-incident-completed"],
-      text: "屋外雨声加重，门边传来细微动静。\n【门外的声音】A……\n【小X】别答，离门远一点。\n声音又响了一次，随后消失。它是在叫死去的A、这间屋子的旧主人，还是你？你无法确定。"}]}
+      text: "屋外雨声加重，门边传来细微动静。\n【门外的声音】A……\n【小X】别答，离门远一点。\n声音又响了一次，随后消失。它是在叫死去的A、这间屋子的旧主人，还是你？你无法确定。"}]},
+  {node: "x-recovery-confrontation", target: "x-recovery-demand", type: "conversation",
+    interactionType: "conversation",
+    npc: "companion-x", label: "听小周说明回收要求", marker: "小周", x: 72, y: 55,
+    actions: [{id: "x-recovery-demand", label: "与小周对峙",
+      facts: ["x-recovery-demand-delivered"],
+      text: "【小周】我陪你回来，不是为了替你找回身份。公司需要你重新启动装置，把散落的证据全部找出来。\n【小周】现在装置已经恢复，服务器里的东西也被你整理齐了。把完整证据包交给我，这次调查就到这里。\n【你】所以一路上的保护、提醒和阻拦，都是为了最后回收证据。\n【小周】你可以这么理解。东西交出来，其他事我来处理。"}]}
 ]);
 
 export function conversationTaskFor(command) {

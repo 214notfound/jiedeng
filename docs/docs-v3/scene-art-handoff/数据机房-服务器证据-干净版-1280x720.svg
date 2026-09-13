@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720">
+  <defs>
+    <linearGradient id="dc" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0e1622"/>
+      <stop offset="1" stop-color="#06090e"/>
+    </linearGradient>
+    <radialGradient id="screen" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#5aa7ff" stop-opacity="0.5"/>
+      <stop offset="1" stop-color="#5aa7ff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect x="0" y="0" width="1280" height="720" fill="url(#dc)"/>
+
+  <!-- 机房服务器架 -->
+  <rect x="110" y="100" width="1060" height="540" fill="#141c28" stroke="#3a4a5c" stroke-width="2"/>
+  <rect x="130" y="120" width="90" height="500" fill="#1a2230" stroke="#4a5568" stroke-width="2"/>
+  <rect x="1060" y="120" width="90" height="500" fill="#1a2230" stroke="#4a5568" stroke-width="2"/>
+
+  <!-- T00 档案索引 -->
+  <g>
+    <rect x="215" y="160" width="170" height="120" fill="#0a0f16" stroke="#4a6b8a" stroke-width="3" rx="4"/>
+    <rect x="229" y="176" width="142" height="12" fill="#5aa7ff" opacity="0.6"/>
+    <rect x="229" y="196" width="110" height="12" fill="#5aa7ff" opacity="0.45"/>
+    <rect x="229" y="216" width="130" height="12" fill="#5aa7ff" opacity="0.35"/>
+    <rect x="229" y="236" width="90" height="12" fill="#5aa7ff" opacity="0.28"/>
+    <circle cx="300" cy="220" r="80" fill="url(#screen)"/>
+  </g>
+
+  <!-- T01 原始事故档案 -->
+  <g>
+    <rect x="555" y="160" width="170" height="120" fill="#0a0f16" stroke="#4a6b8a" stroke-width="3" rx="4"/>
+    <rect x="569" y="176" width="142" height="12" fill="#5aa7ff" opacity="0.6"/>
+    <rect x="569" y="196" width="100" height="12" fill="#c17a74" opacity="0.7"/>
+    <rect x="569" y="216" width="130" height="12" fill="#5aa7ff" opacity="0.4"/>
+    <rect x="569" y="236" width="80" height="12" fill="#5aa7ff" opacity="0.3"/>
+    <circle cx="640" cy="220" r="80" fill="url(#screen)"/>
+  </g>
+
+  <!-- T02 收购/胁迫记录 -->
+  <g>
+    <rect x="895" y="160" width="170" height="120" fill="#0a0f16" stroke="#4a6b8a" stroke-width="3" rx="4"/>
+    <rect x="909" y="176" width="142" height="12" fill="#5aa7ff" opacity="0.55"/>
+    <rect x="909" y="196" width="120" height="12" fill="#c17a74" opacity="0.7"/>
+    <rect x="909" y="216" width="90" height="12" fill="#5aa7ff" opacity="0.4"/>
+    <rect x="909" y="236" width="110" height="12" fill="#5aa7ff" opacity="0.3"/>
+    <circle cx="980" cy="220" r="80" fill="url(#screen)"/>
+  </g>
+
+  <!-- T03 恐吓版本史 -->
+  <g>
+    <rect x="215" y="440" width="170" height="120" fill="#0a0f16" stroke="#4a6b8a" stroke-width="3" rx="4"/>
+    <rect x="229" y="456" width="142" height="12" fill="#5aa7ff" opacity="0.5"/>
+    <rect x="229" y="476" width="110" height="12" fill="#5aa7ff" opacity="0.4"/>
+    <rect x="229" y="496" width="130" height="12" fill="#c17a74" opacity="0.6"/>
+    <rect x="229" y="516" width="90" height="12" fill="#5aa7ff" opacity="0.3"/>
+    <circle cx="300" cy="500" r="80" fill="url(#screen)"/>
+  </g>
+
+  <!-- T04 安保/封井/手机伪造 -->
+  <g>
+    <rect x="555" y="440" width="170" height="120" fill="#0a0f16" stroke="#4a6b8a" stroke-width="3" rx="4"/>
+    <rect x="569" y="456" width="142" height="12" fill="#5aa7ff" opacity="0.5"/>
+    <rect x="569" y="476" width="100" height="12" fill="#5aa7ff" opacity="0.4"/>
+    <rect x="569" y="496" width="130" height="12" fill="#c17a74" opacity="0.6"/>
+    <rect x="569" y="516" width="80" height="12" fill="#5aa7ff" opacity="0.3"/>
+    <circle cx="640" cy="500" r="80" fill="url(#screen)"/>
+  </g>
+
+  <!-- T05 记忆诱导计划 -->
+  <g>
+    <rect x="895" y="440" width="170" height="120" fill="#0a0f16" stroke="#4a6b8a" stroke-width="3" rx="4"/>
+    <rect x="909" y="456" width="142" height="12" fill="#5aa7ff" opacity="0.55"/>
+    <rect x="909" y="476" width="120" height="12" fill="#c17a74" opacity="0.7"/>
+    <rect x="909" y="496" width="90" height="12" fill="#5aa7ff" opacity="0.4"/>
+    <rect x="909" y="516" width="110" height="12" fill="#5aa7ff" opacity="0.3"/>
+    <circle cx="980" cy="500" r="80" fill="url(#screen)"/>
+  </g>
+</svg>

@@ -6,6 +6,11 @@ import { getCurrentUser, goToMenu } from "./navigation.js";
 import { createInteractionModule } from "../exploration/integration/game/interaction-module.js";
 import { mountExploration } from "../exploration/game/exploration-view.js";
 import { createMapPuzzleAdapter } from "../minigames/map-puzzle/adapter/map-puzzle-adapter.js";
+import {
+  createV3MinigameGateway,
+  v3MinigameDefinitionFor,
+  validateV3MinigameCommand
+} from "../minigames/v3-handoff/v3-minigame-gateway.js";
 import { getAchievementEvents } from "../achievements/game/achievements.js";
 import { saveGame } from "./storage.js";
 import { STORY_FACT_DEFINITIONS } from "./game-contract.js";
@@ -180,6 +185,18 @@ export function deriveViewState(response) {
   }
 
   throw new TypeError(`无法识别的剧情状态：${String(response.status)}`);
+}
+
+// 有介绍文本、没有剧情按钮、但已经发布外部命令时，读完即进入业务基础页。
+// 这里只决定页面状态，不提交事实、不消费命令，也不推进 Node。
+export function shouldEnterExplorationAfterReading(response) {
+  if (response?.status !== "ready"
+    || !Array.isArray(response.presentation?.actions)
+    || response.presentation.actions.length !== 0
+    || !Array.isArray(response.commands)) {
+    return false;
+  }
+  return response.commands.some((command) => EXTERNAL_COMMAND_TYPES.has(command?.commandType));
 }
 
 function setLayerState(element, {visible, interactive}) {
@@ -377,11 +394,14 @@ export function setupGamePage() {
   let interactionModule;
   let removeExploration;
   let mapAdapter;
+  let v3MinigameGateway;
   let activeCommands = [];
   let activeMinigameCommand = null;
   let activeMapCommand = null;
   let announcedMapCommandId = null;
   let preserveViewDuringMapExit = false;
+  let preserveViewDuringV3MinigameResult = false;
+  let pendingV3MinigameResponse = null;
   let failNextExternalEventForDebug = false;
   const stateListeners = new Set();
   const returnMenuButton = requireElement("return-menu-button");
@@ -428,11 +448,10 @@ export function setupGamePage() {
     }
     const isV2MapPuzzle = command.payload.minigameId === "map-puzzle"
       && command.payload.successFactId === "map-puzzle-completed";
-    const isV3Minigame = typeof command.payload.gameStyle === "string"
-      && Array.isArray(command.payload.allowedResultFactIds)
-      && command.payload.allowedResultFactIds.length > 0
-      && command.payload.allowedResultFactIds.every((factId) => typeof factId === "string");
-    if (!isV2MapPuzzle && !isV3Minigame) {
+    if (isV2MapPuzzle) return command;
+    try {
+      validateV3MinigameCommand(command);
+    } catch {
       throw new TypeError("V3 mini-game command is incomplete");
     }
     return command;
@@ -443,9 +462,12 @@ export function setupGamePage() {
     gameMain?.setAttribute("data-view-state", currentView);
     openInventoryButton.disabled = !baseViewActive;
     openMinigameButton.disabled = !baseViewActive || !activeMinigameCommand;
+    const v3Definition = activeMinigameCommand
+      ? v3MinigameDefinitionFor(activeMinigameCommand.payload?.minigameId)
+      : null;
     openMinigameButton.textContent = getMapCommand()
       ? "复原手绘地图"
-      : defaultMinigameButtonLabel;
+      : v3Definition?.title ?? defaultMinigameButtonLabel;
   }
 
   function openMapEntryPrompt(command) {
@@ -484,7 +506,11 @@ export function setupGamePage() {
     const labels = {
       prologue: "序章 · 旧祠堂",
       village: "村口调查",
-      "old-house": "陈家老宅"
+      "old-house": "陈家老宅",
+      "outer-investigation": "外围调查",
+      "identity-reconstruction": "身份重建",
+      "mine-return": "重返矿井",
+      finale: "终局"
     };
     chapterName.textContent = labels[node?.stageId] ?? "调查记录";
   }
@@ -647,14 +673,26 @@ export function setupGamePage() {
   const handleOpenMinigame = () => {
     const command = activeMinigameCommand;
     if (!command) {
-      showFeedback("现在还不能打开地图，请先完成当前调查。", "warning");
-      return;
+      showFeedback("现在还不能打开小游戏，请先完成当前调查。", "warning");
+      return {ok: false};
     }
     if (command.payload.minigameId !== "map-puzzle") {
-      showFeedback("当前小游戏入口已登记，等待对应玩法模块加载。", "info");
-      return;
+      const opened = viewCoordinator.openOverlay(VIEW_STATES.MINIGAME);
+      if (!opened.ok) {
+        showFeedback(opened.message, "warning");
+        return opened;
+      }
+      try {
+        v3MinigameGateway.start(command);
+        return {ok: true};
+      } catch (error) {
+        viewCoordinator.closeOverlay();
+        console.error("[white-lamp:v3-minigame] 小游戏入口打开失败", error);
+        showFeedback("小游戏暂时无法打开，请稍后重试。", "error");
+        return {ok: false, error};
+      }
     }
-    openMap(command);
+    return openMap(command);
   };
   const handleOpenDetail = (targetId) => {
     if (typeof targetId !== "string" || !targetId.trim()) {
@@ -719,8 +757,8 @@ export function setupGamePage() {
         } catch (error) {
           activeMinigameCommand = null;
           activeMapCommand = null;
-          console.error("[white-lamp:minigame-entry] 地图入口命令冲突", error);
-          showFeedback("地图入口暂时无法使用，请稍后重试。", "error");
+          console.error("[white-lamp:minigame-entry] 小游戏入口命令冲突", error);
+          showFeedback("小游戏入口暂时无法使用，请稍后重试。", "error");
         }
         syncTopBar(viewCoordinator.getState());
       },
@@ -730,8 +768,27 @@ export function setupGamePage() {
         REQUEST_MINIGAME: () => {}
       },
       onStatusChange: (_status, response) => updateView("response", () => {
-        gameView.renderResponse(response);
+        const enterExplorationAfterReading = shouldEnterExplorationAfterReading(response);
+        const expectedCommandIds = enterExplorationAfterReading
+          ? response.commands.map((command) => command.commandId)
+          : [];
+        gameView.renderResponse(response, {
+          onComplete: () => {
+            if (!enterExplorationAfterReading) return;
+            const activeCommandIds = new Set(activeCommands.map((command) => command.commandId));
+            if (!expectedCommandIds.every((commandId) => activeCommandIds.has(commandId))) return;
+            gameView.getReadingView().close();
+            viewCoordinator.showBase(VIEW_STATES.EXPLORATION);
+            const firstHotspot = sceneRoot.querySelector(".scene-hotspot:not(.is-disabled)")
+              ?? sceneRoot.querySelector(".scene-hotspot");
+            firstHotspot?.focus();
+          }
+        });
         if (preserveViewDuringMapExit) return;
+        if (preserveViewDuringV3MinigameResult) {
+          pendingV3MinigameResponse = response;
+          return;
+        }
         const nextView = deriveViewState(response);
         if (nextView) viewCoordinator.showBase(nextView);
         if (response.status === "waiting-external") {
@@ -848,6 +905,29 @@ export function setupGamePage() {
       }
     });
 
+    v3MinigameGateway = createV3MinigameGateway({
+      container: minigameRoot,
+      onEvent: async (event) => {
+        preserveViewDuringV3MinigameResult = true;
+        pendingV3MinigameResponse = null;
+        try {
+          return await dispatchExternalEvent(event);
+        } finally {
+          preserveViewDuringV3MinigameResult = false;
+        }
+      },
+      onClose: () => {
+        if (pendingV3MinigameResponse) {
+          const response = pendingV3MinigameResponse;
+          pendingV3MinigameResponse = null;
+          const nextView = deriveViewState(response);
+          if (nextView) viewCoordinator.showBase(nextView);
+          return;
+        }
+        viewCoordinator.closeOverlay();
+      }
+    });
+
     interactionModule = createInteractionModule(host);
     removeExploration = mountExploration({
       module: interactionModule,
@@ -893,6 +973,16 @@ export function setupGamePage() {
         }
         viewCoordinator.showBase(VIEW_STATES.READING);
         gameView.openSystemPrompt(presentation, {
+          onComplete: async (result) => {
+            try {
+              const outcome = await callbacks.onComplete?.(result);
+              if (outcome && outcome.ok === false) callbacks.onFailure?.(outcome);
+              return outcome;
+            } catch (error) {
+              callbacks.onFailure?.(error);
+              throw error;
+            }
+          },
           onClose: () => {
             callbacks.onClose?.();
             viewCoordinator.showBase(VIEW_STATES.EXPLORATION);
@@ -916,6 +1006,7 @@ export function setupGamePage() {
       removeExploration?.();
       interactionModule?.dispose();
       mapAdapter?.destroy();
+      v3MinigameGateway?.destroy();
       stateListeners.clear();
       delete globalThis.WhiteLamp.gamePage;
     }, {once: true});

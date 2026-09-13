@@ -344,3 +344,33 @@ test("剧情结束状态以系统阅读框呈现，不混入 NPC 对话或尾部
     globalThis.document = previousDocument;
   }
 });
+
+test("正式剧情响应允许页面控制器接收一次真实阅读完成回调", async () => {
+  const previousDocument = globalThis.document;
+  const storyElement = new FakeElement("div");
+  const actionsElement = new FakeElement("div");
+  globalThis.document = {
+    createElement: (tagName) => new FakeElement(tagName),
+    getElementById: (id) => ({"game-story": storyElement, "game-actions": actionsElement}[id] ?? null)
+  };
+  let completed = 0;
+
+  try {
+    const gameView = createGameView();
+    gameView.renderResponse({
+      status: "ready",
+      presentation: {
+        presentationId: "present-outer-lines-investigation-four-threads-open",
+        sceneId: "village",
+        blocks: [{blockId: "four-threads-emerge", blockType: "narration", text: "四条线索浮出水面。"}],
+        actions: []
+      }
+    }, {onComplete: () => { completed += 1; }});
+
+    gameView.getReadingView().next();
+    gameView.getReadingView().next();
+    assert.equal(completed, 1);
+  } finally {
+    globalThis.document = previousDocument;
+  }
+});

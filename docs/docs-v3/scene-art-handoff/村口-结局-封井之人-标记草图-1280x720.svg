@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" font-family="Microsoft YaHei, PingFang SC, sans-serif">
+  <defs>
+    <linearGradient id="dark" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#08090c"/>
+      <stop offset="1" stop-color="#04060a"/>
+    </linearGradient>
+    <radialGradient id="del" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#ff4757" stop-opacity="0.4"/>
+      <stop offset="1" stop-color="#ff4757" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect x="0" y="0" width="1280" height="720" fill="url(#dark)"/>
+  <rect x="3" y="3" width="1274" height="714" fill="none" stroke="#f5c542" stroke-width="5"/>
+  <text x="14" y="30" fill="#f5c542" font-size="16" font-weight="bold">左上角 (0,0)</text>
+  <text x="1158" y="704" fill="#f5c542" font-size="16" font-weight="bold">右下角 (100,100)</text>
+
+  <text x="640" y="90" fill="#b7c4d0" font-size="16" text-anchor="middle">结局二 · 封井之人（ending-defeated）</text>
+
+  <g>
+    <rect x="440" y="220" width="400" height="300" fill="#0a0f16" stroke="#3a4a5c" stroke-width="3"/>
+    <rect x="460" y="240" width="360" height="260" fill="#000000"/>
+    <text x="640" y="380" fill="#ff4757" font-size="24" font-weight="bold" text-anchor="middle">副本已清除</text>
+    <circle cx="640" cy="360" r="130" fill="url(#del)"/>
+    <circle cx="640" cy="360" r="60" fill="none" stroke="#ff4757" stroke-width="3" stroke-dasharray="8 6"/>
+    <text x="640" y="180" fill="#ff4757" font-size="18" font-weight="bold" text-anchor="middle">焦点 · 副本清除（主角被灭口，无血腥）</text>
+  </g>
+
+  <g>
+    <rect x="240" y="430" width="160" height="190" fill="none" stroke="#b7c4d0" stroke-width="2" stroke-dasharray="6 4" rx="6"/>
+    <text x="320" y="630" fill="#b7c4d0" font-size="14" text-anchor="middle">主角立绘（覆盖层，非背景）· 淡出（不画血腥）</text>
+  </g>
+
+  <rect x="340" y="650" width="600" height="52" fill="#0d1118" stroke="#ff4757" stroke-width="2" rx="6"/>
+  <text x="640" y="682" fill="#ff4757" font-size="16" font-weight="bold" text-anchor="middle">条件 x-showdown-lost：主角被灭口，副本被清除</text>
+</svg>

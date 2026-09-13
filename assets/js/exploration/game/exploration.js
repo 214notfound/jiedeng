@@ -8,6 +8,12 @@ import {ITEMS} from "../data/items.js";
 import {scenePresentationFor} from "../data/scene-assets.js";
 import {bindHost, requireIds} from "../core/host-binding.js";
 
+const V3_MINIGAME_FACTS = Object.freeze({
+  "haunting-network-puzzle": ["haunting-is-engineered"],
+  "mine-route-puzzle": ["sealed-mine-bypassed"],
+  "x-showdown-chase": ["x-showdown-survived", "x-showdown-lost"]
+});
+
 function validateEnvelope(context) {
   const state = context?.state;
   const checkpoint = state?.storyCheckpoint;
@@ -56,14 +62,25 @@ export function validateExplorationContext(context) {
       }
     }
     if (command.commandType === "REQUEST_MINIGAME") {
-      if (command.payload?.minigameId !== "map-puzzle"
-        || command.payload.successFactId !== "map-puzzle-completed") {
-        throw new Error("未知小游戏命令。");
+      if (command.payload?.minigameId === "map-puzzle") {
+        if (command.payload.successFactId !== "map-puzzle-completed") {
+          throw new Error("未知小游戏命令。");
+        }
+        if (checkpoint.nodeId !== "village-map-and-route"
+          || [1, 2, 3].some((number) => !state.inventory.includes("map-fragment-" + number)
+            || !state.facts.includes("map-fragment-" + number + "-acquired"))) {
+          throw new Error("地图任务尚未满足条件。");
+        }
+        continue;
       }
-      if (checkpoint.nodeId !== "village-map-and-route"
-        || [1, 2, 3].some((number) => !state.inventory.includes("map-fragment-" + number)
-          || !state.facts.includes("map-fragment-" + number + "-acquired"))) {
-        throw new Error("地图任务尚未满足条件。");
+      const allowedFacts = V3_MINIGAME_FACTS[command.payload?.minigameId];
+      if (!allowedFacts
+        || !["puzzle", "chase"].includes(command.payload.gameStyle)
+        || !Array.isArray(command.payload.allowedResultFactIds)
+        || command.payload.allowedResultFactIds.length !== allowedFacts.length
+        || new Set(command.payload.allowedResultFactIds).size !== allowedFacts.length
+        || allowedFacts.some((factId) => !command.payload.allowedResultFactIds.includes(factId))) {
+        throw new Error("未知小游戏命令。");
       }
     }
   }
@@ -106,7 +123,10 @@ export function createExploration(host) {
     if (sceneId !== NODE_SCENES[context.state.storyCheckpoint.nodeId]) {
       throw new Error("地点已经变化。");
     }
-    const presentation = scenePresentationFor(sceneId, {facts: context.state.facts});
+    const presentation = scenePresentationFor(sceneId, {
+      facts: context.state.facts,
+      nodeId: context.state.storyCheckpoint.nodeId
+    });
     if (!presentation) throw new Error("场景展示资源不存在。");
     return {
       name: sceneName(sceneId),
@@ -157,6 +177,34 @@ export function createExploration(host) {
     const inspected = Boolean(action?.facts.every((fact) => state.facts.includes(fact)));
     if (!stateLayer && !inspected) return null;
     return {...item, layer: stateLayer, obtained: Boolean(stateLayer), inspected};
+  }
+
+  function getExplorationReadingInput(sceneId, actionId) {
+    const context = bound.read();
+    if (sceneId !== NODE_SCENES[context.state.storyCheckpoint.nodeId]) {
+      throw new Error("地点已经变化。");
+    }
+    const action = entries(context).find((item) => item.id === actionId);
+    if (!action?.submitAfterReading || (!action.command && !action.completed)) return null;
+    return {
+      presentationId: `exploration-reading-${action.id}`,
+      sceneId,
+      blocks: action.blocks.map((block) => ({
+        blockId: block.id,
+        blockType: block.type,
+        text: block.text
+      })),
+      actions: []
+    };
+  }
+
+  function validateReadingCompletion(input, result) {
+    if (result?.mode !== "story"
+      || result.finalItemId !== input.blocks.at(-1)?.blockId
+      || result.metadata?.presentationId !== input.presentationId
+      || result.metadata?.sceneId !== input.sceneId) {
+      throw new Error("调查阅读完成信息不一致，请重新打开调查记录。");
+    }
   }
 
   async function send(task, command, actionId, eventType, facts, payload) {
@@ -216,11 +264,35 @@ export function createExploration(host) {
       if ((action.requiredItems ?? []).some((id) => !context.state.inventory.includes(id))) {
         throw new Error("缺少开门所需的旧钥匙。");
       }
+      if (action.submitAfterReading) {
+        return {ok: true, requiresReading: true, message: action.text};
+      }
       await send(action.task, action.command, action.id, "OBJECT_INVESTIGATED",
         action.facts, {objectId: action.id});
       return {ok: true, message: action.text};
     } catch (error) {
       console.error("[exploration] 操作未完成。", error);
+      return {ok: false, message: error.message};
+    }
+  }
+
+  async function completeExplorationReading(sceneId, actionId, result) {
+    try {
+      const context = bound.read();
+      if (sceneId !== NODE_SCENES[context.state.storyCheckpoint.nodeId]) {
+        throw new Error("地点已经变化。");
+      }
+      const action = entries(context).find((item) => item.id === actionId);
+      if (!action?.submitAfterReading) throw new Error("当前没有这份调查记录。");
+      if (action.completed) return {ok: true, message: action.text};
+      const input = getExplorationReadingInput(sceneId, actionId);
+      if (!input || !action.command) throw new Error("当前调查已经失效，请重新进入。");
+      validateReadingCompletion(input, result);
+      await send(action.task, action.command, action.id, "OBJECT_INVESTIGATED",
+        action.facts, {objectId: action.id});
+      return {ok: true, message: action.text};
+    } catch (error) {
+      console.error("[exploration] 阅读完成未提交。", error);
       return {ok: false, message: error.message};
     }
   }
@@ -255,6 +327,8 @@ export function createExploration(host) {
     getLayout,
     listItems,
     getItemDetail,
+    getExplorationReadingInput,
+    completeExplorationReading,
     interact,
     cancel,
     pendingLabels,
