@@ -13,14 +13,14 @@ test("390px 阅读页占满动态视口且对话框填充场景下方剩余空�
 
   assert.match(css, /@media \(max-width: 520px\)/);
   assert.match(css, /\.game-shell\s*\{[\s\S]*?display:\s*flex;[\s\S]*?min-height:\s*100dvh;/);
-  assert.match(css, /\.game-layout\s*\{[\s\S]*?flex:\s*1 0 auto;[\s\S]*?width:\s*100%;/);
+  assert.match(css, /\.game-layout\s*\{[\s\S]*?flex:\s*1 1 0;[\s\S]*?width:\s*100%;/);
   assert.match(
     css,
-    /\.game-main\[data-view-state="reading"\]\s*\{[\s\S]*?grid-template-rows:\s*auto auto minmax\(190px, 1fr\);/
+    /\.game-main\[data-view-state="reading"\]\s*\{[\s\S]*?min-height:\s*0;[\s\S]*?grid-template-rows:\s*minmax\(0, 1fr\) auto minmax\(150px, min\(28dvh, 176px\)\);/
   );
   assert.match(
     css,
-    /\.game-main\[data-view-state="reading"\] \.story-panel\s*\{[\s\S]*?align-self:\s*stretch;[\s\S]*?max-height:\s*none;/
+    /\.game-main\[data-view-state="reading"\] \.story-panel\s*\{[\s\S]*?align-self:\s*stretch;[\s\S]*?min-height:\s*150px;[\s\S]*?max-height:\s*min\(28dvh, 176px\);[\s\S]*?overflow:\s*hidden;/
   );
 });
 

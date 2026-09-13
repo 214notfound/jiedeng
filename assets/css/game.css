@@ -453,21 +453,22 @@ body:has(.game-main[data-view-state="minigame"]) {
     padding-bottom: 0;
   }
   .game-layout {
-    flex: 1 0 auto;
+    flex: 1 1 0;
     width: 100%;
     min-height: 0;
     margin: 0 auto;
   }
   .game-main[data-view-state="reading"] {
-    min-height: 100%;
-    grid-template-rows: auto auto minmax(190px, 1fr);
+    min-height: 0;
+    grid-template-rows: minmax(0, 1fr) auto minmax(150px, min(28dvh, 176px));
     align-content: stretch;
   }
+  .scene-panel { min-height: 0; }
   .game-main[data-view-state="reading"] .story-panel {
     align-self: stretch;
-    min-height: 190px;
-    max-height: none;
-    overflow: visible;
+    min-height: 150px;
+    max-height: min(28dvh, 176px);
+    overflow: hidden;
   }
   .game-main[data-view-state="reading"] #game-story {
     overflow-x: hidden;
