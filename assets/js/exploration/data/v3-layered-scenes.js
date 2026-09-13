@@ -11,7 +11,9 @@ export const V3_LAYERED_SCENES = Object.freeze([
     assetId: "old-clinic-detail",
     marker: "查看登记桌",
     x: 50,
-    y: 53
+    y: 53,
+    detailX: 50,
+    detailY: 53
   }),
   Object.freeze({
     baseSceneId: "father-house",
@@ -22,7 +24,9 @@ export const V3_LAYERED_SCENES = Object.freeze([
     assetId: "father-house-hidden-layer",
     marker: "进入暗层",
     x: 48,
-    y: 72
+    y: 72,
+    detailX: 50,
+    detailY: 50
   })
 ]);
 
@@ -46,8 +50,14 @@ export function projectV3LayeredScene(view, layout, selectedId) {
         interactions: [action]
       },
       layout: {
-        hotspots: layout.hotspots.filter((hotspot) =>
-          hotspot.interactionIds.some((actionId) => actionIds.has(actionId)))
+        hotspots: layout.hotspots
+          .filter((hotspot) =>
+            hotspot.interactionIds.some((actionId) => actionIds.has(actionId)))
+          .map((hotspot) => ({
+            ...hotspot,
+            x: entry.detailX ?? hotspot.x,
+            y: entry.detailY ?? hotspot.y
+          }))
       }
     };
   }

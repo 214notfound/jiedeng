@@ -25,11 +25,15 @@ test("诊所放大层与父亲旧屋暗层只导航，不改变业务动作", ()
     const base = projectV3LayeredScene(view, layout, null);
     assert.equal(base.view.interactions[0].interactionType, "scene");
     assert.equal(base.view.interactions[0].targetSceneId, entry.sceneId);
+    assert.equal(base.layout.hotspots[0].x, entry.x);
+    assert.equal(base.layout.hotspots[0].y, entry.y);
     assert.deepEqual(view, before);
 
     const selected = projectV3LayeredScene(view, layout, entry.sceneId);
     assert.equal(selected.view.interactions[0].interactionType, "item");
     assert.match(selected.view.sceneImage, new RegExp(`${entry.assetId}\\.jpg$`));
     assert.equal(selected.selected.returnLabel, entry.returnLabel);
+    assert.equal(selected.layout.hotspots[0].x, entry.detailX);
+    assert.equal(selected.layout.hotspots[0].y, entry.detailY);
   }
 });
