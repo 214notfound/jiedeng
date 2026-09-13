@@ -101,6 +101,38 @@ const MAP_ENTRY_PROMPT_PRESENTATION = Object.freeze({
   ])
 });
 
+const V3_MINIGAME_ENTRY_PROMPTS = Object.freeze({
+  "haunting-network-puzzle": Object.freeze({
+    presentationId: "ui-v3-haunting-network-entry",
+    sceneId: "haunting-network",
+    text: "【系统提示】广播室的装置网络已经还原，是否进入拆鬼小游戏？"
+  }),
+  "mine-route-puzzle": Object.freeze({
+    presentationId: "ui-v3-mine-route-entry",
+    sceneId: "sealed-mine",
+    text: "【系统提示】绕过封墙的路线已经确认，是否进入矿井路线解谜？"
+  }),
+  "x-showdown-chase": Object.freeze({
+    presentationId: "ui-v3-x-showdown-entry",
+    sceneId: "server-room",
+    text: "【系统提示】证据回收对峙已经开始，是否进入追逐小游戏？"
+  })
+});
+
+const CONTROL_ROOM_ENTRY_PROMPT = Object.freeze({
+  presentationId: "ui-v3-control-room-entry",
+  sceneId: "mine-control-room",
+  blocks: Object.freeze([Object.freeze({
+    blockId: "control-room-entry-message",
+    blockType: "system",
+    text: "【系统提示】旧控制室的入口已经确认，是否进入控制室调查？"
+  })]),
+  actions: Object.freeze([
+    Object.freeze({actionId: "enter-control-room", label: "进入调查", actionType: "choice"}),
+    Object.freeze({actionId: "dismiss-control-room-prompt", label: "稍后再说", actionType: "choice"})
+  ])
+});
+
 const BASE_VIEW_STATES = new Set([VIEW_STATES.READING, VIEW_STATES.EXPLORATION]);
 const OVERLAY_VIEW_STATES = new Set([
   VIEW_STATES.DETAIL,
@@ -498,6 +530,70 @@ export function setupGamePage() {
     }
   }
 
+  function openV3MinigameEntryPrompt(command) {
+    const prompt = V3_MINIGAME_ENTRY_PROMPTS[command?.payload?.minigameId];
+    if (!command || !prompt) return false;
+    try {
+      gameView.openSystemPrompt({
+        presentationId: prompt.presentationId,
+        sceneId: prompt.sceneId,
+        blocks: [{
+          blockId: `${prompt.presentationId}-message`,
+          blockType: "system",
+          text: prompt.text
+        }],
+        actions: [
+          {actionId: "enter-v3-minigame", label: "进入小游戏", actionType: "choice"},
+          {actionId: "dismiss-v3-minigame-prompt", label: "稍后再说", actionType: "choice"}
+        ]
+      }, {
+        onAction(actionId) {
+          const currentCommand = activeMinigameCommand;
+          if (currentCommand?.commandId !== command.commandId) {
+            return {ok: false, code: "V3_MINIGAME_COMMAND_EXPIRED"};
+          }
+          if (actionId === "enter-v3-minigame") {
+            viewCoordinator.showBase(VIEW_STATES.EXPLORATION);
+            return handleOpenMinigame();
+          }
+          if (actionId === "dismiss-v3-minigame-prompt") {
+            viewCoordinator.showBase(VIEW_STATES.EXPLORATION);
+            return {ok: true};
+          }
+          return {ok: false, code: "V3_MINIGAME_PROMPT_ACTION_INVALID"};
+        }
+      });
+      viewCoordinator.showBase(VIEW_STATES.READING);
+      return true;
+    } catch (error) {
+      console.error("[white-lamp:v3-minigame-entry] 小游戏阅读提示打开失败", error);
+      showFeedback("小游戏入口暂时无法打开，请稍后重试。", "error");
+      return false;
+    }
+  }
+
+  function openControlRoomEntryPrompt(command) {
+    if (command?.payload?.targetId !== "investigate-control-room") return false;
+    try {
+      gameView.openSystemPrompt(CONTROL_ROOM_ENTRY_PROMPT, {
+        onAction(actionId) {
+          const currentCommand = activeCommands.find((item) => item.commandId === command.commandId);
+          if (!currentCommand) return {ok: false, code: "CONTROL_ROOM_COMMAND_EXPIRED"};
+          viewCoordinator.showBase(VIEW_STATES.EXPLORATION);
+          return actionId === "enter-control-room" || actionId === "dismiss-control-room-prompt"
+            ? {ok: true}
+            : {ok: false, code: "CONTROL_ROOM_PROMPT_ACTION_INVALID"};
+        }
+      });
+      viewCoordinator.showBase(VIEW_STATES.READING);
+      return true;
+    } catch (error) {
+      console.error("[white-lamp:control-room-entry] 控制室阅读提示打开失败", error);
+      showFeedback("控制室入口暂时无法打开，请稍后重试。", "error");
+      return false;
+    }
+  }
+
   function updateChapterName() {
     const checkpoint = gameFlow?.getState()?.storyCheckpoint;
     const node = globalThis.WhiteLampStoryInternal?.storyData?.nodes?.find(
@@ -782,6 +878,17 @@ export function setupGamePage() {
             const firstHotspot = sceneRoot.querySelector(".scene-hotspot:not(.is-disabled)")
               ?? sceneRoot.querySelector(".scene-hotspot");
             firstHotspot?.focus();
+            const minigameCommand = response.commands.find(
+              (command) => command.commandType === "REQUEST_MINIGAME"
+            );
+            if (minigameCommand) {
+              openV3MinigameEntryPrompt(minigameCommand);
+              return;
+            }
+            const explorationCommand = response.commands.find(
+              (command) => command.commandType === "REQUEST_EXPLORATION"
+            );
+            if (explorationCommand) openControlRoomEntryPrompt(explorationCommand);
           }
         });
         if (preserveViewDuringMapExit) return;

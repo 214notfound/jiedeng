@@ -27,6 +27,10 @@
         <button id="open-inventory-button" class="button" type="button">背包</button>
         <button id="open-minigame-button" class="button" type="button" disabled>地图</button>
         <a class="button button--link" href="achievements/achievements.html">成就</a>
+        <button id="audio-toggle-button" class="button audio-toggle-button" type="button" aria-pressed="false">
+          <span data-audio-icon aria-hidden="true">🔊</span>
+          <span class="visually-hidden">关闭声音</span>
+        </button>
         <button id="save-button" class="button button--primary" type="button">保存进度</button>
       </header>
 
@@ -88,6 +92,7 @@
     <script src="../assets/js/game-line/game/story-request.js"></script>
     <script src="../assets/js/game-line/game/story-engine.js"></script>
 
+    <script type="module" src="../assets/js/core/audio/audio-page-entry.js"></script>
     <script type="module" src="../assets/js/core/game-page-controller.js"></script>
   </body>
 </html>
