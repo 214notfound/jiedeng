@@ -110,13 +110,13 @@ async function run() {
     let checkedSubsceneClose = false;
     async function completeNpc(actionLabel, choiceLabel, expectedState = "exploration") {
       const characterByAction = {
-        "与小X交谈": "companion-x",
-        "接过小X递来的旧钥匙": "companion-x",
+        "与小周交谈": "companion-x",
+        "接过小周递来的旧钥匙": "companion-x",
         "询问白灯与供电异常": "companion-x",
         "询问小卖部老板": "villager-1",
         "询问拒签户": "villager-2",
         "询问年老村民": "villager-3",
-        "向小X追问线索之间的矛盾": "companion-x",
+        "向小周追问线索之间的矛盾": "companion-x",
         "听门外呼名": null
       };
       const subsceneNames = {"询问小卖部老板": "小卖部", "询问拒签户": "拒签户家", "询问年老村民": "路边石凳"};
@@ -355,7 +355,7 @@ async function run() {
 
     // E3：探索态只有光点；点击后 reading 显示独立人物层，读完后清除。
     await waitForState("exploration");
-    await clickVisibleButton("与小X交谈");
+    await clickVisibleButton("与小周交谈");
     await waitForState("reading");
     const conversationPanel = await readingPanelLayout();
     assert.equal(conversationPanel.mode, "conversation");
@@ -368,7 +368,7 @@ async function run() {
     assert.ok(Math.abs(conversationPanel.bottom - narrationPanel.bottom) < 1);
     await clickVisibleButton("结束阅读");
     await waitForState("exploration");
-    await completeNpc("与小X交谈");
+    await completeNpc("与小周交谈");
     await checkExplorationLayout();
 
     // E2：失败不落账、不打开详情；同一热点可重试。
@@ -394,7 +394,7 @@ async function run() {
       /blue-glass-bead\.png$/
     );
     await closeDetail();
-    await completeNpc("接过小X递来的旧钥匙", "追问过去，再接过钥匙", "reading");
+    await completeNpc("接过小周递来的旧钥匙", "追问过去，再接过钥匙", "reading");
     assert.equal(await page.evaluate(() => WhiteLamp.game.getState().facts
       .includes("x-deflects-memory-question-noticed")), false);
 
@@ -452,7 +452,7 @@ async function run() {
       await closeDetail();
     }
 
-    await completeNpc("向小X追问线索之间的矛盾");
+    await completeNpc("向小周追问线索之间的矛盾");
     await completeNpc("听门外呼名", undefined, "reading");
     await finishStoryAction("结束第一周内容");
     await page.screenshot({path: path.join(outputDirectory, "e1-e5-end-1280.png"), fullPage: true});

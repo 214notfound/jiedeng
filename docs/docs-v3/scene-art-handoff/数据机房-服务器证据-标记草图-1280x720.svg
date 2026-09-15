@@ -1,0 +1,118 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" font-family="Microsoft YaHei, PingFang SC, sans-serif">
+  <defs>
+    <linearGradient id="dc" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0e1622"/>
+      <stop offset="1" stop-color="#06090e"/>
+    </linearGradient>
+    <radialGradient id="screen" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#5aa7ff" stop-opacity="0.5"/>
+      <stop offset="1" stop-color="#5aa7ff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect x="0" y="0" width="1280" height="720" fill="url(#dc)"/>
+  <rect x="3" y="3" width="1274" height="714" fill="none" stroke="#f5c542" stroke-width="5"/>
+  <text x="14" y="30" fill="#f5c542" font-size="16" font-weight="bold">左上角 (0,0)</text>
+  <text x="1158" y="704" fill="#f5c542" font-size="16" font-weight="bold">右下角 (100,100)</text>
+
+  <rect x="110" y="100" width="1060" height="540" fill="#141c28" stroke="#3a4a5c" stroke-width="2"/>
+  <rect x="130" y="120" width="90" height="500" fill="#1a2230" stroke="#4a5568" stroke-width="2"/>
+  <rect x="1060" y="120" width="90" height="500" fill="#1a2230" stroke="#4a5568" stroke-width="2"/>
+  <text x="640" y="84" fill="#b7c4d0" font-size="15" text-anchor="middle">新矿区数据机房 · 服务器证据</text>
+
+  <!-- T00 档案索引｜23,31 -->
+  <g>
+    <rect x="215" y="160" width="170" height="120" fill="#0a0f16" stroke="#4a6b8a" stroke-width="3" rx="4"/>
+    <rect x="229" y="176" width="142" height="12" fill="#5aa7ff" opacity="0.6"/>
+    <rect x="229" y="196" width="110" height="12" fill="#5aa7ff" opacity="0.45"/>
+    <rect x="229" y="216" width="130" height="12" fill="#5aa7ff" opacity="0.35"/>
+    <rect x="229" y="236" width="90" height="12" fill="#5aa7ff" opacity="0.28"/>
+    <circle cx="300" cy="220" r="80" fill="url(#screen)"/>
+    <circle cx="300" cy="220" r="52" fill="none" stroke="#ffb347" stroke-width="3" stroke-dasharray="8 6"/>
+    <line x1="250" y1="220" x2="350" y2="220" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+    <line x1="300" y1="170" x2="300" y2="270" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+    <circle cx="300" cy="220" r="9" fill="#ff4757" stroke="#ffffff" stroke-width="3"/>
+    <text x="300" y="152" fill="#ffb347" font-size="18" font-weight="bold" text-anchor="middle">T00 · 档案索引｜23,31</text>
+  </g>
+
+  <!-- T01 原始事故档案｜50,31 -->
+  <g>
+    <rect x="555" y="160" width="170" height="120" fill="#0a0f16" stroke="#4a6b8a" stroke-width="3" rx="4"/>
+    <rect x="569" y="176" width="142" height="12" fill="#5aa7ff" opacity="0.6"/>
+    <rect x="569" y="196" width="100" height="12" fill="#c17a74" opacity="0.7"/>
+    <rect x="569" y="216" width="130" height="12" fill="#5aa7ff" opacity="0.4"/>
+    <rect x="569" y="236" width="80" height="12" fill="#5aa7ff" opacity="0.3"/>
+    <circle cx="640" cy="220" r="80" fill="url(#screen)"/>
+    <circle cx="640" cy="220" r="52" fill="none" stroke="#ffb347" stroke-width="3" stroke-dasharray="8 6"/>
+    <line x1="590" y1="220" x2="690" y2="220" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+    <line x1="640" y1="170" x2="640" y2="270" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+    <circle cx="640" cy="220" r="9" fill="#ff4757" stroke="#ffffff" stroke-width="3"/>
+    <text x="640" y="152" fill="#ffb347" font-size="18" font-weight="bold" text-anchor="middle">T01 · 原始事故档案｜50,31</text>
+  </g>
+
+  <!-- T02 收购/胁迫记录｜77,31 -->
+  <g>
+    <rect x="895" y="160" width="170" height="120" fill="#0a0f16" stroke="#4a6b8a" stroke-width="3" rx="4"/>
+    <rect x="909" y="176" width="142" height="12" fill="#5aa7ff" opacity="0.55"/>
+    <rect x="909" y="196" width="120" height="12" fill="#c17a74" opacity="0.7"/>
+    <rect x="909" y="216" width="90" height="12" fill="#5aa7ff" opacity="0.4"/>
+    <rect x="909" y="236" width="110" height="12" fill="#5aa7ff" opacity="0.3"/>
+    <circle cx="980" cy="220" r="80" fill="url(#screen)"/>
+    <circle cx="980" cy="220" r="52" fill="none" stroke="#ffb347" stroke-width="3" stroke-dasharray="8 6"/>
+    <line x1="930" y1="220" x2="1030" y2="220" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+    <line x1="980" y1="170" x2="980" y2="270" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+    <circle cx="980" cy="220" r="9" fill="#ff4757" stroke="#ffffff" stroke-width="3"/>
+    <text x="980" y="152" fill="#ffb347" font-size="18" font-weight="bold" text-anchor="middle">T02 · 收购/胁迫记录｜77,31</text>
+  </g>
+
+  <!-- T03 恐吓版本史｜23,69 -->
+  <g>
+    <rect x="215" y="440" width="170" height="120" fill="#0a0f16" stroke="#4a6b8a" stroke-width="3" rx="4"/>
+    <rect x="229" y="456" width="142" height="12" fill="#5aa7ff" opacity="0.5"/>
+    <rect x="229" y="476" width="110" height="12" fill="#5aa7ff" opacity="0.4"/>
+    <rect x="229" y="496" width="130" height="12" fill="#c17a74" opacity="0.6"/>
+    <rect x="229" y="516" width="90" height="12" fill="#5aa7ff" opacity="0.3"/>
+    <circle cx="300" cy="500" r="80" fill="url(#screen)"/>
+    <circle cx="300" cy="500" r="52" fill="none" stroke="#ffb347" stroke-width="3" stroke-dasharray="8 6"/>
+    <line x1="250" y1="500" x2="350" y2="500" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+    <line x1="300" y1="450" x2="300" y2="550" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+    <circle cx="300" cy="500" r="9" fill="#ff4757" stroke="#ffffff" stroke-width="3"/>
+    <text x="300" y="584" fill="#ffb347" font-size="18" font-weight="bold" text-anchor="middle">T03 · 恐吓版本史｜23,69</text>
+  </g>
+
+  <!-- T04 安保/封井/手机伪造｜50,69 -->
+  <g>
+    <rect x="555" y="440" width="170" height="120" fill="#0a0f16" stroke="#4a6b8a" stroke-width="3" rx="4"/>
+    <rect x="569" y="456" width="142" height="12" fill="#5aa7ff" opacity="0.5"/>
+    <rect x="569" y="476" width="100" height="12" fill="#5aa7ff" opacity="0.4"/>
+    <rect x="569" y="496" width="130" height="12" fill="#c17a74" opacity="0.6"/>
+    <rect x="569" y="516" width="80" height="12" fill="#5aa7ff" opacity="0.3"/>
+    <circle cx="640" cy="500" r="80" fill="url(#screen)"/>
+    <circle cx="640" cy="500" r="52" fill="none" stroke="#ffb347" stroke-width="3" stroke-dasharray="8 6"/>
+    <line x1="590" y1="500" x2="690" y2="500" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+    <line x1="640" y1="450" x2="640" y2="550" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+    <circle cx="640" cy="500" r="9" fill="#ff4757" stroke="#ffffff" stroke-width="3"/>
+    <text x="640" y="584" fill="#ffb347" font-size="18" font-weight="bold" text-anchor="middle">T04 · 安保/封井/手机伪造｜50,69</text>
+  </g>
+
+  <!-- T05 记忆诱导计划｜77,69 -->
+  <g>
+    <rect x="895" y="440" width="170" height="120" fill="#0a0f16" stroke="#4a6b8a" stroke-width="3" rx="4"/>
+    <rect x="909" y="456" width="142" height="12" fill="#5aa7ff" opacity="0.55"/>
+    <rect x="909" y="476" width="120" height="12" fill="#c17a74" opacity="0.7"/>
+    <rect x="909" y="496" width="90" height="12" fill="#5aa7ff" opacity="0.4"/>
+    <rect x="909" y="516" width="110" height="12" fill="#5aa7ff" opacity="0.3"/>
+    <circle cx="980" cy="500" r="80" fill="url(#screen)"/>
+    <circle cx="980" cy="500" r="52" fill="none" stroke="#ffb347" stroke-width="3" stroke-dasharray="8 6"/>
+    <line x1="930" y1="500" x2="1030" y2="500" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+    <line x1="980" y1="450" x2="980" y2="550" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+    <circle cx="980" cy="500" r="9" fill="#ff4757" stroke="#ffffff" stroke-width="3"/>
+    <text x="980" y="584" fill="#ffb347" font-size="18" font-weight="bold" text-anchor="middle">T05 · 记忆诱导计划｜77,69</text>
+  </g>
+
+  <!-- T06 归档（非热点） -->
+  <g>
+    <rect x="390" y="646" width="500" height="50" fill="#0d1118" stroke="#f5c542" stroke-width="2" rx="6"/>
+    <text x="640" y="676" fill="#f5c542" font-size="17" font-weight="bold" text-anchor="middle">T06 · 四组证据包打包（full-evidence-package-ready，归档，非热点）</text>
+  </g>
+</svg>

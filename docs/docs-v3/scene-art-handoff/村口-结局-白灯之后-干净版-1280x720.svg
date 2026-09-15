@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720">
+  <defs>
+    <linearGradient id="night" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0d1118"/>
+      <stop offset="1" stop-color="#141c28"/>
+    </linearGradient>
+    <radialGradient id="lamp" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#f5e9d0" stop-opacity="0.8"/>
+      <stop offset="1" stop-color="#f5e9d0" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="probe" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#5aa7ff" stop-opacity="0.5"/>
+      <stop offset="1" stop-color="#5aa7ff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect x="0" y="0" width="1280" height="720" fill="url(#night)"/>
+
+  <!-- 白灯（仍亮，真相被部分公开） -->
+  <g>
+    <line x1="320" y1="220" x2="320" y2="280" stroke="#5a4836" stroke-width="3"/>
+    <rect x="294" y="280" width="52" height="60" fill="#ece7dc" stroke="#8a7a5c" stroke-width="2" rx="4"/>
+    <circle cx="320" cy="310" r="100" fill="url(#lamp)"/>
+  </g>
+
+  <!-- 远处调查的光（集团被调查） -->
+  <circle cx="980" cy="300" r="110" fill="url(#probe)"/>
+  <rect x="940" y="400" width="80" height="160" fill="#1c2430" stroke="#4a6b8a" stroke-width="2"/>
+
+</svg>

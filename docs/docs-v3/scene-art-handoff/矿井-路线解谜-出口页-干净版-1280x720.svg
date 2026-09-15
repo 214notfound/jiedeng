@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720">
+  <defs>
+    <linearGradient id="mine" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#141a24"/>
+      <stop offset="1" stop-color="#08090c"/>
+    </linearGradient>
+    <radialGradient id="lamp" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#f5e9d0" stop-opacity="0.85"/>
+      <stop offset="1" stop-color="#f5e9d0" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect x="0" y="0" width="1280" height="720" fill="url(#mine)"/>
+
+  <!-- 绕过封井后的内部平台 -->
+  <rect x="120" y="120" width="1040" height="480" fill="#1a2028" stroke="#3a4a5c" stroke-width="2"/>
+
+  <!-- 排水洞（已被绕过） -->
+  <circle cx="360" cy="360" r="56" fill="#0a0f16" stroke="#4a6b8a" stroke-width="3"/>
+  <circle cx="360" cy="360" r="56" fill="none" stroke="#5aa7ff" stroke-width="2" stroke-dasharray="6 4"/>
+
+  <!-- 内部平台（入口，井口透光为环境光，非点击高亮） -->
+  <g>
+    <rect x="700" y="260" width="260" height="180" fill="#1c2028" stroke="#4a6b8a" stroke-width="3"/>
+    <rect x="720" y="300" width="220" height="120" fill="#0a0f16"/>
+    <rect x="760" y="360" width="140" height="60" fill="#2b3442"/>
+    <circle cx="830" cy="360" r="130" fill="url(#lamp)"/>
+    <text x="830" y="270" fill="#f5c542" font-size="18" font-weight="bold" text-anchor="middle" font-family="Microsoft YaHei, sans-serif">内部平台 · 竖井边</text>
+  </g>
+
+</svg>

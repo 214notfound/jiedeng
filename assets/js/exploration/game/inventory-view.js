@@ -43,13 +43,13 @@ export function mountInventory({module, root, detailRoot, showFeedback, openDeta
   let layer = "items";
   let active = true;
 
-  function renderDetail(item) {
+  function renderDetail(item, description = item.description) {
     detailTitle.textContent = item.name;
     detailImage.hidden = false;
     detailImageError.hidden = true;
     detailImage.alt = item.name;
     detailImage.src = item.detailImage ?? item.image;
-    detailDescription.textContent = item.description;
+    detailDescription.textContent = description;
     detailSource.textContent = "来源：" + item.source + (item.obtained ? " · 已获得" : " · 已查看");
   }
 
@@ -69,11 +69,11 @@ export function mountInventory({module, root, detailRoot, showFeedback, openDeta
     }
   }
 
-  function openTarget(itemId) {
+  function openTarget(itemId, {description} = {}) {
     try {
       const item = module.getItemDetail?.(itemId);
       if (!item) return false;
-      renderDetail(item);
+      renderDetail(item, description ?? item.description);
       const result = openDetail(itemId);
       if (!result?.ok) throw new Error(result?.message || "详情暂时无法打开。");
       return true;

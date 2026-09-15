@@ -182,6 +182,29 @@ test("阅读器逐段显示且只在末尾触发一次完成回调", async () =>
   assert.equal(completions.length, 1, "关闭不得伪装成阅读完成");
 }));
 
+test("同一条对白中的角色与旁白按段落推进，不在一个对话框内形成长滚动文本", () => withFakeDocument(() => {
+  const storyElement = new FakeElement("div");
+  const actionsElement = new FakeElement("div");
+  const view = createReadingView({storyElement, actionsElement});
+
+  view.open({
+    mode: "conversation",
+    items: [{
+      id: "key-dialogue",
+      kind: "dialogue",
+      text: "【你】我以前是做什么的？\n【小X】先别硬想。\n他把话题岔开。"
+    }],
+    actions: [],
+    metadata: {conversationId: "conversation-1", npcId: "companion-x", actionId: "key", commandId: "command-1"}
+  });
+
+  assert.equal(storyElement.children.at(-1).textContent, "我以前是做什么的？");
+  view.next();
+  assert.equal(storyElement.children.at(-1).textContent, "先别硬想。");
+  view.next();
+  assert.equal(storyElement.children.at(-1).textContent, "他把话题岔开。");
+}));
+
 test("NPC Choice 提交期间可见忙碌状态、阻止连点并在失败后允许重试", async () => withFakeDocument(async () => {
   const storyElement = new FakeElement("div");
   const actionsElement = new FakeElement("div");
@@ -295,6 +318,58 @@ test("系统提示复用统一阅读框并把选择交回页面控制器", async
     assert.deepEqual(promptActions.map((button) => button.textContent), ["进入游戏", "稍后再说"]);
     await promptActions[1].dispatch("click");
     assert.deepEqual(selectedActions, ["dismiss-map-prompt"]);
+  } finally {
+    globalThis.document = previousDocument;
+  }
+});
+
+test("剧情结束状态以系统阅读框呈现，不混入 NPC 对话或尾部标签", async () => {
+  const previousDocument = globalThis.document;
+  const storyElement = new FakeElement("div");
+  const actionsElement = new FakeElement("div");
+  globalThis.document = {
+    createElement: (tagName) => new FakeElement(tagName),
+    getElementById: (id) => ({"game-story": storyElement, "game-actions": actionsElement}[id] ?? null)
+  };
+
+  try {
+    const gameView = createGameView();
+    gameView.renderResponse({status: "ended"});
+    assert.equal(storyElement.children.length, 1);
+    assert.equal(storyElement.children[0].className, "story-block story-block--system");
+    assert.match(storyElement.children[0].textContent, /调查暂告一段落/);
+    assert.deepEqual(actionsElement.querySelectorAll("button").map((button) => button.textContent), ["读完"]);
+    assert.equal(actionsElement.children.some((child) => child.className === "ending-label"), false);
+  } finally {
+    globalThis.document = previousDocument;
+  }
+});
+
+test("正式剧情响应允许页面控制器接收一次真实阅读完成回调", async () => {
+  const previousDocument = globalThis.document;
+  const storyElement = new FakeElement("div");
+  const actionsElement = new FakeElement("div");
+  globalThis.document = {
+    createElement: (tagName) => new FakeElement(tagName),
+    getElementById: (id) => ({"game-story": storyElement, "game-actions": actionsElement}[id] ?? null)
+  };
+  let completed = 0;
+
+  try {
+    const gameView = createGameView();
+    gameView.renderResponse({
+      status: "ready",
+      presentation: {
+        presentationId: "present-outer-lines-investigation-four-threads-open",
+        sceneId: "village",
+        blocks: [{blockId: "four-threads-emerge", blockType: "narration", text: "四条线索浮出水面。"}],
+        actions: []
+      }
+    }, {onComplete: () => { completed += 1; }});
+
+    gameView.getReadingView().next();
+    gameView.getReadingView().next();
+    assert.equal(completed, 1);
   } finally {
     globalThis.document = previousDocument;
   }

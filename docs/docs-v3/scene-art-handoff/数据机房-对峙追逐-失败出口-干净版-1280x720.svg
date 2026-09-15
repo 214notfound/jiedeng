@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720">
+  <defs>
+    <linearGradient id="dc" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0a0e16"/>
+      <stop offset="1" stop-color="#04060a"/>
+    </linearGradient>
+    <radialGradient id="fail" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#ff4757" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#ff4757" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect x="0" y="0" width="1280" height="720" fill="url(#dc)"/>
+
+  <rect x="110" y="100" width="1060" height="500" fill="#121620" stroke="#3a4a5c" stroke-width="2"/>
+
+  <!-- 副本删除屏幕（证据被回收/清除，不画血腥） -->
+  <g>
+    <rect x="440" y="220" width="400" height="200" fill="#0a0f16" stroke="#ff4757" stroke-width="3" rx="4"/>
+    <rect x="456" y="238" width="368" height="14" fill="#ff4757" opacity="0.6"/>
+    <rect x="456" y="262" width="320" height="14" fill="#ff4757" opacity="0.5"/>
+    <rect x="456" y="286" width="280" height="14" fill="#ff4757" opacity="0.4"/>
+    <rect x="456" y="310" width="240" height="14" fill="#ff4757" opacity="0.3"/>
+    <text x="640" y="360" fill="#ff4757" font-size="22" font-weight="bold" text-anchor="middle" font-family="Microsoft YaHei, sans-serif">副本已删除</text>
+    <circle cx="640" cy="320" r="130" fill="url(#fail)"/>
+  </g>
+
+</svg>

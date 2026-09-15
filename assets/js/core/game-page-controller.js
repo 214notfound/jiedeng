@@ -6,6 +6,11 @@ import { getCurrentUser, goToMenu } from "./navigation.js";
 import { createInteractionModule } from "../exploration/integration/game/interaction-module.js";
 import { mountExploration } from "../exploration/game/exploration-view.js";
 import { createMapPuzzleAdapter } from "../minigames/map-puzzle/adapter/map-puzzle-adapter.js";
+import {
+  createV3MinigameGateway,
+  v3MinigameDefinitionFor,
+  validateV3MinigameCommand
+} from "../minigames/v3-handoff/v3-minigame-gateway.js";
 import { getAchievementEvents } from "../achievements/game/achievements.js";
 import { saveGame } from "./storage.js";
 import { STORY_FACT_DEFINITIONS } from "./game-contract.js";
@@ -96,6 +101,38 @@ const MAP_ENTRY_PROMPT_PRESENTATION = Object.freeze({
   ])
 });
 
+const V3_MINIGAME_ENTRY_PROMPTS = Object.freeze({
+  "haunting-network-puzzle": Object.freeze({
+    presentationId: "ui-v3-haunting-network-entry",
+    sceneId: "haunting-network",
+    text: "【系统提示】广播室的装置网络已经还原，是否进入拆鬼小游戏？"
+  }),
+  "mine-route-puzzle": Object.freeze({
+    presentationId: "ui-v3-mine-route-entry",
+    sceneId: "sealed-mine",
+    text: "【系统提示】绕过封墙的路线已经确认，是否进入矿井路线解谜？"
+  }),
+  "x-showdown-chase": Object.freeze({
+    presentationId: "ui-v3-x-showdown-entry",
+    sceneId: "server-room",
+    text: "【系统提示】证据回收对峙已经开始，是否进入追逐小游戏？"
+  })
+});
+
+const CONTROL_ROOM_ENTRY_PROMPT = Object.freeze({
+  presentationId: "ui-v3-control-room-entry",
+  sceneId: "mine-control-room",
+  blocks: Object.freeze([Object.freeze({
+    blockId: "control-room-entry-message",
+    blockType: "system",
+    text: "【系统提示】旧控制室的入口已经确认，是否进入控制室调查？"
+  })]),
+  actions: Object.freeze([
+    Object.freeze({actionId: "enter-control-room", label: "进入调查", actionType: "choice"}),
+    Object.freeze({actionId: "dismiss-control-room-prompt", label: "稍后再说", actionType: "choice"})
+  ])
+});
+
 const BASE_VIEW_STATES = new Set([VIEW_STATES.READING, VIEW_STATES.EXPLORATION]);
 const OVERLAY_VIEW_STATES = new Set([
   VIEW_STATES.DETAIL,
@@ -180,6 +217,18 @@ export function deriveViewState(response) {
   }
 
   throw new TypeError(`无法识别的剧情状态：${String(response.status)}`);
+}
+
+// 有介绍文本、没有剧情按钮、但已经发布外部命令时，读完即进入业务基础页。
+// 这里只决定页面状态，不提交事实、不消费命令，也不推进 Node。
+export function shouldEnterExplorationAfterReading(response) {
+  if (response?.status !== "ready"
+    || !Array.isArray(response.presentation?.actions)
+    || response.presentation.actions.length !== 0
+    || !Array.isArray(response.commands)) {
+    return false;
+  }
+  return response.commands.some((command) => EXTERNAL_COMMAND_TYPES.has(command?.commandType));
 }
 
 function setLayerState(element, {visible, interactive}) {
@@ -377,10 +426,14 @@ export function setupGamePage() {
   let interactionModule;
   let removeExploration;
   let mapAdapter;
+  let v3MinigameGateway;
   let activeCommands = [];
+  let activeMinigameCommand = null;
   let activeMapCommand = null;
   let announcedMapCommandId = null;
   let preserveViewDuringMapExit = false;
+  let preserveViewDuringV3MinigameResult = false;
+  let pendingV3MinigameResponse = null;
   let failNextExternalEventForDebug = false;
   const stateListeners = new Set();
   const returnMenuButton = requireElement("return-menu-button");
@@ -413,14 +466,40 @@ export function setupGamePage() {
     return activeMapCommand;
   }
 
+  function selectActiveMinigameCommand(commands) {
+    if (!Array.isArray(commands)) throw new TypeError("V3 mini-game command list is invalid");
+    const minigameCommands = commands.filter(
+      (command) => command?.commandType === "REQUEST_MINIGAME"
+    );
+    if (minigameCommands.length > 1) throw new TypeError("multiple V3 mini-game commands");
+    const command = minigameCommands[0] ?? null;
+    if (!command) return null;
+    if (typeof command.commandId !== "string" || !command.commandId.trim()
+      || typeof command.payload?.minigameId !== "string") {
+      throw new TypeError("V3 mini-game command is incomplete");
+    }
+    const isV2MapPuzzle = command.payload.minigameId === "map-puzzle"
+      && command.payload.successFactId === "map-puzzle-completed";
+    if (isV2MapPuzzle) return command;
+    try {
+      validateV3MinigameCommand(command);
+    } catch {
+      throw new TypeError("V3 mini-game command is incomplete");
+    }
+    return command;
+  }
+
   function syncTopBar(currentView) {
     const baseViewActive = BASE_VIEW_STATES.has(currentView);
     gameMain?.setAttribute("data-view-state", currentView);
     openInventoryButton.disabled = !baseViewActive;
-    openMinigameButton.disabled = !baseViewActive || !getMapCommand();
+    openMinigameButton.disabled = !baseViewActive || !activeMinigameCommand;
+    const v3Definition = activeMinigameCommand
+      ? v3MinigameDefinitionFor(activeMinigameCommand.payload?.minigameId)
+      : null;
     openMinigameButton.textContent = getMapCommand()
       ? "复原手绘地图"
-      : defaultMinigameButtonLabel;
+      : v3Definition?.title ?? defaultMinigameButtonLabel;
   }
 
   function openMapEntryPrompt(command) {
@@ -451,6 +530,70 @@ export function setupGamePage() {
     }
   }
 
+  function openV3MinigameEntryPrompt(command) {
+    const prompt = V3_MINIGAME_ENTRY_PROMPTS[command?.payload?.minigameId];
+    if (!command || !prompt) return false;
+    try {
+      gameView.openSystemPrompt({
+        presentationId: prompt.presentationId,
+        sceneId: prompt.sceneId,
+        blocks: [{
+          blockId: `${prompt.presentationId}-message`,
+          blockType: "system",
+          text: prompt.text
+        }],
+        actions: [
+          {actionId: "enter-v3-minigame", label: "进入小游戏", actionType: "choice"},
+          {actionId: "dismiss-v3-minigame-prompt", label: "稍后再说", actionType: "choice"}
+        ]
+      }, {
+        onAction(actionId) {
+          const currentCommand = activeMinigameCommand;
+          if (currentCommand?.commandId !== command.commandId) {
+            return {ok: false, code: "V3_MINIGAME_COMMAND_EXPIRED"};
+          }
+          if (actionId === "enter-v3-minigame") {
+            viewCoordinator.showBase(VIEW_STATES.EXPLORATION);
+            return handleOpenMinigame();
+          }
+          if (actionId === "dismiss-v3-minigame-prompt") {
+            viewCoordinator.showBase(VIEW_STATES.EXPLORATION);
+            return {ok: true};
+          }
+          return {ok: false, code: "V3_MINIGAME_PROMPT_ACTION_INVALID"};
+        }
+      });
+      viewCoordinator.showBase(VIEW_STATES.READING);
+      return true;
+    } catch (error) {
+      console.error("[white-lamp:v3-minigame-entry] 小游戏阅读提示打开失败", error);
+      showFeedback("小游戏入口暂时无法打开，请稍后重试。", "error");
+      return false;
+    }
+  }
+
+  function openControlRoomEntryPrompt(command) {
+    if (command?.payload?.targetId !== "investigate-control-room") return false;
+    try {
+      gameView.openSystemPrompt(CONTROL_ROOM_ENTRY_PROMPT, {
+        onAction(actionId) {
+          const currentCommand = activeCommands.find((item) => item.commandId === command.commandId);
+          if (!currentCommand) return {ok: false, code: "CONTROL_ROOM_COMMAND_EXPIRED"};
+          viewCoordinator.showBase(VIEW_STATES.EXPLORATION);
+          return actionId === "enter-control-room" || actionId === "dismiss-control-room-prompt"
+            ? {ok: true}
+            : {ok: false, code: "CONTROL_ROOM_PROMPT_ACTION_INVALID"};
+        }
+      });
+      viewCoordinator.showBase(VIEW_STATES.READING);
+      return true;
+    } catch (error) {
+      console.error("[white-lamp:control-room-entry] 控制室阅读提示打开失败", error);
+      showFeedback("控制室入口暂时无法打开，请稍后重试。", "error");
+      return false;
+    }
+  }
+
   function updateChapterName() {
     const checkpoint = gameFlow?.getState()?.storyCheckpoint;
     const node = globalThis.WhiteLampStoryInternal?.storyData?.nodes?.find(
@@ -459,7 +602,11 @@ export function setupGamePage() {
     const labels = {
       prologue: "序章 · 旧祠堂",
       village: "村口调查",
-      "old-house": "陈家老宅"
+      "old-house": "陈家老宅",
+      "outer-investigation": "外围调查",
+      "identity-reconstruction": "身份重建",
+      "mine-return": "重返矿井",
+      finale: "终局"
     };
     chapterName.textContent = labels[node?.stageId] ?? "调查记录";
   }
@@ -578,6 +725,17 @@ export function setupGamePage() {
       };
     }
 
+    if (command.payload.minigameId !== "map-puzzle") {
+      return {
+        eventId,
+        eventType: "MINIGAME_RESOLVED",
+        source: "minigame",
+        causedByCommandId: command.commandId,
+        resultFactIds: [command.payload.allowedResultFactIds[0]],
+        payload: {minigameId: command.payload.minigameId}
+      };
+    }
+
     return {
       eventId,
       eventType: "MAP_PUZZLE_COMPLETED",
@@ -609,12 +767,28 @@ export function setupGamePage() {
   const handleCloseInventory = () => viewCoordinator.closeOverlay();
   const handleCloseDetail = () => detailDismissController.closeDetail();
   const handleOpenMinigame = () => {
-    const command = getMapCommand();
+    const command = activeMinigameCommand;
     if (!command) {
-      showFeedback("现在还不能打开地图，请先完成当前调查。", "warning");
-      return;
+      showFeedback("现在还不能打开小游戏，请先完成当前调查。", "warning");
+      return {ok: false};
     }
-    openMap(command);
+    if (command.payload.minigameId !== "map-puzzle") {
+      const opened = viewCoordinator.openOverlay(VIEW_STATES.MINIGAME);
+      if (!opened.ok) {
+        showFeedback(opened.message, "warning");
+        return opened;
+      }
+      try {
+        v3MinigameGateway.start(command);
+        return {ok: true};
+      } catch (error) {
+        viewCoordinator.closeOverlay();
+        console.error("[white-lamp:v3-minigame] 小游戏入口打开失败", error);
+        showFeedback("小游戏暂时无法打开，请稍后重试。", "error");
+        return {ok: false, error};
+      }
+    }
+    return openMap(command);
   };
   const handleOpenDetail = (targetId) => {
     if (typeof targetId !== "string" || !targetId.trim()) {
@@ -672,11 +846,15 @@ export function setupGamePage() {
       onCommandsChange: (commands) => {
         activeCommands = commands;
         try {
-          activeMapCommand = selectMapPuzzleCommand(commands);
+          activeMinigameCommand = selectActiveMinigameCommand(commands);
+          activeMapCommand = activeMinigameCommand?.payload?.minigameId === "map-puzzle"
+            ? selectMapPuzzleCommand(commands)
+            : null;
         } catch (error) {
+          activeMinigameCommand = null;
           activeMapCommand = null;
-          console.error("[white-lamp:minigame-entry] 地图入口命令冲突", error);
-          showFeedback("地图入口暂时无法使用，请稍后重试。", "error");
+          console.error("[white-lamp:minigame-entry] 小游戏入口命令冲突", error);
+          showFeedback("小游戏入口暂时无法使用，请稍后重试。", "error");
         }
         syncTopBar(viewCoordinator.getState());
       },
@@ -686,12 +864,42 @@ export function setupGamePage() {
         REQUEST_MINIGAME: () => {}
       },
       onStatusChange: (_status, response) => updateView("response", () => {
-        gameView.renderResponse(response);
+        const enterExplorationAfterReading = shouldEnterExplorationAfterReading(response);
+        const expectedCommandIds = enterExplorationAfterReading
+          ? response.commands.map((command) => command.commandId)
+          : [];
+        gameView.renderResponse(response, {
+          onComplete: () => {
+            if (!enterExplorationAfterReading) return;
+            const activeCommandIds = new Set(activeCommands.map((command) => command.commandId));
+            if (!expectedCommandIds.every((commandId) => activeCommandIds.has(commandId))) return;
+            gameView.getReadingView().close();
+            viewCoordinator.showBase(VIEW_STATES.EXPLORATION);
+            const firstHotspot = sceneRoot.querySelector(".scene-hotspot:not(.is-disabled)")
+              ?? sceneRoot.querySelector(".scene-hotspot");
+            firstHotspot?.focus();
+            const minigameCommand = response.commands.find(
+              (command) => command.commandType === "REQUEST_MINIGAME"
+            );
+            if (minigameCommand) {
+              openV3MinigameEntryPrompt(minigameCommand);
+              return;
+            }
+            const explorationCommand = response.commands.find(
+              (command) => command.commandType === "REQUEST_EXPLORATION"
+            );
+            if (explorationCommand) openControlRoomEntryPrompt(explorationCommand);
+          }
+        });
         if (preserveViewDuringMapExit) return;
+        if (preserveViewDuringV3MinigameResult) {
+          pendingV3MinigameResponse = response;
+          return;
+        }
         const nextView = deriveViewState(response);
         if (nextView) viewCoordinator.showBase(nextView);
         if (response.status === "waiting-external") {
-          openMapEntryPrompt(activeMapCommand);
+          if (activeMapCommand) openMapEntryPrompt(activeMapCommand);
         }
       }),
       onError: (error) => {
@@ -804,6 +1012,29 @@ export function setupGamePage() {
       }
     });
 
+    v3MinigameGateway = createV3MinigameGateway({
+      container: minigameRoot,
+      onEvent: async (event) => {
+        preserveViewDuringV3MinigameResult = true;
+        pendingV3MinigameResponse = null;
+        try {
+          return await dispatchExternalEvent(event);
+        } finally {
+          preserveViewDuringV3MinigameResult = false;
+        }
+      },
+      onClose: () => {
+        if (pendingV3MinigameResponse) {
+          const response = pendingV3MinigameResponse;
+          pendingV3MinigameResponse = null;
+          const nextView = deriveViewState(response);
+          if (nextView) viewCoordinator.showBase(nextView);
+          return;
+        }
+        viewCoordinator.closeOverlay();
+      }
+    });
+
     interactionModule = createInteractionModule(host);
     removeExploration = mountExploration({
       module: interactionModule,
@@ -815,6 +1046,11 @@ export function setupGamePage() {
       openMap,
       openDetail: handleOpenDetail,
       openConversation(input, callbacks = {}) {
+        const feedback = document.getElementById("feedback");
+        if (feedback) {
+          feedback.hidden = true;
+          feedback.textContent = "";
+        }
         viewCoordinator.showBase(VIEW_STATES.READING);
         gameView.openConversation(input, {
           onAction: callbacks.onAction,
@@ -835,6 +1071,31 @@ export function setupGamePage() {
             viewCoordinator.showBase(VIEW_STATES.EXPLORATION);
           }
         });
+      },
+      openReading(presentation, callbacks = {}) {
+        const feedback = document.getElementById("feedback");
+        if (feedback) {
+          feedback.hidden = true;
+          feedback.textContent = "";
+        }
+        viewCoordinator.showBase(VIEW_STATES.READING);
+        gameView.openSystemPrompt(presentation, {
+          onComplete: async (result) => {
+            try {
+              const outcome = await callbacks.onComplete?.(result);
+              if (outcome && outcome.ok === false) callbacks.onFailure?.(outcome);
+              return outcome;
+            } catch (error) {
+              callbacks.onFailure?.(error);
+              throw error;
+            }
+          },
+          onClose: () => {
+            callbacks.onClose?.();
+            viewCoordinator.showBase(VIEW_STATES.EXPLORATION);
+          },
+          allowClose: true
+        });
       }
     });
 
@@ -852,6 +1113,7 @@ export function setupGamePage() {
       removeExploration?.();
       interactionModule?.dispose();
       mapAdapter?.destroy();
+      v3MinigameGateway?.destroy();
       stateListeners.clear();
       delete globalThis.WhiteLamp.gamePage;
     }, {once: true});

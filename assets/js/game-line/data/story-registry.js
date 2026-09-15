@@ -35,6 +35,7 @@
     ],
     locations: ["shrine", "village", "old-house"],
     minigames: ["map-puzzle"],
+    checkpointMigrations: [],
     expectedNodeIds: [
       "prologue-wake",
       "prologue-belongings",
@@ -117,9 +118,119 @@
     if (!Array.isArray(nodes)) {
       throw new Error(`[white-lamp:story] 阶段 ${stageId} 的 Node 必须是数组`);
     }
+    const nodeIds = nodes.map((node) => node && node.id);
+    const duplicate = nodeIds.find((id, index) => nodeIds.indexOf(id) !== index);
+    const conflict = nodeIds.find((id) =>
+      storyData.nodes.some((node) => node.id === id),
+    );
+    if (duplicate || conflict) {
+      throw new Error(
+        `[white-lamp:story] 阶段 ${stageId} 存在重复 Node ID：${duplicate || conflict}`,
+      );
+    }
+    nodes.forEach((node) => {
+      if (!node || node.stageId !== stageId) {
+        throw new Error(`[white-lamp:story] 阶段 ${stageId} 包含错误的 Node 引用`);
+      }
+    });
     nodes.forEach((node) => storyData.nodes.push(node));
   }
 
+  function requireExtensionList(extension, field) {
+    const values = extension[field] || [];
+    if (!Array.isArray(values)) {
+      throw new Error(`[white-lamp:story] 扩展字段 ${field} 必须是数组`);
+    }
+    return values;
+  }
+
+  function assertNoDuplicateIds(existing, additions, field, getId) {
+    const ids = additions.map(getId);
+    const duplicate = ids.find((id, index) => ids.indexOf(id) !== index);
+    const conflict = ids.find((id) => existing.some((item) => getId(item) === id));
+    if (duplicate || conflict) {
+      throw new Error(
+        `[white-lamp:story] 扩展字段 ${field} 存在重复 ID：${duplicate || conflict}`,
+      );
+    }
+  }
+
+  function extendStoryRegistry(extension) {
+    if (!extension || typeof extension !== "object" || Array.isArray(extension)) {
+      throw new Error("[white-lamp:story] 剧情扩展必须是对象");
+    }
+    if (extension.baseModuleVersion !== storyData.moduleVersion) {
+      throw new Error(
+        `[white-lamp:story] 扩展基础版本不匹配：${extension.baseModuleVersion}`,
+      );
+    }
+    if (
+      typeof extension.moduleVersion !== "string" ||
+      extension.moduleVersion.trim() === "" ||
+      typeof extension.endNodeId !== "string" ||
+      extension.endNodeId.trim() === ""
+    ) {
+      throw new Error("[white-lamp:story] 扩展缺少 moduleVersion 或 endNodeId");
+    }
+
+    const plainIdFields = [
+      "stages",
+      "characters",
+      "items",
+      "clues",
+      "locations",
+      "minigames",
+      "expectedNodeIds",
+    ];
+    const additions = {};
+    plainIdFields.forEach((field) => {
+      additions[field] = requireExtensionList(extension, field);
+      assertNoDuplicateIds(storyData[field], additions[field], field, (value) => value);
+    });
+    additions.facts = requireExtensionList(extension, "facts");
+    assertNoDuplicateIds(storyData.facts, additions.facts, "facts", (value) => value && value.id);
+    additions.checkpointMigrations = requireExtensionList(
+      extension,
+      "checkpointMigrations",
+    );
+    assertNoDuplicateIds(
+      storyData.checkpointMigrations,
+      additions.checkpointMigrations,
+      "checkpointMigrations",
+      (value) => value && `${value.nodeId}@${value.fromRevision}`,
+    );
+
+    plainIdFields.forEach((field) => storyData[field].push(...additions[field]));
+    storyData.facts.push(...additions.facts);
+    storyData.checkpointMigrations.push(...additions.checkpointMigrations);
+    storyData.moduleVersion = extension.moduleVersion;
+    storyData.endNodeId = extension.endNodeId;
+  }
+
+  function replaceStoryNode(nodeId, expectedRevision, replacement) {
+    const index = storyData.nodes.findIndex((node) => node.id === nodeId);
+    if (index < 0) {
+      throw new Error(`[white-lamp:story] 待替换 Node 不存在：${nodeId}`);
+    }
+    const current = storyData.nodes[index];
+    if (current.revision !== expectedRevision) {
+      throw new Error(
+        `[white-lamp:story] Node ${nodeId} revision 不匹配：${current.revision}`,
+      );
+    }
+    if (
+      !replacement ||
+      replacement.id !== nodeId ||
+      !Number.isInteger(replacement.revision) ||
+      replacement.revision <= expectedRevision
+    ) {
+      throw new Error(`[white-lamp:story] Node ${nodeId} 替换版本无效`);
+    }
+    storyData.nodes[index] = replacement;
+  }
+
   internal.storyData = storyData;
+  internal.extendStoryRegistry = extendStoryRegistry;
   internal.registerStoryStage = registerStoryStage;
+  internal.replaceStoryNode = replaceStoryNode;
 })(window);

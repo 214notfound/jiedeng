@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720">
+  <defs>
+    <linearGradient id="night" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0d1118"/>
+      <stop offset="1" stop-color="#141c28"/>
+    </linearGradient>
+    <radialGradient id="lamp" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#f5e9d0" stop-opacity="0.7"/>
+      <stop offset="1" stop-color="#f5e9d0" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="fog" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3a4a5c" stop-opacity="0.12"/>
+      <stop offset="1" stop-color="#3a4a5c" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="1280" height="720" fill="url(#night)"/>
+
+  <!-- 远山与雾 -->
+  <path d="M0 320 L180 180 L360 300 L560 150 L760 290 L960 170 L1150 300 L1280 240 L1280 440 L0 440 Z" fill="#161d28"/>
+  <rect x="0" y="360" width="1280" height="140" fill="url(#fog)"/>
+
+  <!-- 村口牌坊 -->
+  <g>
+    <rect x="150" y="180" width="60" height="360" fill="#1c2430" stroke="#3a4a5c" stroke-width="2"/>
+    <rect x="1070" y="180" width="60" height="360" fill="#1c2430" stroke="#3a4a5c" stroke-width="2"/>
+    <rect x="120" y="150" width="1040" height="60" fill="#1c2430" stroke="#3a4a5c" stroke-width="2"/>
+    <text x="640" y="192" fill="#c8bfa8" font-size="26" text-anchor="middle" font-family="Microsoft YaHei, sans-serif">借灯村</text>
+  </g>
+
+  <!-- 白灯（一盏，唯一暖光） -->
+  <g>
+    <line x1="980" y1="210" x2="980" y2="270" stroke="#5a4836" stroke-width="3"/>
+    <rect x="954" y="270" width="52" height="60" fill="#ece7dc" stroke="#8a7a5c" stroke-width="2" rx="4"/>
+    <circle cx="980" cy="300" r="90" fill="url(#lamp)"/>
+  </g>
+
+  <!-- 地面（留中下部空给 UI 覆盖层） -->
+  <rect x="0" y="500" width="1280" height="220" fill="#10161f"/>
+  <rect x="0" y="500" width="1280" height="6" fill="#2b3442"/>
+</svg>

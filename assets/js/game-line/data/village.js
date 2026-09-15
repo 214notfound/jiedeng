@@ -60,7 +60,7 @@
       milestones: [
         {
           id: "shopkeeper-thread-complete",
-          intent: "小卖部老板完整传达项目、B 工程师、怪事和苏禾线索。",
+          intent: "小卖部老板完整传达项目、王工程师、怪事和苏禾线索。",
           satisfiedWhen: { allFacts: ["shopkeeper-inquiry-completed"] },
           onReach: [
             {
@@ -72,7 +72,7 @@
         },
         {
           id: "holdout-thread-complete",
-          intent: "拒签户完整传达房屋、祖坟、旧事故和小 X 打断深挖的信息。",
+          intent: "拒签户完整传达房屋、祖坟、旧事故和小周打断深挖的信息。",
           satisfiedWhen: { allFacts: ["holdout-inquiry-completed"] },
           onReach: [
             {
@@ -84,7 +84,7 @@
         },
         {
           id: "elder-thread-complete",
-          intent: "老人完整传达蓝玻璃珠、A、旧事故公开版本和小 X 阻止追问的信息。",
+          intent: "老人完整传达蓝玻璃珠、陈晋年、旧事故公开版本和小周阻止追问的信息。",
           satisfiedWhen: { allFacts: ["elder-inquiry-completed"] },
           onReach: [
             {
@@ -218,7 +218,7 @@
             {
               id: "old-house-marked-on-map",
               blockType: "system",
-              text: "【系统提示】恭喜你，成功解锁【陈家老宅】相关剧情。复原后的地图指向陈家老宅，小 X 提醒你，那把旧钥匙或许能派上用场。",
+              text: "【系统提示】恭喜你，成功解锁【陈家老宅】相关剧情。复原后的地图指向陈家老宅，小周提醒你，那把旧钥匙或许能派上用场。",
             },
           ],
           actionIds: ["go-old-house"],
