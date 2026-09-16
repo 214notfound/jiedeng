@@ -396,7 +396,7 @@ for (const entry of ["formal", "debug"]) {
     assert.ok(state.inventory.includes("restored-village-map"));
     assert.ok(state.unlockedLocations.includes("old-house"));
     assert.ok(response.presentation?.actions?.some(action => action.actionId === "go-old-house"));
-    assert.match(response.presentation?.blocks?.[0]?.text, /恭喜你，成功解锁【陈家老宅】相关剧情/);
+    assert.match(response.presentation?.blocks?.[0]?.text, /碎片拼上了，断面严丝合缝/);
     assert.ok(rendered.length > 0);
     assert.ok(rendered.every(s => s.facts.includes("map-puzzle-completed") && s.achievements.includes("map-restorer")),
       "展示不能收到已完成地图但尚未结算成就的中间状态");

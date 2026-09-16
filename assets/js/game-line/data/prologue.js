@@ -67,7 +67,7 @@
             {
               id: "recent-memory-gap",
               blockType: "narration",
-              text: "你的思考和行动都没问题，但是头疼欲裂，近期的记忆只剩下一段空白",
+              text: "你的思考和行动都没问题，但是头疼欲裂，近期的记忆只剩下一段空白。",
             },
             {
               id: "wake-monologue",
@@ -77,7 +77,7 @@
             {
               id: "young-man-nearby",
               blockType: "narration",
-              text: "一个年轻人守在你旁边，说不定他知道些什么……",
+              text: "你看了看四周，一个年轻人守在你旁边，说不定他知道些什么……",
             },
           ],
           actionIds: ["confirm-wake-context"],
@@ -278,7 +278,7 @@
             {
               id: "rain-again",
               blockType: "narration",
-              text: "雨又下起来了，这里的天气也十分沉重，祠堂里再没有别的东西可看了。",
+              text: "雨又下起来了，这里的天气也十分沉重，滴答，滴答，滴答……祠堂里再没有别的东西可看了。",
             },
             {
               id: "lamp-was-for-you",

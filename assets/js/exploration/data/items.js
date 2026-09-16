@@ -8,10 +8,10 @@ const rows = [
  ["map-fragment-2","手绘地图碎片二","拒签户","村庄手绘图的一部分。"],
  ["map-fragment-3","手绘地图碎片三","年老村民","村庄手绘图的一部分。"],
  ["restored-village-map","完整村庄地图","地图复原","三块手绘图复原后的路线记录。"],
- ["old-photograph","家庭照片","陈家老宅·照片调查记录","照片里的A、妹妹和父亲；A当时面容完整。","old-photograph.png"],
+ ["old-photograph","家庭照片","陈家老宅·照片调查记录","照片里有父亲、陈晋年和妹妹；陈晋年当时面容完整。","old-photograph.png"],
  ["school-uniform","妹妹的校服","陈家老宅·校服调查记录","妹妹的旧物，与蓝玻璃珠存在实体联系。","school-uniform.png"],
- ["height-marks","身高刻痕","陈家老宅·刻痕调查记录","事故时A约十七岁，妹妹才是村小学生。"],
- ["funeral-list","送葬名单","陈家老宅·名单调查记录","妹妹死亡，A也被村里作为死者送葬。"]
+ ["height-marks","身高刻痕","陈家老宅·刻痕调查记录","事故时陈晋年约十七岁，妹妹才是村小学生。"],
+ ["funeral-list","送葬名单","陈家老宅·名单调查记录","妹妹死亡，陈晋年也被村里作为死者送葬。"]
 ];
 const AUTO_OPEN_ON_ACQUIRE_IDS = new Set([
  "map-fragment-1",

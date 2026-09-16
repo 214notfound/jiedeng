@@ -11,7 +11,9 @@
       "Bash(node test/story/story-engine.test.js)",
       "Bash(node --test test/exploration/)",
       "Bash(node test/story/game-flow.test.js)",
-      "Bash(node --test \"test/core/*.test.mjs\" \"test/minigames/*.test.mjs\" \"test/achievements/*.test.mjs\" \"test/authorize/*.test.mjs\")"
+      "Bash(node --test \"test/core/*.test.mjs\" \"test/minigames/*.test.mjs\" \"test/achievements/*.test.mjs\" \"test/authorize/*.test.mjs\")",
+      "Bash(node test/story/story-v3.test.js)",
+      "Bash(node --test \"test/core/*.test.mjs\" \"test/exploration/*.test.mjs\" \"test/minigames/*.test.mjs\" \"test/achievements/*.test.mjs\" \"test/authorize/*.test.mjs\")"
     ]
   }
 }

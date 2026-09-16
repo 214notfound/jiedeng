@@ -20,6 +20,14 @@ function makeButton(label, className, onClick) {
 
 const SPEAKER_LABEL_PATTERN = /^【([^】]+)】\s*/u;
 
+// 叙述标记而非角色名：剥离标签后按普通正文展示，不生成名牌。
+const SILENT_SPEAKER_LABELS = new Set(["旁白"]);
+
+function labelledSpeaker(label) {
+  const speaker = label.trim();
+  return speaker && !SILENT_SPEAKER_LABELS.has(speaker) ? speaker : null;
+}
+
 export function splitSpeakerLabel(text) {
   const match = SPEAKER_LABEL_PATTERN.exec(text);
   if (!match) return Object.freeze({speaker: null, text});
@@ -27,7 +35,7 @@ export function splitSpeakerLabel(text) {
   if (!speaker) return Object.freeze({speaker: null, text});
 
   return Object.freeze({
-    speaker,
+    speaker: labelledSpeaker(speaker),
     text: text.slice(match[0].length)
   });
 }
@@ -52,7 +60,7 @@ export function splitReadingText(text) {
       const textStart = match.index + match[0].length;
       const textEnd = matches[index + 1]?.index ?? line.length;
       const content = line.slice(textStart, textEnd).trim();
-      if (content) segments.push(Object.freeze({speaker: match[1].trim(), text: content}));
+      if (content) segments.push(Object.freeze({speaker: labelledSpeaker(match[1]), text: content}));
     });
   });
 
