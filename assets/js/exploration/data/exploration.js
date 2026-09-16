@@ -8,10 +8,10 @@ export const EXPLORATION_TASKS = Object.freeze([
     actions: [
       {id: "burned-work-id", label: "查看烧毁的工作证", marker: "证件", x: 25, y: 75,
         facts: ["burned-work-id-investigated"],
-        text: "工作证烧毁了大半，但还能辨认项目公司的标识和姓氏“B”。至少，这证明你与项目公司有现实联系。"},
+        text: "工作证烧得只剩半张。公司标识还在，姓名那一栏露出一个字母：王。烧痕的边缘整整齐齐有些奇怪，头像彻底认不出了"},
       {id: "blue-glass-bead", label: "查看蓝玻璃珠", marker: "玻璃珠", x: 75, y: 75,
         facts: ["blue-glass-bead-investigated"],
-        text: "掌心是一颗磨花的蓝色玻璃珠，上面没有文字，也看不出来源。你不知道为什么把这件不起眼的旧物带在身上。"}
+        text: "掌心里是一颗磨花的蓝色玻璃珠，没有文字，也看不出产地。珠子表面磨得很匀，是长年被人捏在指间来回搓的那种磨法。你的手指碰到它，下意识地收紧了，就好像是……"}
     ]
   },
   {

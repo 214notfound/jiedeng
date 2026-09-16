@@ -67,7 +67,17 @@
             {
               id: "recent-memory-gap",
               blockType: "narration",
-              text: "思考和行动都没有问题，但近期的记忆只剩下一段空白。小周守在旁边，自称是公司的安全联络员。",
+              text: "你的思考和行动都没问题，但是头疼欲裂，近期的记忆只剩下一段空白",
+            },
+            {
+              id: "wake-monologue",
+              blockType: "system",
+              text: "这是哪里？我是谁？我身上究竟发生了什么？",
+            },
+            {
+              id: "young-man-nearby",
+              blockType: "narration",
+              text: "一个年轻人守在你旁边，说不定他知道些什么……",
             },
           ],
           actionIds: ["confirm-wake-context"],
@@ -242,7 +252,17 @@
             {
               id: "lamp-outside-shrine",
               blockType: "narration",
-              text: "祠堂外的雨幕里，不知何时亮起了一盏惨白的灯。",
+              text: "一阵阵骚动从门外传来，祠堂外的雨幕里，突然亮起了一盏惨白的灯，让人看着心里发毛",
+            },
+            {
+              id: "lamp-height",
+              blockType: "narration",
+              text: "它不高，大概齐腰。隔着雨，你看不出那是灯泡、是手电，还是别的什么。",
+            },
+            {
+              id: "lamp-facing-door",
+              blockType: "narration",
+              text: "它亮着，一动不动。正对着祠堂的门，像是知道你会从这里出来，你有一种感觉，他似乎是在等你。",
             },
           ],
           actionIds: ["confirm-white-lamp"],
@@ -256,9 +276,19 @@
           sceneId: "shrine",
           blocks: [
             {
-              id: "investigate-at-village",
+              id: "rain-again",
+              blockType: "narration",
+              text: "雨又下起来了，这里的天气也十分沉重，祠堂里再没有别的东西可看了。",
+            },
+            {
+              id: "lamp-was-for-you",
               blockType: "system",
-              text: "先去村口，问清最近谁见过怪事，以及项目究竟出了什么问题。",
+              text: "你总觉得，那盏灯是冲着你亮的，先亮给你看，然后自己灭了。",
+            },
+            {
+              id: "think-it-through",
+              blockType: "system",
+              text: "……想不通。先去村口吧，白灯，项目，自己的失忆，说不定都和这座奇怪的村子有关系",
             },
           ],
           actionIds: ["leave-shrine"],
