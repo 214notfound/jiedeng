@@ -1,5 +1,5 @@
 // 本文件只负责把制作组静态资料渲染到团队介绍页。
-import { memberCards, members, teamData } from "./team-data.js?v=1.5";
+import { memberCards, members, teamData } from "./team-data.js?v=1.8";
 
 const list = document.getElementById("memberList");
 const orderIndex = new Map(teamData.memberOrder.map((memberId, index) => [memberId, index]));
