@@ -190,7 +190,10 @@
 }
 .exploration-module .exploration-item-dialog img {
   display: block;
+  width: auto;
+  max-height: min(62vh, 720px);
   margin: 0 auto;
+  object-fit: contain;
 }
 .exploration-module [hidden] {
   display: none !important;
