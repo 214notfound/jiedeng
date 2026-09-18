@@ -769,7 +769,7 @@ test("修改展示措辞和块数量不会改变剧情推进字段", () => {
   });
   assert.equal(response.commit.checkpoint.nodeId, "prologue-wake");
   assert.equal(response.commit.checkpoint.nodeRevision, 1);
-  assert.equal(response.presentation.blocks.length, 3);
+  assert.equal(response.presentation.blocks.length, presentation.blocks.length);
   assert.equal(response.presentation.actions[0].actionId, "confirm-wake-context");
 });
 

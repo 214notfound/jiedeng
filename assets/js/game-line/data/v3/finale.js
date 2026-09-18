@@ -51,8 +51,8 @@
             },
             {
               id: "cross-verify-server-evidence",
-              blockType: "system",
-              text: "用原始记录互证旧矿难、恐吓、封井和记忆操控的证据。",
+              blockType: "narration",
+              text: "备份是定时做的，做得比清洗还勤。",
             },
           ],
           actionIds: [],
@@ -141,7 +141,17 @@
             {
               id: "zhou-waits-for-evidence",
               blockType: "narration",
-              text: "小周伸出手，等你把完整证据包交给他。",
+              text: "小周伸出手，掌心朝上。",
+            },
+            {
+              id: "hand-stays-open",
+              blockType: "narration",
+              text: "等了一会儿，见你没有动，手也没有收回去。",
+            },
+            {
+              id: "this-hand-along-the-way",
+              blockType: "system",
+              text: "这只手，一路上替我背过包，也在祠堂门口拦过我。",
             },
           ],
           actionIds: ["hand-over-evidence", "refuse-handover"],
@@ -205,12 +215,22 @@
             {
               id: "zhou-closes-in",
               blockType: "narration",
-              text: "小周追了上来。装置的规则，你早就摸清了。",
+              text: "小周追了上来。他跑得不快，但路只有一条。",
+            },
+            {
+              id: "lights-in-rows",
+              blockType: "narration",
+              text: "机房里一排灯亮，另一排灯灭。再一排亮，再一排灭——那是你写的规则。",
+            },
+            {
+              id: "i-wrote-this-system",
+              blockType: "system",
+              text: "这套东西是我做的。哪一段会熄、哪一段会停，我比谁都清楚。",
             },
             {
               id: "escape-zhou-chase",
               blockType: "system",
-              text: "用装置的规则逃离小周的追逐，别让证据被回收。",
+              text: "……可他也在。他跟了我七天。",
             },
           ],
           actionIds: [],
@@ -325,8 +345,18 @@
           blocks: [
             {
               id: "evidence-groups-visible",
+              blockType: "narration",
+              text: "四组东西已经分好了，整整齐齐摆在桌面上。",
+            },
+            {
+              id: "export-key-on-the-right",
+              blockType: "narration",
+              text: "导出键在最右边。按下去，留下的就会留下来。",
+            },
+            {
+              id: "not-a-stance",
               blockType: "system",
-              text: "四组证据已列出各自指向的人。你现在选择的不是一句立场，而是哪些证据会留下。",
+              text: "不是表态。是决定哪几组能活下去。",
             },
           ],
           actionIds: [
@@ -364,7 +394,14 @@
       requiredFact: "evidence-handed-to-x",
       acknowledgementFact: "ending-accomplice-acknowledged",
       title: "《共犯的终点》",
-      text: "小周毁掉证据并完成灭口。王阙最后一次把选择交给了别人。",
+      text: "你把东西递了过去。小周接得很稳，用两只手。"
+        + "\n他数了一遍，又数了一遍，然后点了点头。"
+        + "\n【小周】“路上辛苦了。”他说，“剩下的我来办。”"
+        + "\n他转身去关机房的门。门合上以后，里面灭了一排灯。"
+        + "\n【你】这一路上，我一直在把选择交给别人。"
+        + "\n一声枪响，震得森林种鸟群四散，然后又归于沉静，像是什么都没发生过"
+        + "\n那一夜之后，村里再没有过人。"
+        + "\n只有白灯还照旧亮着，大雨冲刷着数不尽的罪恶，沉默的喧噪中，一切照旧，一切都从未发生。",
     }),
     createEndingNode({
       id: "ending-defeated",
@@ -372,7 +409,14 @@
       requiredFact: "x-showdown-lost",
       acknowledgementFact: "ending-defeated-acknowledged",
       title: "《封井之人》",
-      text: "小周灭口并回收了证据，副本被清除，项目继续。知道真相并没有自动保住真相。",
+      text: "小周追上了你。他喘得很厉害，但没有停。"
+        + "\n最后一段路上，灯全灭了。是他按的，不是你。"
+        + "\n他把你手上的东西一件一件拿下来，放回箱子里。"
+        + "\n【小周】“别怪我。”他说，“我也是要交差的。”"
+        + "\n机房的屏幕一个一个变黑。备份在第一行就被删了。"
+        + "\n【你】十七年前，苏禾也是这样被留在井里的吗。"
+        + "\n门在他身后合上了。留下的只有永恒的黑暗，黑暗中，你凝视着那些血色的罪恶"
+        + "\n几天后，项目继续。井口的水泥，又浇高了一层。",
     }),
     createEndingNode({
       id: "ending-erasure",
@@ -380,7 +424,15 @@
       requiredFact: "all-evidence-destroyed",
       acknowledgementFact: "ending-erasure-acknowledged",
       title: "《无名者》",
-      text: "证据被全部销毁，村庄被拆。陈晋年和王阙又被留在了两份无法相认的记录里。",
+      text: "你按下导出键，又按了清除。手没有抖。"
+        + "\n四组东西一组一组地灭掉。最后一组的进度条走得最慢。接下来的事情你记不太清了。"
+        + "\n村子在第二年拆完，陈家老宅也是。"
+        + "\n拆迁的登记册上，那间屋子写的是“无主”。"
+        + "\n户籍底册上，陈晋年那一栏还留着涂改的痕迹。王阙那一栏写着“注销”。"
+        + "\n两份记录隔着一条街，谁也没有对上谁。"
+        + "\n【王阙】这样也好。谁都不必是我。"
+        + "\n 忘却是一种选择，忘却是一种逃避，忘却是一种新生，忘却是一种罪恶。"
+        + "\n 雨还在下，滴答，滴答，默默记录着王阙人如其名的罪恶……",
     }),
     createEndingNode({
       id: "ending-curated-truth",
@@ -388,7 +440,13 @@
       requiredFact: "curated-evidence-published",
       acknowledgementFact: "ending-curated-truth-acknowledged",
       title: "《白灯之后》",
-      text: "集团的罪证被公开，王阙却仍以白灯客的名字删去了自己。",
+      text: "你保留下来的那一半发了出去：矿难，胁迫，收购，掩盖。"
+        + "\n删掉的那一半，你按旧名字署了名。"
+        + "\n报道登出来那天，网上开始有人管“白灯客”叫英雄。"
+        + "\n先是有人在他住过的地方放了一盏白色的灯。第二天之后，这便成了一种网红打卡行为。"
+        + "\n【你】他们拜的那个名字，是我给自己留的最后一层皮。"
+        + "\n老宅的院子里，从此每年都亮着一盏灯。"
+        + "\n没有人知道，那盏灯是谁点的。有人说，那是为了偿还白灯客借灯挂名的罪恶。一切照旧",
     }),
     createEndingNode({
       id: "ending-full-account",
@@ -396,7 +454,12 @@
       requiredFact: "full-evidence-published",
       acknowledgementFact: "ending-full-account-acknowledged",
       title: "《不再借灯》",
-      text: "公司、父亲、小周、王阙与白灯客的全部行为同时公开，主角也第一次以同一个人的责任接受调查。",
+      text: "你把四组东西一起发了出去，一份也没删。"
+        + "\n检举信的最后是签名栏。你写了三个名字：陈晋年、王阙、白灯客。"
+        + "\n第二天早上来了两辆警车。你没有锁门。"
+        + "\n车上的人问你怎么称呼。你把三个名字都说了，又补了一句，“都是我。”"
+        + "\n这一次，没有借来的名字。"
+        + "\n那天夜里，村里那盏白灯没有亮。从那以后，石涧村再没有借过灯。",
     }),
   ]);
 

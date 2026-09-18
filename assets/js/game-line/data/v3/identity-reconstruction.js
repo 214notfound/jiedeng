@@ -47,12 +47,27 @@
             {
               id: "debug-tape-figure",
               blockType: "narration",
-              text: "控制室里的调试录像还在，画面里那个熟悉的身影，操作着每一条恐吓指令。",
+              text: "控制室的显示器还能亮。只剩一段没被清掉的调试录像。",
+            },
+            {
+              id: "tape-too-low-to-see",
+              blockType: "narration",
+              text: "画面很低，看不清脸。里边的人坐在操作台前，抬手，按了一串键。",
+            },
+            {
+              id: "two-knocks-on-console",
+              blockType: "narration",
+              text: "他调完参数，用指节在台沿上敲了两下。",
+            },
+            {
+              id: "hand-moves-by-itself",
+              blockType: "narration",
+              text: "你的手自己抬了起来，落在同一个位置上，也敲了两下。",
             },
             {
               id: "confirm-b-and-authorship",
               blockType: "system",
-              text: "用操作习惯、伤疤和调试录像，确认主角就是王阙，并证明恐吓方案由他主动设计。",
+              text: "录像里的那个背影，是我……",
             },
           ],
           actionIds: [],
@@ -107,12 +122,17 @@
             {
               id: "empty-grave-no-body",
               blockType: "narration",
-              text: "空坟里没有遗体。诊所的伤情图和户籍变更，把两个本不该相连的名字连在了一起。",
+              text: "那两座坟里，陈晋年空棺，你还记得。",
+            },
+            {
+              id: "clinic-and-household-register",
+              blockType: "narration",
+              text: "诊所的伤情图，和户籍底册上的那一处涂改，把两个本不该相连的名字连在了一起。",
             },
             {
               id: "confirm-chen-survival",
               blockType: "system",
-              text: "确认陈晋年毁容生还、改名王阙，并查清他私自带妹妹离院的经过。",
+              text: "空坟不是因为没有找到人。是因为那个人，正站在这里。",
             },
           ],
           actionIds: [],
@@ -187,12 +207,17 @@
             {
               id: "father-name-twice",
               blockType: "narration",
-              text: "旧矿难的档案里，父亲的名字出现了两次：一次是被迫，一次是主动。",
+              text: "旧矿难的档案里，父亲的名字出现了两次。",
+            },
+            {
+              id: "father-once-forced-once-willing",
+              blockType: "narration",
+              text: "一次是被迫的，一次是主动的。",
             },
             {
               id: "prove-company-succession",
               blockType: "system",
-              text: "还原父亲的被迫与帮凶，证明现集团承接了旧公司的矿权和秘密。",
+              text: "两次……",
             },
           ],
           actionIds: [],
@@ -265,12 +290,17 @@
             {
               id: "report-missing-clues",
               blockType: "narration",
-              text: "白灯客寄来的材料看似公允，却独独漏掉了恐吓、封井和苏禾。",
+              text: "你仔细检查这份材料，是白灯客的举报资料，可是有些奇怪",
+            },
+            {
+              id: "report-looks-fair",
+              blockType: "narration",
+              text: "白灯客寄出去的材料，看上去很公允。旧矿难、父亲、集团，一个都没落下。",
             },
             {
               id: "confirm-white-lamp-and-bypass",
-              blockType: "system",
-              text: "确认白灯客就是王阙，并找到可绕开封墙的排水洞坐标。",
+              blockType: "narration",
+              text: "可是从头到尾，没有提到人造恐吓，没有提到封井，没有苏禾的名字，似乎是忘记了，又似乎是为了隐藏。",
             },
           ],
           actionIds: [],
