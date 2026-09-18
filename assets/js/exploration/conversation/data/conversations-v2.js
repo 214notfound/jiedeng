@@ -39,7 +39,7 @@ export const V2_CONVERSATIONS = Object.freeze({
       Object.freeze({lineId: "identity-conflict-02", text: "【你】（皱眉）这照片上的蓝色玻璃珠，怎么和我手上的一样？"}),
       Object.freeze({lineId: "identity-conflict-03", text: "【旁白】你环顾四周，一种莫名的熟悉感涌上心头..."}),
       Object.freeze({lineId: "identity-conflict-04", text: "【小周】过去的这些事故，和现在的闹鬼有啥关系吗？"}),
-      Object.freeze({lineId: "identity-conflict-05", text: "【你】暂时没想清楚...不过你怎么有他们家的钥匙？"}),
+      Object.freeze({lineId: "identity-conflict-05", text: "【你】暂时没想清楚...不过，你怎么会有他们家的钥匙？"}),
       Object.freeze({lineId: "identity-conflict-06", text: "【小周】我哪知道是这一家的？我们不也是碰巧试出来的吗？"}),
       Object.freeze({lineId: "identity-conflict-07", text: "【旁白】他说完，扭头去推门。门早就开着。"}),
     ])
