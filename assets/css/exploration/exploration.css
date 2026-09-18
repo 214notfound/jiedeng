@@ -136,7 +136,9 @@
   list-style: none;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  /* 单张地图也保持卡片宽度，不因 1fr 把横向特写拉满整行。 */
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 280px));
+  justify-content: start;
   gap: 1rem;
 }
 .exploration-module .content-card {

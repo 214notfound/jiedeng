@@ -83,10 +83,11 @@ document.getElementById("teamMemberNav").replaceChildren(...orderedMemberCards.m
 }));
 
 const divisionLabels = [
-  ["planningAndWriting", "策划与文案"],
-  ["development", "程序开发"],
-  ["visualAndInteraction", "视觉与交互"],
-  ["testingAndIntegration", "测试与整合"]
+  ["luo-chenfei", "罗晨菲"],
+  ["yang-meng", "杨梦"],
+  ["gao-bingxuan", "高冰轩"],
+  ["lu-zhengsong", "卢正松"],
+  ["yu-zhirang", "于知让"]
 ];
 const confirmedDivisions = divisionLabels.filter(([key]) => teamData.divisions[key]);
 
