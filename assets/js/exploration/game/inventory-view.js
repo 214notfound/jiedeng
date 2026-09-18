@@ -1,6 +1,11 @@
 // 背包视图：只读展示已提交物品；详情统一挂载到 controller 管理的 detail-root。
 import {element, button, region, createFeedback, playerMessage} from "./view-utils.js";
 
+const DISPLAY_GROUPS = Object.freeze([
+  Object.freeze({id: "objects", label: "物品与证物"}),
+  Object.freeze({id: "leads", label: "线索与地图"})
+]);
+
 export function getObtainedItem(module, itemId) {
   if (typeof itemId !== "string" || !itemId.trim()) {
     throw new TypeError("缺少要查看的物品或线索。");
@@ -40,7 +45,7 @@ export function mountInventory({module, root, detailRoot, showFeedback, openDeta
   detail.append(detailTitle, detailImage, detailImageError, detailDescription, detailSource);
   container.append(browser);
 
-  let layer = "items";
+  let layer = DISPLAY_GROUPS[0].id;
   let active = true;
 
   function renderDetail(item, description = item.description) {
@@ -90,13 +95,14 @@ export function mountInventory({module, root, detailRoot, showFeedback, openDeta
   function render() {
     if (!active) return;
     try {
-      const items = module.listItems(layer);
+      // 获得状态仍由宿主的 inventory / clues 统一管理；这里只做语义展示分组。
+      const items = module.listItems().filter((item) => item.displayGroup === layer);
       const focusedId = document.activeElement?.dataset.itemId;
       const focusedLayer = document.activeElement?.dataset.layer;
       browser.replaceChildren(element("h2", "exploration-title", "背包"));
       const controls = element("div", "exploration-controls");
       controls.setAttribute("aria-label", "背包分类");
-      for (const [id, label] of [["items", "物品"], ["clues", "线索碎片"]]) {
+      for (const {id, label} of DISPLAY_GROUPS) {
         const tab = button(label, () => {
           layer = id;
           render();
@@ -115,10 +121,11 @@ export function mountInventory({module, root, detailRoot, showFeedback, openDeta
         entry.dataset.itemId = item.id;
         entry.setAttribute("aria-label", "查看" + item.name + "详情");
         const thumbnail = document.createElement("img");
-        thumbnail.src = item.image;
+        thumbnail.src = item.detailImage ?? item.image;
         thumbnail.alt = "";
         thumbnail.width = 64;
         thumbnail.height = 64;
+        thumbnail.className = "exploration-item-thumbnail";
         const thumbnailError = element(
           "span",
           "exploration-resource-fallback exploration-resource-fallback--thumbnail",

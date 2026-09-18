@@ -1,8 +1,56 @@
 // 成就视图：展示状态并按指定通知方发出一次提示，不修改全局成就。
 import { element, region, createFeedback, playerMessage } from "./view-utils.js";
 
-// 同一模块实例只允许一个视图承担通知，其他视图仍可展示。
 const notificationOwners = new WeakMap();
+const CATEGORY_LABELS = Object.freeze({
+  investigation: "调查札记",
+  truth: "灯下真相",
+  ending: "终局余烬"
+});
+const CATEGORY_ORDER = Object.freeze(["investigation", "truth", "ending"]);
+const ENDING_MARKS = Object.freeze(["Ⅰ", "Ⅱ", "Ⅲ", "Ⅳ", "Ⅴ"]);
+
+function displayName(item) {
+  if (!item.secret || item.unlocked) return item.name;
+  return `未明之章 · ${ENDING_MARKS[item.sequence - 1] ?? item.sequence}`;
+}
+
+function displayDescription(item) {
+  if (!item.secret || item.unlocked) return item.description;
+  return "这段雨夜尚未抵达终点。";
+}
+
+function createCard(item) {
+  const card = element("article", "achievement-card");
+  card.classList.toggle("achievement-card--unlocked", item.unlocked);
+  card.classList.toggle("achievement-card--locked", !item.unlocked);
+  card.dataset.achievementId = item.id;
+
+  const mark = element("span", "achievement-card__mark", item.unlocked ? "灯" : "影");
+  mark.setAttribute("aria-hidden", "true");
+  const copy = element("div", "achievement-card__copy");
+  const status = item.available === false
+    ? "记录异常"
+    : item.unlocked ? "已解锁" : "未解锁";
+  copy.append(
+    element("p", "achievement-card__status", status),
+    element("h3", "achievement-card__title", displayName(item)),
+    element("p", "achievement-card__description", displayDescription(item))
+  );
+  if (item.warning) {
+    copy.append(element("p", "achievement-warning",
+      playerMessage(item.warning, "这项成就暂时无法确认。")));
+  }
+  if (item.unlockedAt) {
+    const time = element("time", "achievement-card__time",
+      new Date(item.unlockedAt).toLocaleString("zh-CN"));
+    time.dateTime = item.unlockedAt;
+    copy.append(time);
+  }
+  card.append(mark, copy);
+  return card;
+}
+
 export function mountAchievements({ module, root, showFeedback, notifyUnlocks = true }) {
   if (typeof showFeedback !== "function") throw new TypeError("缺少反馈回调。");
   if (!root?.append) throw new TypeError("缺少成就挂载容器。");
@@ -12,32 +60,47 @@ export function mountAchievements({ module, root, showFeedback, notifyUnlocks = 
   if (notifyUnlocks && !notificationOwners.has(module)) notificationOwners.set(module, owner);
   const container = region(root);
   const notify = createFeedback(container, showFeedback);
-  const list = element("div", "exploration-achievements");
+  const list = element("div", "achievement-catalogue");
   container.append(list);
   let active = true;
+
   function render() {
     if (!active) return;
     try {
       const items = module.listAchievements();
       if (notifyUnlocks && !notificationOwners.has(module)) notificationOwners.set(module, owner);
-      list.replaceChildren(element("h2", "exploration-title", "成就"));
-      for (const item of items) {
-        const card = element("article", "content-card");
-        const status = item.available === false
-          ? "记录异常，暂不可用"
-          : item.unlocked ? "已解锁" : "未解锁";
-        card.append(element("h3", "", item.name), element("p", "", item.description),
-          element("p", "", status));
-        if (item.warning) card.append(element("p", "achievement-warning",
-          playerMessage(item.warning, "这项成就暂时无法确认。")));
-        if (item.unlockedAt) {
-          const time = element("time", "", new Date(item.unlockedAt).toLocaleString("zh-CN"));
-          time.dateTime = item.unlockedAt;
-          card.append(time);
+      const unlockedCount = items.filter((item) => item.unlocked).length;
+      const summary = element("section", "achievement-summary");
+      summary.setAttribute("aria-label", "成就进度");
+      summary.append(
+        element("p", "achievement-summary__eyebrow", "ARCHIVE / 雨夜记录"),
+        element("p", "achievement-summary__count", `${unlockedCount} / ${items.length}`),
+        element("p", "achievement-summary__copy", "每一次调查、选择与抵达，都会在这里留下一点灯光。")
+      );
+      const progress = element("div", "achievement-summary__progress");
+      progress.setAttribute("role", "progressbar");
+      progress.setAttribute("aria-valuemin", "0");
+      progress.setAttribute("aria-valuemax", String(items.length));
+      progress.setAttribute("aria-valuenow", String(unlockedCount));
+      const progressFill = element("span", "achievement-summary__progress-fill");
+      progressFill.style.width = `${items.length ? unlockedCount / items.length * 100 : 0}%`;
+      progress.append(progressFill);
+      summary.append(progress);
+
+      const sections = CATEGORY_ORDER.map((category) => {
+        const section = element("section", "achievement-group");
+        const heading = element("h2", "achievement-group__title", CATEGORY_LABELS[category]);
+        const grid = element("div", "achievement-grid");
+        for (const item of items.filter((entry) => entry.category === category)) {
+          grid.append(createCard(item));
         }
-        list.append(card);
+        section.append(heading, grid);
+        return section;
+      });
+      list.replaceChildren(summary, ...sections);
+
+      for (const item of items) {
         if (item.unlocked && !seen.has(item.id)) {
-          // 在调用外部反馈前记录，避免反馈同步重入导致重复通知。
           seen.add(item.id);
           if (notificationOwners.get(module) === owner) notify("成就解锁：" + item.name, "success");
         }
@@ -47,6 +110,7 @@ export function mountAchievements({ module, root, showFeedback, notifyUnlocks = 
       notify(playerMessage(error.message, "成就暂时无法读取，请返回游戏重试。"), "error");
     }
   }
+
   let unsubscribe;
   try { unsubscribe = module.subscribe(render); }
   catch (error) {

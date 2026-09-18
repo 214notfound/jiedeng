@@ -160,6 +160,15 @@
   background: transparent;
   color: inherit;
 }
+.exploration-module .exploration-item-thumbnail {
+  width: 100%;
+  height: clamp(108px, 13vw, 148px);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: rgb(4 7 12 / 55%);
+  object-fit: contain;
+  object-position: center;
+}
 .exploration-module .exploration-resource-fallback {
   color: inherit;
   line-height: 1.5;
@@ -194,6 +203,20 @@
   max-height: min(62vh, 720px);
   margin: 0 auto;
   object-fit: contain;
+}
+@media (max-width: 640px) {
+  .exploration-module .exploration-inventory {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .75rem;
+  }
+  .exploration-module .exploration-item-thumbnail {
+    height: clamp(96px, 27vw, 132px);
+  }
+}
+@media (max-width: 420px) {
+  .exploration-module .exploration-inventory {
+    grid-template-columns: 1fr;
+  }
 }
 .exploration-module [hidden] {
   display: none !important;

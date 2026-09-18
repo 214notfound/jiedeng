@@ -1,4 +1,18 @@
-// 背包目录：只描述展示信息；物品/线索分类完全由宿主状态决定。
+// 背包目录：宿主状态决定“是否获得”，displayGroup 只决定背包中的展示分组。
+// 不以展示分组替代 inventory / clues，避免影响剧情条件、存档和小游戏契约。
+const DISPLAY_GROUPS = Object.freeze({
+ "burned-work-id":"objects",
+ "blue-glass-bead":"objects",
+ "key-a":"objects",
+ "old-photograph":"objects",
+ "school-uniform":"objects",
+ "funeral-list":"objects",
+ "map-fragment-1":"leads",
+ "map-fragment-2":"leads",
+ "map-fragment-3":"leads",
+ "restored-village-map":"leads",
+ "height-marks":"leads"
+});
 const rows = [
  ["burned-work-id","烧毁的工作证","随身物品","烧毁大半的工作证，公司信息已经模糊，只能辨认姓名栏中的姓氏“王”。",null,"burned-work-id.png"],
  ["blue-glass-bead","蓝玻璃珠","随身物品","一颗蓝玻璃珠，来历尚待调查。","blue-glass-bead.png"],
@@ -25,6 +39,7 @@ export const ITEMS=Object.freeze(rows.map(([
  name,
  source,
  description,
+ displayGroup:DISPLAY_GROUPS[id]??"objects",
  image:new URL("../../../images/exploration/items/"+imageName,import.meta.url).href,
  ...(AUTO_OPEN_ON_ACQUIRE_IDS.has(id) ? {autoOpenOnAcquire:true} : {}),
  ...(detailImageName ? {
