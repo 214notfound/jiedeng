@@ -1,0 +1,52 @@
+.mg2d { position: relative; min-height: 100%; padding-top: max(84px, calc(env(safe-area-inset-top) + 72px)); overflow: hidden; color: #eee8dc; background: #070a0b; }
+.mg-entry-overlay { position: fixed; z-index: 80; inset: 0; display: grid; place-items: center; padding: 20px; background: rgba(0, 0, 0, .8); }
+.mg-entry-overlay[hidden] { display: none; }
+.mg-entry-overlay__card { display: grid; width: min(460px, 100%); gap: 12px; padding: 28px; color: #eee8dc; background: #111619; border: 1px solid #90866d; box-shadow: 0 18px 60px rgba(0,0,0,.6); }
+.mg-entry-overlay__title, .mg-entry-overlay__objective, .mg-entry-overlay__controls, .mg-entry-overlay__restriction { margin: 0; }
+.mg-entry-overlay__title { font: 700 24px/1.25 "Songti SC", SimSun, serif; letter-spacing: .12em; }
+.mg-entry-overlay__objective { line-height: 1.7; }
+.mg-entry-overlay__controls, .mg-entry-overlay__restriction { color: #c2beb2; line-height: 1.6; }
+.mg-entry-overlay .button { min-height: 42px; }
+.mg2d-stage { position: relative; height: calc(100dvh - max(84px, calc(env(safe-area-inset-top) + 72px))); min-height: 420px; overflow: hidden; background: #090d0e; }
+.mg2d-world { position: absolute; left: 0; top: 0; transform-origin: 0 0; will-change: transform; }
+.mg2d-hud { position: absolute; z-index: 20; inset: max(96px, calc(env(safe-area-inset-top) + 84px)) 20px auto; display: flex; justify-content: space-between; gap: 20px; pointer-events: none; }
+.mg2d-title, .mg2d-objective__text, .mg2d-controls { margin: 0; }
+.mg2d-title { font: 700 clamp(20px, 3vw, 30px)/1.2 "Songti SC", SimSun, serif; letter-spacing: .12em; }
+.mg2d-objective__text, .mg2d-controls { margin-top: 6px; color: #c2beb2; text-shadow: 0 2px 5px #000; }
+.mg2d-wall { position: absolute; background: repeating-linear-gradient(45deg, #202628 0 14px, #171c1e 14px 28px); border: 2px solid #343b3d; box-shadow: inset 0 0 24px #050708; }
+.mg2d-player { position: absolute; z-index: 5; display: grid; place-items: center; color: #17191b; background: #ded6c5; border: 2px solid #fff8e8; border-radius: 45% 45% 35% 35%; font-size: 10px; box-shadow: 0 0 22px rgba(238, 226, 192, .55); }
+.mg2d-prompt { position: absolute; z-index: 30; bottom: 26px; left: 50%; min-width: 280px; margin: 0; padding: 12px 22px; transform: translateX(-50%); color: #eee8dc; background: rgba(6, 8, 9, .9); border: 1px solid #90866d; text-align: center; }
+.mg2d-pause { position: absolute; z-index: 60; inset: 0; display: grid; place-items: center; background: rgba(0, 0, 0, .76); }
+.mg2d-pause[hidden] { display: none; }
+.mg2d-pause__card { display: grid; width: min(360px, calc(100% - 32px)); gap: 12px; padding: 28px; background: #111619; border: 1px solid #766f5f; }
+.mg2d-pause__title { margin: 0 0 8px; text-align: center; }
+.mg-mine__world { background: linear-gradient(rgba(4, 7, 9, .3), rgba(4, 7, 9, .48)), url("../../../images/minigames/game2/bg_mine_world.png") center / cover no-repeat; }
+.mg-mine__world::before { position: absolute; inset: 570px 60px 520px; background: #161c1d; border-block: 3px solid #3a4242; content: ""; }
+.mg-mine__door, .mg-mine__valve, .mg-mine__exit { position: absolute; z-index: 4; display: grid; place-items: center; text-align: center; }
+.mg2d-sprite { position: absolute; max-width: none; object-fit: contain; pointer-events: none; }
+.mg2d-player { overflow: visible; background: transparent; border: 0; box-shadow: none; }
+.mg2d-player > .mg2d-sprite { width: 92px; height: 122px; left: 50%; bottom: 0; transform: translateX(-50%); }
+.mg-mine__door { color: #d8b2a5; background: rgba(45, 50, 50, .35); border: 3px solid #7e554c; }
+.mg-mine__door > .mg2d-sprite { width: 220px; height: 170px; left: 50%; top: 50%; transform: translate(-50%, -50%); }
+.mg-mine__valve { color: #f1dbc3; background: rgba(109, 49, 40, .35); border: 0; border-radius: 50%; font-size: 11px; }
+.mg-mine__valve > .mg2d-sprite { width: 96px; height: 96px; left: 50%; top: 50%; transform: translate(-50%, -50%); }
+.mg-mine__valve.is-active { color: #b8e2c2; border-color: #6cac7d; }
+.mg-mine__exit { color: #d8d4c7; background: rgba(22, 29, 31, .35); border: 3px solid #637071; }
+.mg-mine__exit > .mg2d-sprite { width: 150px; height: 190px; left: 50%; bottom: 0; transform: translateX(-50%); }
+.mg-mine__label { position: relative; z-index: 2; padding: 2px 5px; background: rgba(5, 7, 8, .72); }
+.mg-mine__inspect, .mg-mine__lamp-marker { position: absolute; z-index: 4; width: 18px; height: 18px; transform: translate(-50%, -50%); border-radius: 50%; pointer-events: none; }
+.mg-mine__inspect { border: 1px solid rgba(205, 192, 151, .62); background: rgba(205, 192, 151, .12); box-shadow: 0 0 12px rgba(205, 192, 151, .22); }
+.mg-mine__inspect::after { position: absolute; inset: 6px; border-radius: 50%; background: #cfc39d; content: ""; }
+.mg-mine__lamp-marker { border: 1px solid rgba(202, 147, 80, .72); background: rgba(122, 76, 35, .24); box-shadow: 0 0 10px rgba(201, 129, 54, .3); }
+.mg-mine__lamp-marker.is-active { background: #f2c982; box-shadow: 0 0 18px 6px rgba(243, 181, 91, .5); }
+.mg-mine__darkness { position: absolute; z-index: 10; inset: 0; pointer-events: none; background: radial-gradient(circle at var(--light-x) var(--light-y), rgba(0,0,0,.03) 0 100px, rgba(0,0,0,.38) 155px, rgba(0,0,0,.8) 235px, rgba(0,0,0,.96) 330px); }
+.mg-mine__lamp-light { position: absolute; z-index: 11; transform: translate(-50%, -50%); border-radius: 50%; pointer-events: none; background: radial-gradient(circle, rgba(255, 221, 153, .38) 0, rgba(239, 175, 86, .2) 38%, rgba(219, 134, 55, .06) 66%, transparent 74%); mix-blend-mode: screen; }
+.mg-mine__lamp-light[hidden], .mg-mine__notice[hidden] { display: none; }
+.mg-mine__notice { position: absolute; z-index: 30; right: 18px; bottom: 84px; width: min(420px, calc(100% - 36px)); padding: 16px 52px 16px 18px; color: #eee8dc; background: rgba(12, 15, 16, .94); border: 1px solid #85785f; box-shadow: 0 10px 30px rgba(0, 0, 0, .5); }
+.mg-mine__notice-text { margin: 0; line-height: 1.65; }
+.mg-mine__notice-close { position: absolute; top: 8px; right: 8px; min-width: 34px; min-height: 34px; padding: 0; color: #d8d1c2; background: transparent; border: 1px solid #5e5b52; cursor: pointer; }
+@media (max-width: 620px) {
+  .mg2d-controls { display: none; }
+  .mg2d-hud { inset-inline: 12px; }
+  .mg-mine__notice { right: 12px; bottom: 84px; width: calc(100% - 24px); }
+}

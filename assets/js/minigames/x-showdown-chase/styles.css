@@ -1,0 +1,41 @@
+.mg2d { position: relative; min-height: 100%; padding-top: max(84px, calc(env(safe-area-inset-top) + 72px)); overflow: hidden; color: #eee8dc; background: #07090d; }
+.mg-entry-overlay { position: fixed; z-index: 80; inset: 0; display: grid; place-items: center; padding: 20px; background: rgba(0, 0, 0, .82); }
+.mg-entry-overlay[hidden] { display: none; }
+.mg-entry-overlay__card { display: grid; width: min(460px, 100%); gap: 12px; padding: 28px; color: #eee8dc; background: #11151c; border: 1px solid #90866d; box-shadow: 0 18px 60px rgba(0,0,0,.65); }
+.mg-entry-overlay__title, .mg-entry-overlay__objective, .mg-entry-overlay__controls, .mg-entry-overlay__restriction { margin: 0; }
+.mg-entry-overlay__title { font: 700 24px/1.25 "Songti SC", SimSun, serif; letter-spacing: .12em; }
+.mg-entry-overlay__objective { line-height: 1.7; }
+.mg-entry-overlay__controls, .mg-entry-overlay__restriction { color: #c2beb2; line-height: 1.6; }
+.mg-entry-overlay .button { min-height: 42px; }
+.mg2d-stage { position: relative; height: calc(100dvh - max(84px, calc(env(safe-area-inset-top) + 72px))); min-height: 420px; overflow: hidden; background: #090c12; }
+.mg2d-world { position: absolute; left: 0; top: 0; transform-origin: 0 0; will-change: transform; }
+.mg2d-hud { position: absolute; z-index: 20; inset: max(96px, calc(env(safe-area-inset-top) + 84px)) 20px auto; display: flex; align-items: start; justify-content: space-between; gap: 20px; pointer-events: none; }
+.mg2d-title, .mg2d-objective__text, .mg2d-controls { margin: 0; }
+.mg2d-title { font: 700 clamp(20px, 3vw, 30px)/1.2 "Songti SC", SimSun, serif; letter-spacing: .12em; }
+.mg2d-objective__text, .mg2d-controls { margin-top: 6px; color: #c2beb2; text-shadow: 0 2px 5px #000; }
+.mg2d-wall { position: absolute; background: #1a2029; border: 2px solid #343d49; box-shadow: inset 0 0 24px #05070b; }
+.mg2d-player { position: absolute; z-index: 5; display: grid; place-items: center; color: #17191b; background: transparent; border: 0; border-radius: 45% 45% 35% 35%; font-size: 10px; box-shadow: 0 0 22px rgba(238, 226, 192, .55); overflow: visible; }
+.mg2d-sprite { position: absolute; max-width: none; object-fit: contain; pointer-events: none; }
+.mg2d-player > .mg2d-sprite { width: 92px; height: 122px; left: 50%; bottom: 0; transform: translateX(-50%); }
+.mg2d-player.is-invincible { animation: chase-blink .14s steps(2) infinite; }
+.mg2d-prompt { position: absolute; z-index: 30; bottom: 26px; left: 50%; min-width: 280px; margin: 0; padding: 12px 22px; transform: translateX(-50%); color: #eee8dc; background: rgba(6, 8, 12, .92); border: 1px solid #90866d; text-align: center; }
+.mg2d-pause, .mg-chase__rules { position: absolute; z-index: 60; inset: 0; display: grid; place-items: center; background: rgba(0, 0, 0, .78); }
+.mg2d-pause[hidden], .mg-chase__rules[hidden] { display: none; }
+.mg2d-pause__card, .mg-chase__rules-card { display: grid; width: min(440px, calc(100% - 32px)); gap: 12px; padding: 28px; background: #11151c; border: 1px solid #766f5f; }
+.mg2d-pause__title, .mg-chase__rules-title, .mg-chase__rules-card p { margin: 0; }
+.mg-chase__rules-title { text-align: center; }
+.mg-chase__world { background: linear-gradient(rgba(4, 7, 11, .24), rgba(4, 7, 11, .44)), url("../../../images/minigames/game3/bg_server_room.png") center / cover no-repeat; }
+.mg-chase__cabinet { background: repeating-linear-gradient(90deg, #1b222d 0 18px, #121820 18px 22px); }
+.mg-chase__enemy { position: absolute; z-index: 6; display: grid; place-items: center; color: #f5d8d1; background: transparent; border: 0; border-radius: 35%; font-size: 10px; box-shadow: 0 0 24px rgba(180, 45, 55, .48); overflow: visible; }
+.mg-chase__enemy > .mg2d-sprite { width: 104px; height: 138px; left: 50%; bottom: 0; transform: translateX(-50%); }
+.mg-chase__evidence { position: absolute; z-index: 4; display: grid; place-items: center; color: #14110b; background: rgba(230, 198, 117, .35); border: 2px solid #fff0b0; font-size: 9px; box-shadow: 0 0 25px rgba(229, 191, 94, .55); overflow: visible; }
+.mg-chase__evidence > .mg2d-sprite { width: 64px; height: 64px; left: 50%; top: 50%; transform: translate(-50%, -50%); }
+.mg-chase__evidence[hidden] { display: none; }
+.mg-chase__exit { position: absolute; z-index: 3; display: grid; place-items: center; color: #ccebd7; background: rgba(24, 55, 43, .35); border: 3px solid #6aaa82; overflow: visible; }
+.mg-chase__exit > .mg2d-sprite { width: 132px; height: 132px; left: 50%; top: 50%; transform: translate(-50%, -50%); }
+.mg-chase__exit.is-locked { color: #a49c96; background: #292426; border-color: #66585b; }
+.mg-chase__meters { display: flex; gap: 14px; padding: 8px 12px; background: rgba(7, 9, 13, .78); border: 1px solid rgba(216, 198, 164, .35); }
+.mg-chase__hp { color: #db7777; }
+.mg-chase__evidence-count { color: #e4cb87; }
+@keyframes chase-blink { 50% { opacity: .28; } }
+@media (max-width: 620px) { .mg2d-controls { display: none; } .mg2d-hud { inset-inline: 12px; } .mg-chase__meters { flex-direction: column; gap: 2px; } }

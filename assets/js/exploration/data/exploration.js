@@ -257,7 +257,7 @@ export const EXPLORATION_TASKS = Object.freeze([
   v3Task({
     node: "server-evidence-recovered",
     target: "investigate-company-server",
-    label: "提取集团服务器证据",
+    label: "核对集团服务器证据",
     marker: "证据索引",
     x: 50,
     y: 50,
@@ -268,7 +268,8 @@ export const EXPLORATION_TASKS = Object.freeze([
       {type: "system", text: "记忆诱导……难怪我想不起来，是我以白灯客的名义举报公司，被发现了而已"},
       {type: "narration", text: "计划书的执行记录里，最近的几条，日期就在上周。"},
       {type: "system", text: "所以我什么都想不起来——不是撞坏了头。"},
-      {type: "narration", text: "这些记录一份一份都在。指向集团，指向父亲，指向小周，也指向王阙。"}
+      {type: "narration", text: "这些记录一份一份都在。指向集团，指向父亲，指向小周，也指向王阙。"},
+      {type: "system", text: "三组关键证据的位置与访问索引已经确认，可以进入最终处置。"}
     ]
   })
 ]);
