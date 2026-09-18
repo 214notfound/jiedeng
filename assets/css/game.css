@@ -343,6 +343,166 @@ body:has(.game-main[data-view-state="minigame"]) {
 .story-action--close { color: var(--paper); background: rgba(255, 255, 255, 0.04); border-color: var(--line); }
 .ending-label { padding: 20px; color: var(--accent); border: 1px solid var(--accent); text-align: center; letter-spacing: 0.2em; }
 
+/* V4 artwork is a display skin, independent of the reading contract's kind. */
+.game-main[data-view-state="reading"] .story-panel[data-visual-kind] {
+  isolation: isolate;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  min-height: 0;
+  max-height: none;
+  padding: 0;
+  gap: 4px;
+  grid-template-rows: auto auto;
+}
+.game-main[data-view-state="reading"] .story-panel[data-visual-kind]::before {
+  content: none;
+}
+.game-main[data-view-state="reading"] .story-panel[data-visual-kind]::after {
+  content: none;
+}
+.story-panel[data-visual-kind="dialogue"] {
+  --reading-art: url("../images/ui/dialogue/dialogue-frame.png");
+}
+.story-panel[data-visual-kind="narration"] {
+  --reading-art: url("../images/ui/dialogue/narration-frame.png");
+}
+.story-panel[data-visual-kind="inner"] {
+  --reading-art: url("../images/ui/dialogue/inner-system-frame.png");
+}
+.game-main[data-view-state="reading"] .story-panel[data-visual-kind] .reading-surface {
+  box-sizing: border-box;
+  height: clamp(160px, 17.5vh, 170px);
+  min-height: 0;
+  margin: 0;
+  padding: 34px 17% 34px 12%;
+  background: var(--reading-art) center / 100% 100% no-repeat;
+  overflow: hidden;
+}
+.game-main[data-view-state="reading"] .story-panel[data-visual-kind] #game-story {
+  display: grid;
+  align-content: safe center;
+  gap: 6px;
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #756756 transparent;
+}
+.game-main[data-view-state="reading"] .story-panel[data-visual-kind="narration"] .reading-surface {
+  height: clamp(166px, 18vh, 176px);
+  padding: 44px 13% 40px 15%;
+}
+.game-main[data-view-state="reading"] .story-panel[data-visual-kind="inner"] .reading-surface {
+  height: clamp(158px, 17vh, 168px);
+  padding: 52px 14% 32px 16%;
+}
+.story-panel[data-visual-kind] .game-actions {
+  padding: 0 5%;
+  gap: 8px;
+  align-items: start;
+}
+.story-panel[data-visual-kind] .story-speaker {
+  position: static;
+  min-width: 0;
+  margin: 0 0 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  transform: none;
+  color: #d9c39a;
+  text-align: left;
+  font-family: "Songti SC", STSong, SimSun, serif;
+  font-size: clamp(14px, 1.25vw, 16px);
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0.08em;
+}
+.story-panel[data-visual-kind] .story-block {
+  padding: 0;
+  border: 0;
+  color: #eee8dc;
+  font-family: "Songti SC", STSong, SimSun, serif;
+  font-size: clamp(15px, 1.35vw, 17px);
+  line-height: 1.68;
+  letter-spacing: 0.015em;
+  text-shadow: 0 1px 3px #05090e;
+}
+.story-panel[data-visual-kind="narration"] .story-block {
+  color: #e5e8e8;
+  line-height: 1.82;
+  letter-spacing: 0.045em;
+}
+.story-panel[data-visual-kind="inner"] .story-block {
+  color: #ddd7cf;
+  font-size: clamp(15px, 1.25vw, 17px);
+  line-height: 1.82;
+  letter-spacing: 0.035em;
+}
+.story-panel[data-visual-kind] .story-action {
+  min-height: 40px;
+  padding: 7px 14px;
+  border: 1px solid #756756;
+  background: #11171deb;
+  color: #eee8dc;
+}
+.story-panel[data-visual-kind] .story-action:hover:not(:disabled),
+.story-panel[data-visual-kind] .story-action:focus-visible {
+  border-color: #bf8872;
+  background: #39201fee;
+  outline: 2px solid #caa98a;
+  outline-offset: 2px;
+}
+.story-panel[data-visual-kind] .story-action:disabled { opacity: .6; }
+.story-panel[data-visual-kind] .story-action--continue { padding-right: 34px; }
+@media (max-width: 767px) {
+  .game-main[data-view-state="reading"] .story-panel[data-visual-kind] {
+    min-height: 0;
+    max-height: none;
+    padding: 0;
+    margin-top: 0;
+    overflow: visible;
+  }
+  .game-main[data-view-state="reading"] .story-panel[data-visual-kind] .reading-surface {
+    height: clamp(148px, 22dvh, 156px);
+    padding: 30px 17% 32px 13%;
+  }
+  .game-main[data-view-state="reading"] .story-panel[data-visual-kind="narration"] .reading-surface {
+    height: clamp(158px, 24dvh, 168px);
+    padding: 42px 10% 32px 16%;
+  }
+  .game-main[data-view-state="reading"] .story-panel[data-visual-kind="inner"] .reading-surface {
+    height: clamp(150px, 22dvh, 158px);
+    padding: 44px 12% 28px 16%;
+  }
+  .story-panel[data-visual-kind] .game-actions { gap: 6px; }
+  .story-panel[data-visual-kind] .story-action {
+    min-width: 0;
+    min-height: 44px;
+    white-space: normal;
+  }
+  .game-main[data-view-state="reading"]:has(.story-panel[data-visual-kind]) {
+    grid-template-rows: minmax(0, 1fr) auto auto;
+  }
+  .game-main[data-view-state="reading"]:has(.story-panel[data-visual-kind] .story-action--plot) {
+    grid-template-rows: minmax(0, 1fr) auto auto;
+  }
+  .game-main[data-view-state="reading"] .story-panel[data-visual-kind]:has(.story-action--plot) {
+    min-height: 0;
+  }
+  .story-panel[data-visual-kind] .game-actions:has(.story-action--plot) {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  .story-panel[data-visual-kind] .game-actions .story-action--plot {
+    flex: 1 1 135px;
+    width: auto;
+  }
+}
+
 .game-sidebar { display: grid; align-content: start; gap: 14px; }
 .side-panel { padding: 20px; background: var(--panel); border: 1px solid var(--line); }
 .side-panel ul { display: grid; gap: 8px; margin: 16px 0 0; padding: 0; list-style: none; }

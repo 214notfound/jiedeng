@@ -20,12 +20,13 @@ function makeButton(label, className, onClick) {
 
 const SPEAKER_LABEL_PATTERN = /^【([^】]+)】\s*/u;
 
-// 叙述标记而非角色名：剥离标签后按普通正文展示，不生成名牌。
-const SILENT_SPEAKER_LABELS = new Set(["旁白"]);
-
-function labelledSpeaker(label) {
+// 特殊标签只决定当前段的前端视觉；业务 kind、完成 ID 与剧情顺序保持不变。
+function labelledSegment(label, text) {
   const speaker = label.trim();
-  return speaker && !SILENT_SPEAKER_LABELS.has(speaker) ? speaker : null;
+  if (speaker === "旁白") return Object.freeze({speaker: null, text, visualKind: "narration"});
+  if (speaker === "独白") return Object.freeze({speaker: null, text, visualKind: "inner"});
+  if (speaker === "系统提示") return Object.freeze({speaker: null, text, visualKind: "inner"});
+  return Object.freeze({speaker: speaker || null, text});
 }
 
 export function splitSpeakerLabel(text) {
@@ -34,10 +35,7 @@ export function splitSpeakerLabel(text) {
   const speaker = match[1].trim();
   if (!speaker) return Object.freeze({speaker: null, text});
 
-  return Object.freeze({
-    speaker: labelledSpeaker(speaker),
-    text: text.slice(match[0].length)
-  });
+  return labelledSegment(speaker, text.slice(match[0].length));
 }
 
 export function splitReadingText(text) {
@@ -60,7 +58,7 @@ export function splitReadingText(text) {
       const textStart = match.index + match[0].length;
       const textEnd = matches[index + 1]?.index ?? line.length;
       const content = line.slice(textStart, textEnd).trim();
-      if (content) segments.push(Object.freeze({speaker: labelledSpeaker(match[1]), text: content}));
+      if (content) segments.push(labelledSegment(match[1], content));
     });
   });
 
@@ -77,6 +75,10 @@ function renderTextItem(storyElement, item, segmentIndex = 0) {
 
   storyElement.dataset.contentKind = item.kind;
   if (storyPanel) storyPanel.dataset.contentKind = item.kind;
+  const visualKind = labelledText.visualKind
+    ?? (labelledText.speaker ? "dialogue" : item.kind === "system" ? "inner" : item.kind);
+  storyElement.dataset.visualKind = visualKind;
+  if (storyPanel) storyPanel.dataset.visualKind = visualKind;
 
   if (labelledText.speaker) {
     const speaker = document.createElement("p");
@@ -194,6 +196,8 @@ export function createReadingView({
     actionsElement.setAttribute("aria-busy", "false");
     storyElement.removeAttribute("data-content-kind");
     storyPanel?.removeAttribute("data-content-kind");
+    storyElement.removeAttribute("data-visual-kind");
+    storyPanel?.removeAttribute("data-visual-kind");
   }
 
   function setButtonsDisabled(disabled) {
