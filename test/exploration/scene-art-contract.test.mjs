@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {existsSync} from "node:fs";
+import {existsSync, readFileSync} from "node:fs";
 import {fileURLToPath} from "node:url";
 import {EXPLORATION_TASKS} from "../../assets/js/exploration/data/exploration.js";
 import {CONVERSATION_TASKS} from "../../assets/js/exploration/conversation/data/conversations.js";
@@ -15,6 +15,12 @@ function actionCoordinates(tasks) {
   return Object.fromEntries(tasks.flatMap((task) =>
     task.actions.map((action) => [action.id, [task.x ?? action.x, task.y ?? action.y]]))
   );
+}
+
+function pngDimensions(url) {
+  const data = readFileSync(fileURLToPath(url));
+  assert.equal(data.subarray(0, 8).toString("hex"), "89504e470d0a1a0a");
+  return {width: data.readUInt32BE(16), height: data.readUInt32BE(20)};
 }
 
 test("E1 三场景调查锚点与当前正式 16:9 场景一致", () => {
@@ -126,6 +132,24 @@ test("E1 坐标保持百分比范围且老宅门与门外声音只复用视觉�
 
 test("E1 正式场景按地点和老宅门状态选择同一坐标空间背景", () => {
   assert.match(sceneAssetFor("shrine"), /scenes\/shrine\.png$/);
+  assert.match(
+    sceneAssetFor("shrine", {variantId: "bulb-only"}),
+    /scenes\/shrine\.png$/
+  );
+  assert.match(
+    sceneAssetFor("shrine", {variantId: "both-lights"}),
+    /scenes\/shrine-both-lights\.png$/
+  );
+  assert.match(
+    sceneAssetFor("shrine", {variantId: "white-lamp-only"}),
+    /scenes\/shrine-white-lamp-only\.png$/
+  );
+  for (const variantId of ["bulb-only", "both-lights", "white-lamp-only"]) {
+    assert.deepEqual(
+      pngDimensions(sceneAssetFor("shrine", {variantId})),
+      {width: 1280, height: 720}
+    );
+  }
   assert.match(sceneAssetFor("village"), /scenes\/village\.png$/);
   assert.match(sceneAssetFor("old-house"), /old-house-door-closed\.png$/);
   assert.match(
@@ -146,6 +170,8 @@ test("E1 正式场景按地点和老宅门状态选择同一坐标空间背景",
 test("E1 正式场景和已确认物品特写资源均可读取", () => {
   const urls = [
     sceneAssetFor("shrine"),
+    sceneAssetFor("shrine", {variantId: "both-lights"}),
+    sceneAssetFor("shrine", {variantId: "white-lamp-only"}),
     sceneAssetFor("village"),
     sceneAssetFor("old-house"),
     sceneAssetFor("old-house", {variantId: "door-open"}),
