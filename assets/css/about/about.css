@@ -469,21 +469,6 @@ body::before {
 .division-item dt { font-family: "Songti SC", SimSun, serif; font-size: 15px; }
 .division-item dd { color: rgba(242, 238, 230, .74); }
 
-@media (min-width: 761px) {
-  .project-flow li:not(:last-child)::after {
-    position: absolute;
-    top: 50%;
-    right: -7px;
-    z-index: 2;
-    width: 12px;
-    height: 12px;
-    border-top: 1px solid var(--about-accent);
-    border-right: 1px solid var(--about-accent);
-    content: "";
-    transform: translateY(-50%) rotate(45deg);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .project-feature,
   .project-version-grid > div { transition: none; }
