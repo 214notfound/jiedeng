@@ -240,5 +240,5 @@ test("V3 场景根据 Node 使用对应图片且不覆盖 V2 村口", () => {
   }).image, /v3\/su-death-scene\.jpg$/);
   assert.match(scenePresentationFor("village-exit", {
     facts: [], nodeId: "ending-full-account"
-  }).image, /v3\/ending-full-account\.jpg$/);
+  }).image, /v3\/ending-full-account\.png$/);
 });

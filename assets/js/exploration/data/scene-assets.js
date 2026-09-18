@@ -2,7 +2,21 @@ import {v3SceneArtFor} from "./v3-scene-assets.js";
 
 const SCENE_ASSETS = Object.freeze({
   shrine: Object.freeze({
-    default: new URL("../../../images/exploration/scenes/shrine.png", import.meta.url).href
+    // 杨梦的视频衔接状态：A（默认）→ B → C → A。
+    // 恢复供电时灯泡亮起、白灯同时熄灭，因此复用 bulb-only。
+    default: new URL("../../../images/exploration/scenes/shrine.png", import.meta.url).href,
+    "bulb-only": new URL(
+      "../../../images/exploration/scenes/shrine.png",
+      import.meta.url
+    ).href,
+    "both-lights": new URL(
+      "../../../images/exploration/scenes/shrine-both-lights.png",
+      import.meta.url
+    ).href,
+    "white-lamp-only": new URL(
+      "../../../images/exploration/scenes/shrine-white-lamp-only.png",
+      import.meta.url
+    ).href
   }),
   village: Object.freeze({
     default: new URL("../../../images/exploration/scenes/village.png", import.meta.url).href

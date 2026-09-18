@@ -69,6 +69,18 @@ export const projectData = {
       title: "解谜推进",
       description:
         "完成地图复原等 Mini-game，把分散的线索转化为新的可探索地点和剧情入口。"
+    },
+    {
+      id: "branch-investigation",
+      title: "多线调查与身份重构",
+      description:
+        "沿峡谷、项目档案、苏禾踪迹与白灯邮件等调查线并行取证，再把彼此冲突的姓名与经历拼合成完整身份。"
+    },
+    {
+      id: "story-minigames",
+      title: "多类型小游戏与主线嵌合",
+      description:
+        "地图复原、线路核对、矿井路线与终局追逐均由剧情自然引出，结果会写回同一条事实链并继续改变后续走向。"
     }
   ],
 
@@ -80,7 +92,12 @@ export const projectData = {
     "收集地图碎片",
     "复原地图",
     "探索陈家老宅",
-    "继续追查身份与旧事故"
+    "展开外围四线调查",
+    "拼合陈晋年、王阙与白灯客的身份",
+    "重返矿井并还原苏禾死亡真相",
+    "进入数据中心取得完整证据",
+    "面对证据回收与终局追逐",
+    "作出证据选择并抵达不同结局"
   ],
 
   features: [
@@ -101,19 +118,46 @@ export const projectData = {
       title: "剧情与网页交互结合",
       description:
         "文本、调查、状态记录和 Mini-game 不是独立页面，而是共同推动同一条剧情与线索链。"
+    },
+    {
+      id: "parallel-investigation",
+      title: "多线索并行汇合",
+      description:
+        "四条外围调查线从不同人物与地点切入，在身份重构、矿井真相和公司证据处逐层汇合。"
+    },
+    {
+      id: "state-driven-story",
+      title: "事实驱动的叙事状态",
+      description:
+        "调查、选择与小游戏结果都会沉淀为可恢复的剧情事实，让存档、成就和结局读取同一份进度。"
+    },
+    {
+      id: "multiple-endings",
+      title: "五种证据结局",
+      description:
+        "玩家如何保留、交出或公开证据，将导向五个彼此独立的结局，并留下对应的成就记录。"
+    },
+    {
+      id: "integrated-minigames",
+      title: "多类型小游戏融入主线",
+      description:
+        "拼图、线路解谜、路线判断与追逐并非额外关卡，而是调查行为的延伸，其结果直接决定剧情事实与后续入口。"
     }
   ],
 
   version: {
-    label: "V1 / 第一周内容",
+    label: "V4 / 完整流程版本",
     completed: [
-      "完整故事大纲与主要人物关系已经形成。",
-      "V1 剧情 Node 与模块接口约定已经整理。"
+      "从旧祠堂苏醒到五种结局的完整剧情流程已经接通。",
+      "村庄、陈家老宅、外围四线、身份重构、矿井与终局阶段已经完成。",
+      "地图复原小游戏与三个 V3 小游戏节点已经接入剧情事实链。",
+      "物品、线索、存档与成就状态共用统一的游戏进度。"
     ],
     inProgress: [
-      "About Us / Project / Member 页面开发与视觉细化。",
-      "地图复原 Mini-game 的交互、成功判定与剧情接口接入。",
-      "成员头像、背景图和后续手写标签、编号等 UI 资产整理。"
+      "线索图片、场景细节与对话框视觉继续统一。",
+      "桌面端和移动端的响应式布局继续校验。",
+      "V3 小游戏由结果交接继续细化为完整操作体验。",
+      "成就内容、文案校对与全流程回归测试继续完善。"
     ]
   },
 
@@ -122,7 +166,7 @@ export const projectData = {
     technology: ["HTML", "CSS", "JavaScript"],
     targetPlatform: "Web 浏览器",
     estimatedPlayTime: "",
-    currentVersion: "V1",
+    currentVersion: "V4",
     completionDate: ""
   },
 
@@ -158,10 +202,16 @@ export const teamData = {
   ],
 
   divisions: {
-    planningAndWriting: "资料整理中，本轮暂不填写具体成员与职责。",
-    development: "资料整理中，本轮暂不填写具体成员与职责。",
-    visualAndInteraction: "资料整理中，本轮暂不填写具体成员与职责。",
-    testingAndIntegration: "资料整理中，本轮暂不填写具体成员与职责。"
+    "luo-chenfei":
+      "V1 全局、主菜单、页面导航与存档；V2 全局状态、存档、错误处理与正式集成；V4 全局状态协调，以及素材、视频、音效的接入。",
+    "yang-meng":
+      "V1 入口与核心视觉；V2 场景美术、素材与视觉验收；V3 场景美术、视觉、音效，以及剧情展示与剧情回归；V4 页面切换转场素材、亮灯与结局剧情视频、音频素材及其接入。",
+    "gao-bingxuan":
+      "V1 Mini-game、项目介绍与制作组页面；V2 游戏页面、统一阅读组件、响应式与地图容器；V3 全局协调、状态存档、游戏页面与统一阅读组件；V4 3 个 Mini-game 的设计与完善。",
+    "lu-zhengsong":
+      "V1 场景探索、NPC 对话、背包与成就；V2 热点、对话、线索、背包与成就；V3 点击式探索、NPC 对话、线索、背包、成就及整体功能集成；V4 对话框设计、物品详情卡片与地图碎片图片替换、场景细节微调、背包与成就菜单页调整，以及与视频衔接的场景调整。",
+    "yu-zhirang":
+      "V1 账户与剧情模块；V2 剧情 Node、剧情展示与剧情回归；V4 剧情对话完善。"
   },
 
   publicContact: null,

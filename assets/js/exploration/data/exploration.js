@@ -8,7 +8,7 @@ export const EXPLORATION_TASKS = Object.freeze([
     actions: [
       {id: "burned-work-id", label: "查看烧毁的工作证", marker: "证件", x: 25, y: 75,
         facts: ["burned-work-id-investigated"],
-        text: "工作证烧得只剩半张。公司标识还在，姓名那一栏露出一个姓：Wang。烧痕的边缘整整齐齐，有些奇怪，头像却是彻底认不出了"},
+        text: "工作证烧得只剩半张。公司信息已经模糊，姓名那一栏只露出一个姓：王。烧痕的边缘整整齐齐，有些奇怪，头像却是彻底认不出了"},
       {id: "blue-glass-bead", label: "查看蓝玻璃珠", marker: "玻璃珠", x: 75, y: 75,
         facts: ["blue-glass-bead-investigated"],
         text: "一颗磨花的蓝色玻璃珠，是刚刚从你口袋里拿出来的，没有文字，也看不出产地。珠子表面磨得很匀，是长年被人捏在指间来回搓的那种磨法。你的手指碰到它，下意识地收紧了，就好像是……"}
@@ -33,7 +33,7 @@ export const EXPLORATION_TASKS = Object.freeze([
     node: "old-house-entry", target: "old-house-door", type: "exploration",
     interactionType: "item", label: "打开老宅",
     actions: [
-      {id: "old-house-door", label: "用旧钥匙打开宅门", marker: "宅门", x: 50, y: 30,
+      {id: "old-house-door", label: "用旧钥匙打开宅门", marker: "宅门", x: 50, y: 42,
         facts: ["old-house-door-opened"], requiredItems: ["key-a"],
         text: "钥匙插进去，转得很顺。锁是老锁，钥匙也是把旧钥匙，可锁芯里干干净净，一点锈都没有。"
               + "\n【小周】这种老锁都松。走走走。\n门里有股潮气，混着陈皮的味道。"}

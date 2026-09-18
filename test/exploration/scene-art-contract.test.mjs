@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {existsSync} from "node:fs";
+import {existsSync, readFileSync} from "node:fs";
 import {fileURLToPath} from "node:url";
 import {EXPLORATION_TASKS} from "../../assets/js/exploration/data/exploration.js";
 import {CONVERSATION_TASKS} from "../../assets/js/exploration/conversation/data/conversations.js";
@@ -17,6 +17,12 @@ function actionCoordinates(tasks) {
   );
 }
 
+function pngDimensions(url) {
+  const data = readFileSync(fileURLToPath(url));
+  assert.equal(data.subarray(0, 8).toString("hex"), "89504e470d0a1a0a");
+  return {width: data.readUInt32BE(16), height: data.readUInt32BE(20)};
+}
+
 test("E1 三场景调查锚点与当前正式 16:9 场景一致", () => {
   const v1Tasks = EXPLORATION_TASKS.filter((task) =>
     task.actions.every((action) => !action.submitAfterReading));
@@ -25,7 +31,7 @@ test("E1 三场景调查锚点与当前正式 16:9 场景一致", () => {
     "blue-glass-bead": [75, 75],
     "village-decline": [15, 30],
     "su-he-notice": [85, 30],
-    "old-house-door": [50, 30],
+    "old-house-door": [50, 42],
     "old-photograph": [21, 22],
     "school-uniform": [22, 66],
     "height-marks": [84, 30],
@@ -107,7 +113,7 @@ test("E1 热点显式声明最终布局所需的交互类型", () => {
   assert.ok(CONVERSATION_TASKS.every((task) => task.interactionType === "conversation"));
 });
 
-test("E1 坐标保持百分比范围且老宅门与门外声音只复用视觉锚点", () => {
+test("E1 坐标保持百分比范围且老宅门按门状态使用各自视觉锚点", () => {
   for (const [id, coordinates] of Object.entries({
     ...actionCoordinates(EXPLORATION_TASKS),
     ...actionCoordinates(CONVERSATION_TASKS)
@@ -117,7 +123,12 @@ test("E1 坐标保持百分比范围且老宅门与门外声音只复用视觉�
 
   const door = actionCoordinates(EXPLORATION_TASKS)["old-house-door"];
   const caller = actionCoordinates(CONVERSATION_TASKS)["door-call"];
-  assert.deepEqual(caller, door);
+  assert.deepEqual(door, [50, 42]);
+  assert.deepEqual(
+    [Math.round(door[0] * 12.8), Math.round(door[1] * 7.2)],
+    [640, 302]
+  );
+  assert.deepEqual(caller, [50, 30]);
   assert.notEqual(
     CONVERSATION_TASKS.find((task) => task.actions.some((action) => action.id === "door-call")).target,
     EXPLORATION_TASKS.find((task) => task.actions.some((action) => action.id === "old-house-door")).target
@@ -126,11 +137,37 @@ test("E1 坐标保持百分比范围且老宅门与门外声音只复用视觉�
 
 test("E1 正式场景按地点和老宅门状态选择同一坐标空间背景", () => {
   assert.match(sceneAssetFor("shrine"), /scenes\/shrine\.png$/);
+  assert.match(
+    sceneAssetFor("shrine", {variantId: "bulb-only"}),
+    /scenes\/shrine\.png$/
+  );
+  assert.match(
+    sceneAssetFor("shrine", {variantId: "both-lights"}),
+    /scenes\/shrine-both-lights\.png$/
+  );
+  assert.match(
+    sceneAssetFor("shrine", {variantId: "white-lamp-only"}),
+    /scenes\/shrine-white-lamp-only\.png$/
+  );
+  for (const variantId of ["bulb-only", "both-lights", "white-lamp-only"]) {
+    assert.deepEqual(
+      pngDimensions(sceneAssetFor("shrine", {variantId})),
+      {width: 1280, height: 720}
+    );
+  }
   assert.match(sceneAssetFor("village"), /scenes\/village\.png$/);
   assert.match(sceneAssetFor("old-house"), /old-house-door-closed\.png$/);
   assert.match(
     sceneAssetFor("old-house", {variantId: "door-open"}),
     /old-house-door-open\.png$/
+  );
+  assert.deepEqual(
+    pngDimensions(sceneAssetFor("old-house", {variantId: "door-closed"})),
+    {width: 1280, height: 720}
+  );
+  assert.deepEqual(
+    pngDimensions(sceneAssetFor("old-house", {variantId: "door-open"})),
+    {width: 1280, height: 720}
   );
   assert.deepEqual(
     scenePresentationFor("old-house", {facts: []}).variantId,
@@ -146,17 +183,12 @@ test("E1 正式场景按地点和老宅门状态选择同一坐标空间背景",
 test("E1 正式场景和已确认物品特写资源均可读取", () => {
   const urls = [
     sceneAssetFor("shrine"),
+    sceneAssetFor("shrine", {variantId: "both-lights"}),
+    sceneAssetFor("shrine", {variantId: "white-lamp-only"}),
     sceneAssetFor("village"),
     sceneAssetFor("old-house"),
     sceneAssetFor("old-house", {variantId: "door-open"}),
-    ...ITEMS
-      .filter((item) => [
-        "blue-glass-bead",
-        "su-he-notice",
-        "old-photograph",
-        "school-uniform"
-      ].includes(item.id))
-      .map((item) => item.detailImage ?? item.image)
+    ...ITEMS.map((item) => item.detailImage ?? item.image)
   ];
 
   for (const url of urls) assert.equal(existsSync(fileURLToPath(url)), true, url);
@@ -164,8 +196,17 @@ test("E1 正式场景和已确认物品特写资源均可读取", () => {
     assert.match(ITEMS.find((item) => item.id === id).image, /\.svg$/);
     assert.match(ITEMS.find((item) => item.id === id).detailImage, /\.png$/);
   }
-  assert.match(ITEMS.find((item) => item.id === "burned-work-id").image, /\.svg$/);
-  assert.match(ITEMS.find((item) => item.id === "funeral-list").image, /\.svg$/);
+  for (const id of [
+    "burned-work-id",
+    "map-fragment-1",
+    "map-fragment-2",
+    "map-fragment-3",
+    "restored-village-map",
+    "height-marks",
+    "funeral-list"
+  ]) {
+    assert.match(ITEMS.find((item) => item.id === id).image, /\.png$/);
+  }
 });
 
 test("E1 第一周 NPC 人物层使用独立素材且门外声音不显示人物", () => {
