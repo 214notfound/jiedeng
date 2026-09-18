@@ -8,10 +8,17 @@ import {
 } from "../../assets/js/exploration/data/v3-scene-assets.js";
 import {scenePresentationFor} from "../../assets/js/exploration/data/scene-assets.js";
 
-function jpegDimensions(path) {
+function imageDimensions(path) {
   const data = readFileSync(path);
-  assert.equal(data[0], 0xff, `${path} 不是 JPEG`);
-  assert.equal(data[1], 0xd8, `${path} 不是 JPEG`);
+  const isPng = data.subarray(0, 8).equals(Buffer.from([
+    0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a
+  ]));
+  if (isPng) {
+    return {width: data.readUInt32BE(16), height: data.readUInt32BE(20)};
+  }
+
+  assert.equal(data[0], 0xff, `${path} 不是受支持的 PNG 或 JPEG`);
+  assert.equal(data[1], 0xd8, `${path} 不是受支持的 PNG 或 JPEG`);
   let offset = 2;
   while (offset < data.length) {
     if (data[offset] !== 0xff) {
@@ -41,23 +48,23 @@ test("V3 正式场景资源完整、唯一且全部为 1280×720", () => {
     const art = v3SceneArtFor(entry.assetId);
     const path = fileURLToPath(art.image);
     assert.equal(existsSync(path), true, entry.filename);
-    assert.deepEqual(jpegDimensions(path), {width: 1280, height: 720}, entry.filename);
+    assert.deepEqual(imageDimensions(path), {width: 1280, height: 720}, entry.filename);
   }
   assert.equal(v3SceneArtFor("unknown"), null);
 });
 
 test("ending Node selects its matching village-exit presentation", () => {
-  for (const ending of [
-    "ending-accomplice",
-    "ending-defeated",
-    "ending-erasure",
-    "ending-curated-truth",
-    "ending-full-account"
+  for (const [ending, filename] of [
+    ["ending-accomplice", "ending-accomplice.jpg"],
+    ["ending-defeated", "ending-defeated.jpg"],
+    ["ending-erasure", "ending-erasure.jpg"],
+    ["ending-curated-truth", "ending-curated-truth.png"],
+    ["ending-full-account", "ending-full-account.png"]
   ]) {
     const presentation = scenePresentationFor("village-exit", {facts: [], nodeId: ending});
     assert.equal(presentation.sceneId, "village-exit");
     assert.equal(presentation.variantId, ending);
-    assert.match(presentation.image, new RegExp(`v3/${ending}\\.jpg$`));
+    assert.match(presentation.image, new RegExp(`v3/${filename.replace(".", "\\.")}$`));
   }
 });
 

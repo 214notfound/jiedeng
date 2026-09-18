@@ -1,5 +1,5 @@
 // 本文件只负责把项目静态资料渲染到项目介绍页。
-import { projectData } from "./team-data.js?v=1.3";
+import { projectData } from "./team-data.js?v=1.4";
 
 document.getElementById("projectTitle").textContent = projectData.title;
 document.getElementById("projectSubtitle").textContent = projectData.subtitle;

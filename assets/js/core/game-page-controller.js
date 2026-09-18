@@ -628,6 +628,13 @@ export function setupGamePage() {
     else render();
   }
 
+  // 只消费已经由剧情引擎提交的事实，不新增事实、不改变既有接口与状态结构。
+  function reconcileAchievements() {
+    for (const achievementEvent of getAchievementEvents({state: gameFlow.getState()})) {
+      gameFlow.applyAppEvent(achievementEvent);
+    }
+  }
+
   async function dispatchExternalEvent(event) {
     if (debugMode && failNextExternalEventForDebug) {
       failNextExternalEventForDebug = false;
@@ -644,9 +651,7 @@ export function setupGamePage() {
     try {
       result = await gameFlow.handleExternalEvent(event);
       if (result.ok) {
-        for (const achievementEvent of getAchievementEvents({state: gameFlow.getState()})) {
-          gameFlow.applyAppEvent(achievementEvent);
-        }
+        reconcileAchievements();
         result.state = gameFlow.getState();
       }
       return result;
@@ -665,6 +670,16 @@ export function setupGamePage() {
         }
       }
     }
+  }
+
+  async function dispatchStoryAction(actionId) {
+    const result = await gameFlow.handleStoryAction(actionId);
+    if (result.ok) {
+      // 结局确认等事实由剧情按钮提交，因此也要在这里统一核对成就。
+      reconcileAchievements();
+      result.state = gameFlow.getState();
+    }
+    return result;
   }
 
   function createDebugExternalEvent(command) {
@@ -748,7 +763,7 @@ export function setupGamePage() {
 
   gameView = createGameView({
     debugMode,
-    onStoryAction: (actionId) => gameFlow.handleStoryAction(actionId),
+    onStoryAction: dispatchStoryAction,
     onDebugCommand: async (command) => {
       try {
         return await dispatchExternalEvent(createDebugExternalEvent(command));
@@ -926,7 +941,7 @@ export function setupGamePage() {
       getState: gameFlow.getState,
       getStateSnapshot: gameFlow.getStateSnapshot,
       update: gameFlow.applyAppEvent,
-      handleStoryAction: gameFlow.handleStoryAction,
+      handleStoryAction: dispatchStoryAction,
       handleExternalEvent: dispatchExternalEvent,
       save: saveCurrentGame,
       isFlowLocked: gameFlow.isLocked
