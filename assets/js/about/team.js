@@ -83,11 +83,11 @@ document.getElementById("teamMemberNav").replaceChildren(...orderedMemberCards.m
 }));
 
 const divisionLabels = [
+  ["yu-zhirang", "于知让"],
   ["luo-chenfei", "罗晨菲"],
-  ["yang-meng", "杨梦"],
   ["gao-bingxuan", "高冰轩"],
   ["lu-zhengsong", "卢正松"],
-  ["yu-zhirang", "于知让"]
+  ["yang-meng", "杨梦"]
 ];
 const confirmedDivisions = divisionLabels.filter(([key]) => teamData.divisions[key]);
 

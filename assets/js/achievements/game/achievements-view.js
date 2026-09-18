@@ -16,8 +16,8 @@ function displayName(item) {
 }
 
 function displayDescription(item) {
-  if (!item.secret || item.unlocked) return item.description;
-  return "这段雨夜尚未抵达终点。";
+  // 未解锁时不渲染说明，避免成就页反向暴露剧情线索；解锁后再展示完整文案。
+  return item.unlocked ? item.description : null;
 }
 
 function createCard(item) {
@@ -34,9 +34,12 @@ function createCard(item) {
     : item.unlocked ? "已解锁" : "未解锁";
   copy.append(
     element("p", "achievement-card__status", status),
-    element("h3", "achievement-card__title", displayName(item)),
-    element("p", "achievement-card__description", displayDescription(item))
+    element("h3", "achievement-card__title", displayName(item))
   );
+  const description = displayDescription(item);
+  if (description) {
+    copy.append(element("p", "achievement-card__description", description));
+  }
   if (item.warning) {
     copy.append(element("p", "achievement-warning",
       playerMessage(item.warning, "这项成就暂时无法确认。")));
