@@ -252,7 +252,7 @@
             {
               id: "lamp-outside-shrine",
               blockType: "narration",
-              text: "一阵阵骚动从门外传来，祠堂外的雨幕里，突然亮起了一盏惨白的灯，让人看着心里发毛",
+              text: "一阵阵骚动从门外传来，祠堂外的雨幕里，突然亮起了一盏灯，让人看着心里发毛",
             },
             {
               id: "lamp-height",
