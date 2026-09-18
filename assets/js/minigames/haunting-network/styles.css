@@ -1,0 +1,48 @@
+.mg-network {
+  min-height: 100%; padding: max(94px, calc(env(safe-area-inset-top) + 82px)) clamp(14px, 4vw, 48px) 24px;
+  overflow: auto; color: #ece7dc;
+  background: linear-gradient(rgba(5, 8, 11, .48), rgba(5, 8, 11, .7)), url("../../../images/minigames/game1/bg_control_room.png") center / cover no-repeat;
+}
+.mg-entry-overlay { position: fixed; z-index: 80; inset: 0; display: grid; place-items: center; padding: 20px; background: rgba(0, 0, 0, .78); }
+.mg-entry-overlay[hidden] { display: none; }
+.mg-entry-overlay__card { display: grid; width: min(460px, 100%); gap: 12px; padding: 28px; color: #eee8dc; background: #111719; border: 1px solid #90866d; box-shadow: 0 18px 60px rgba(0,0,0,.55); }
+.mg-entry-overlay__title, .mg-entry-overlay__objective, .mg-entry-overlay__controls, .mg-entry-overlay__restriction { margin: 0; }
+.mg-entry-overlay__title { font: 700 24px/1.25 "Songti SC", SimSun, serif; letter-spacing: .12em; }
+.mg-entry-overlay__objective { color: #eee8dc; line-height: 1.7; }
+.mg-entry-overlay__controls, .mg-entry-overlay__restriction { color: #b7b4aa; line-height: 1.6; }
+.mg-entry-overlay .button { min-height: 42px; }
+.mg-network__header { display: flex; width: min(1100px, 100%); margin: 0 auto 18px; align-items: start; justify-content: space-between; gap: 16px; }
+.mg-network__title, .mg-network__objective, .mg-network__devices-title, .mg-network__message { margin: 0; }
+.mg-network__title { font-family: "Songti SC", SimSun, serif; letter-spacing: .15em; }
+.mg-network__objective { margin-top: 6px; color: #b7b4aa; }
+.mg-network__layout { display: grid; width: min(1100px, 100%); margin: auto; grid-template-columns: minmax(300px, 680px) minmax(220px, 300px); gap: clamp(16px, 3vw, 34px); align-items: center; }
+.mg-network__board { display: grid; grid-template-columns: repeat(var(--network-cols), 1fr); gap: 6px; padding: 12px; background: #111719; border: 1px solid #5d625e; box-shadow: inset 0 0 40px #000; }
+.mg-network__tile { position: relative; aspect-ratio: 1; padding: 0; overflow: hidden; color: #d8d4c8; background: #202426; border: 1px solid #4d504c; cursor: pointer; }
+.mg-network__tile--blank { cursor: default; background: rgba(19, 23, 24, .62); border-color: rgba(77, 80, 76, .35); box-shadow: inset 0 0 20px rgba(0, 0, 0, .4); }
+.mg-network__tile:not(:disabled):hover, .mg-network__tile:not(:disabled):focus-visible { border-color: #d6c79b; outline: 1px solid #d6c79b; }
+.mg-network__tile.is-connected { color: #dffcff; border-color: #8cdde8; box-shadow: inset 0 0 18px rgba(115, 229, 244, .23); }
+.mg-network__wire { position: absolute; inset: 12%; display: block; }
+.mg-network__wire::before, .mg-network__wire::after { position: absolute; background: currentColor; content: ""; box-shadow: 0 0 8px currentColor; }
+.mg-network__wire--straight::before { top: 0; bottom: 0; left: calc(50% - 3px); width: 6px; }
+.mg-network__wire--corner::before { top: 0; bottom: 50%; left: calc(50% - 3px); width: 6px; }
+.mg-network__wire--corner::after { top: calc(50% - 3px); right: 0; left: 50%; height: 6px; }
+.mg-network__wire--tee::before { top: 0; bottom: 50%; left: calc(50% - 3px); width: 6px; }
+.mg-network__wire--server::before { top: 50%; bottom: 0; left: calc(50% - 3px); width: 6px; }
+.mg-network__wire--tee::after, .mg-network__wire--server::after { top: calc(50% - 3px); right: 0; left: 0; height: 6px; }
+.mg-network__wire--terminal::before { top: 0; bottom: 50%; left: calc(50% - 3px); width: 6px; }
+.mg-network__wire--terminal::after { inset: 42% 24% 18%; border: 4px solid currentColor; border-radius: 50%; background: #172025; }
+.mg-network__icon { position: absolute; z-index: 1; inset: 10%; width: 80%; height: 80%; object-fit: contain; opacity: .78; filter: saturate(.82) brightness(.82); pointer-events: none; }
+.mg-network__tile.is-connected .mg-network__icon { opacity: .98; filter: saturate(1.05) brightness(1.05) drop-shadow(0 0 8px rgba(137, 224, 240, .46)); }
+.mg-network__tile-label { position: absolute; right: 4px; bottom: 3px; left: 4px; z-index: 2; font-size: clamp(9px, 1.4vw, 13px); text-align: center; }
+.mg-network__devices { padding: 20px; background: rgba(8, 11, 13, .88); border: 1px solid #5d625e; }
+.mg-network__device { display: grid; gap: 4px; padding: 16px 0; border-bottom: 1px solid #363b3b; }
+.mg-network__device-state { color: #c27e72; font-family: Consolas, monospace; }
+.mg-network__device-state.is-connected { color: #82e0b0; }
+.mg-network__help, .mg-network__message { color: #b7b4aa; line-height: 1.7; }
+.mg-network__message { width: min(1100px, 100%); margin: 16px auto 0; text-align: center; }
+@media (max-width: 760px) {
+  .mg-network__layout { grid-template-columns: 1fr; }
+  .mg-network__devices { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .mg-network__devices-title, .mg-network__help { grid-column: 1 / -1; }
+  .mg-network__device { padding: 8px; }
+}

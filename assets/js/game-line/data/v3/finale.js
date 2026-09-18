@@ -25,7 +25,7 @@
       milestones: [
         {
           id: "full-package-ready",
-          intent: "形成能分别证明集团、父亲、小周和王阙行为的完整证据包。",
+          intent: "定位并核对服务器内能分别证明集团、父亲、小周和王阙行为的三组关键证据。",
           satisfiedWhen: { allFacts: ["full-evidence-package-ready"] },
         },
       ],
@@ -102,7 +102,7 @@
       actions: [
         {
           id: "hand-over-evidence",
-          label: "交出全部证据",
+          label: "交出证据位置与访问结果",
           actionType: "choice",
           availableWhen: {
             allFacts: ["x-recovery-demand-delivered"],
@@ -141,7 +141,7 @@
             {
               id: "zhou-waits-for-evidence",
               blockType: "narration",
-              text: "小周伸出手，掌心朝上。",
+              text: "小周伸出手，掌心朝上，等你交出证据位置与服务器访问结果。",
             },
             {
               id: "hand-stays-open",
@@ -179,12 +179,12 @@
       sourceRef: "T12-T15",
       stageId: "finale",
       revision: 1,
-      intent: "用前面获得的装置规则逃离小周的追逐与证据回收。",
+      intent: "在小周追击下取走三份关键证据并逃离控制区。",
       enterWhen: { allFacts: ["x-handover-refused"] },
       milestones: [
         {
           id: "showdown-survived",
-          intent: "玩家成功完成外发并逃离控制区。",
+          intent: "玩家收齐三份关键证据并逃离控制区。",
           satisfiedWhen: { allFacts: ["x-showdown-survived"] },
         },
         {
@@ -215,7 +215,7 @@
             {
               id: "zhou-closes-in",
               blockType: "narration",
-              text: "小周追了上来。他跑得不快，但路只有一条。",
+              text: "小周追了上来。他跑得不快，但路只有一条。你定位出的三组关键证据还在机房里。",
             },
             {
               id: "lights-in-rows",
@@ -228,9 +228,14 @@
               text: "这套东西是我做的。哪一段会熄、哪一段会停，我比谁都清楚。",
             },
             {
-              id: "escape-zhou-chase",
+              id: "he-followed-seven-days",
               blockType: "system",
               text: "……可他也在。他跟了我七天。",
+            },
+            {
+              id: "escape-zhou-chase",
+              blockType: "system",
+              text: "避开小周，取走三份关键证据并从出口逃离。",
             },
           ],
           actionIds: [],

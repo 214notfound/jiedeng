@@ -97,7 +97,28 @@ button { font: inherit; }
 body:has(.game-main[data-view-state="minigame"]) {
   overflow: hidden;
 }
+body:has(.minigame-root:not([hidden])) {
+  overflow: hidden;
+}
 .game-shell:has(.game-main[data-view-state="minigame"]) .game-header {
+  position: fixed;
+  z-index: 100;
+  top: max(12px, env(safe-area-inset-top));
+  right: max(12px, env(safe-area-inset-right));
+  left: max(12px, env(safe-area-inset-left));
+  width: auto;
+  max-width: none;
+  min-height: 56px;
+  margin: 0;
+  padding: 8px 10px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  background: rgba(8, 11, 17, 0.94);
+  border: 1px solid var(--line);
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.42);
+  scrollbar-width: thin;
+}
+.game-shell:has(.minigame-root:not([hidden])) .game-header {
   position: fixed;
   z-index: 100;
   top: max(12px, env(safe-area-inset-top));
@@ -117,17 +138,31 @@ body:has(.game-main[data-view-state="minigame"]) {
 }
 .game-shell:has(.game-main[data-view-state="minigame"]) .game-header__title,
 .game-shell:has(.game-main[data-view-state="minigame"]) #open-inventory-button,
-.game-shell:has(.game-main[data-view-state="minigame"]) #open-minigame-button {
+.game-shell:has(.game-main[data-view-state="minigame"]) #open-minigame-button,
+.game-shell:has(.minigame-root:not([hidden])) .game-header__title,
+.game-shell:has(.minigame-root:not([hidden])) #open-inventory-button,
+.game-shell:has(.minigame-root:not([hidden])) #open-minigame-button {
   display: none;
 }
-.game-shell:has(.game-main[data-view-state="minigame"]) .chapter-name {
+.game-shell:has(.game-main[data-view-state="minigame"]) .chapter-name,
+.game-shell:has(.minigame-root:not([hidden])) .chapter-name {
   margin-right: auto;
   white-space: nowrap;
 }
-.game-shell:has(.game-main[data-view-state="minigame"]) .game-header .button {
+.game-shell:has(.game-main[data-view-state="minigame"]) .game-header .button,
+.game-shell:has(.minigame-root:not([hidden])) .game-header .button {
   flex: 0 0 auto;
 }
 .game-shell:has(.game-main[data-view-state="minigame"]) > .feedback:not([hidden]) {
+  position: fixed;
+  z-index: 100;
+  top: max(82px, calc(env(safe-area-inset-top) + 70px));
+  right: max(12px, env(safe-area-inset-right));
+  left: max(12px, env(safe-area-inset-left));
+  width: auto;
+  margin: 0;
+}
+.game-shell:has(.minigame-root:not([hidden])) > .feedback:not([hidden]) {
   position: fixed;
   z-index: 100;
   top: max(82px, calc(env(safe-area-inset-top) + 70px));
