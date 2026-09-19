@@ -1,8 +1,198 @@
 % ============================================================
 % 第五章 · 项目管理与进度
 % 对应大纲：# 五、项目管理与进度
+%
+% 事实来源：
+%   docs/项目文档v1.md            轮值角色表、迭代节奏、模块分工方式
+%   git log                       立项日期、提交与 PR 数、各版本实际工作
+%   chapters/04-technical.tex     协作流程的表述与本章保持一致
+%
+% 版本时间（9.2—9.20，四个版本首尾相接）：
+%   V1 9.3—9.8   V2 9.7—9.11   V3 9.9—9.15   V4 9.16—9.20
+%
+% 流程图用 TikZ 直接写在图环境里，宏包见 tex/preamble.tex。
+% 轮值角色表与迭代日程表是从原文档搬过来的，只压缩了措辞。
 % ============================================================
 
 \chapter{项目管理与进度}
 
-\pending
+\section{项目提出与开发方式}
+
+9 月 2 日，五名成员各自提出选题方向，逐一陈述并互相质询，当天确定最终方案，并完成仓库初始化。项目定名为《\ProjectName》，制作组名白灯客。
+
+9 月 3 日确定开发方式：需求驱动的 subPR 闭环。整条链路固定为五步，提出需求、编写需求文档、需求评审确定边界与实施方式、开发、测试与集成。开发方式确定之后，四个版本的迭代都按这条链路推进，不再中途改动。
+
+\section{协作流程}
+
+版本管理采用 GitHub Flow。\texttt{main} 是唯一长期分支，始终保持可运行、可演示的状态；功能在短期 Feature 分支上开发，一个分支对应一个 subPR，只解决一个需求，合并即交付。
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[
+  box/.style={draw=nightblue!45, fill=nightblue!6, rounded corners=2pt,
+              align=center, font=\small, text width=2.6cm,
+              minimum height=9mm, inner sep=3pt},
+  fl/.style={-{Stealth[length=2mm]}, draw=black!60, thick},
+  back/.style={-{Stealth[length=2mm]}, draw=black!45, thick, dashed}
+]
+\node[box] (pool)   at (0,0)     {需求池};
+\node[box] (prd)    at (3.5,0)   {PRD 需求文档};
+\node[box] (review) at (7.0,0)   {需求评审\\拆出 subPR};
+\node[box] (tech)   at (10.5,0)  {技术审核\\定接口与边界};
+
+\node[box] (dev)    at (10.5,-2.1) {Feature 分支\\并行开发};
+\node[box] (pr)     at (7.0,-2.1)  {自测并提交 PR};
+\node[box] (accept) at (3.5,-2.1)  {技术审查\\需求验收};
+\node[box] (merge)  at (0,-2.1)    {合并 main\\打版本标签};
+
+\draw[fl] (pool)   -- (prd);
+\draw[fl] (prd)    -- (review);
+\draw[fl] (review) -- (tech);
+\draw[fl] (tech)   -- (dev);
+\draw[fl] (dev)    -- (pr);
+\draw[fl] (pr)     -- (accept);
+\draw[fl] (accept) -- (merge);
+\draw[back] (merge.north) -- (pool.south)
+  node[midway, right=3pt, font=\footnotesize, text=black!60] {下一代};
+\end{tikzpicture}
+\caption{subPR 闭环流程}
+\label{fig:subpr-flow}
+\end{figure}
+
+流程的每一步都有明确的输出物：需求池的条目进入 PRD 成为可评审的需求，需求评审把一个需求拆成若干 subPR 并确定边界，技术审核确定模块接口与分支策略，开发在各自的 Feature 分支上并行进行，合并前必须同时通过技术级测试与需求级验收。合并之后回到需求池，作为下一代需求的输入。
+
+\subsection{subPR 的运作规则}
+
+\begin{enumerate}
+  \item 每个 subPR 从最新 \texttt{main} 创建短期分支，命名为 \texttt{feature/} 加版本、需求 ID 与简述。
+  \item 一个分支只服务一个需求，提交记录说明实际变化。
+  \item 提交评审前先拉取最新 \texttt{main}，解决冲突并重新完成自测。
+  \item PR 描述关联需求 ID、验收条件、测试证据、界面截图与已知问题。
+  \item 合并前同时满足技术级测试与需求级验收。
+  \item 合并后删除已完成的 Feature 分支，全部 subPR 完成后为版本打标签。
+\end{enumerate}
+
+不建立长期 dev 分支；不允许在个人分支上积压到最后一天再一次性合并。
+
+\subsection{五日迭代节奏}
+
+一个迭代周期为五个工作日，每天的产出固定，不随人员轮换改变。
+
+\begin{table}[htbp]
+\centering
+\caption{迭代日程}
+\small
+\begin{tabularx}{\linewidth}{@{}l l l X@{}}
+\toprule
+迭代日 & 活动 & 时长 & 核心产出 \\
+\midrule
+第 1 天 & 需求评审日 & 全天 & 确定本周期 PRD，含需求清单、subPR 边界与验收条件；完成故事细节确认与素材需求梳理 \\
+第 2 天 & 技术审核日 & 全天 & 技术负责人确认接口定义、模块边界与分支策略；各模块负责人完成设计方案并互审 \\
+第 3--4 天 & 开发日 & 两天 & 各 subPR 并行开发、自测；每日 09:00 站会同步进度；每日合并前完成 PR 审查与功能验收 \\
+第 5 天 & 讨论复盘日 & 全天 & 汇总本周期成果，验收测试，整理遗留问题与风险；输出下一代 PRD 输入材料，完成角色轮换交接 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+需求评审日对需求池中的待开发条目做三项决策：确认优先级（P0 阻塞项、P1 核心功能、P2 优化项）、识别依赖关系（哪些需求阻塞其他需求、哪些可以并行）、把需求拆成 subPR 并逐一分配到负责人。开发日按 P0 优先、P1 随后、P2 弹性安排的顺序推进。
+
+开发日的站会上，每人依次回答三个问题：昨天完成了什么，今天计划做什么，遇到了什么阻塞。前两项对照 subPR 进度核对，第三项由技术负责人和项目经理当场协调。站会之后，项目经理把当日的任务调整同步到 subPR 清单。
+
+\section{轮值角色与分工}
+
+项目采用轮值角色制。一轮中必须有六类责任，但角色不固定到人，按代轮换。
+
+\begin{table}[htbp]
+\centering
+\caption{轮值角色权责}
+\small
+\begin{tabularx}{\linewidth}{@{}l X X X@{}}
+\toprule
+轮值角色 & 开发前 & 开发中 & 合并与交接 \\
+\midrule
+项目经理 & 汇总上一代结果；起草下一代 PRD；主持需求评审；确定 subPR 边界与依赖 & 跟踪需求状态；处理范围冲突；组织必要的需求变更 & 确认本代需求全部落地；整理版本记录、遗留问题和下一代输入 \\
+产品经理 & 检查用户流程、故事边界和验收标准；防止提前剧透或虚报完成 & 回答需求问题；检查实现是否偏离玩家体验 & 按 PRD 做需求级验收；通过后允许合并，不通过则写明差距 \\
+技术负责人 & 确定模块边界、接口和分支策略；识别技术依赖 & 审查关键实现；协调冲突；保证 \texttt{main} 可运行 & 拉取最新 \texttt{main} 做技术级测试；检查代码、兼容性、错误反馈和测试证据 \\
+模块负责人 / 开发者 & 领取一个可独立交付的 subPR；确认范围与依赖 & 在 Feature 分支实现、自测、记录问题；及时同步上游变化 & 修复评审问题；补齐 PR 说明；完成交接材料 \\
+内容与视觉责任人 & 核对大纲、剧透边界和素材需求；统一画面基调 & 编写或校对剧情数据，制作和压缩素材，检查文字可读性 & 核对成品内容与素材授权信息，不让占位素材进入发布版 \\
+测试记录人 & 根据验收条件准备场景、设备和异常数据 & 记录成功与失败路径，复测修复项 & 汇总回归结果，确保问题有负责人、有状态、有复现步骤 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+轮值规则有五条：
+
+\begin{enumerate}
+  \item \textbf{以代为单位轮动。} 一代需求全部落地并打版本标签后交接，下一代由新的人员接任。
+  \item \textbf{完成即换代。} 轮动不等待固定日期。本代提前完成就立即进入下一代需求评审，未通过验收则继续修正，不因周次变化宣布完成。
+  \item \textbf{模块在换代时轮动。} 成员优先承担与上一代不同的功能域，变更后的负责人写入新一代 PRD 后才生效。
+  \item \textbf{作者不能独自验收自己。} subPR 的开发者不能同时是该 PR 唯一的技术审查人或需求验收人。
+  \item \textbf{轮换不切断责任。} 前任交付 PRD、已合并 subPR、测试记录、遗留问题与最新 \texttt{main} 状态，继任者确认后才开始下一代。
+\end{enumerate}
+
+分工按功能域拆分，再按依赖安排并行或串行。功能域分为七块：站点与账户、剧情与探索、状态与存档、背包与成就、小游戏、内容与视觉、文档与测试。每个模块必须有明确负责人，不出现由全组负责却无人处理的情况。跨模块接口由相关负责人在技术审核日共同确认，例如剧情引擎向探索系统提供节点与调查状态，小游戏把完成结果交回统一状态与存档接口。
+
+\section{迭代进度}
+
+四个版本首尾相接，上一代收尾时下一代已经开始，因此相邻版本的时间区间有重叠。每代结束都产出一个可运行、可演示、可验收的增量。
+
+\begin{table}[htbp]
+\centering
+\caption{版本时间轴}
+\small
+\begin{tabularx}{\linewidth}{@{}l l X X@{}}
+\toprule
+版本 & 时间 & 核心工作 & 交付成果 \\
+\midrule
+V1 & 9.3--9.8 & 需求评审、仓库搭建、目录规范化、页面骨架、基础交互、前置剧情、存档、首个地图小游戏 & 完整项目架构、13 个页面、可连续游玩的游玩链路、存档体系 \\
+V2 & 9.7--9.11 & 首轮岗位轮换、PRD 更新、subPR 拆解、中段剧情、新增小游戏、线索与成就扩展、存档兼容 & 中段完整剧情、新增交互功能、成就体系、历史存档兼容 \\
+V3 & 9.9--9.15 & 二次轮换、终局剧情、证据抉择系统、多结局落地、全量测试、文档完善、版本归档 & 全剧情分支、五个结局、完整成品项目、标准化文档 \\
+V4 & 9.16--9.20 & 剧情定稿删改、转场效果、过场视频接入、对话框与响应式、小游戏第二阶段、界面细节调整 & 定稿剧情文本、11 处转场、7 段过场视频、四个小游戏全部完成 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[x=0.72cm, y=0.8cm]
+  % 日期网格与刻度
+  \foreach \d in {0,2,4,6,8,10,12,14,16,18}
+    \draw[black!12] (\d,-0.2) -- (\d,3.9);
+  \foreach \d/\l in {0/9.2, 2/9.4, 4/9.6, 6/9.8, 8/9.10,
+                     10/9.12, 12/9.14, 14/9.16, 16/9.18, 18/9.20}
+    \node[font=\scriptsize, text=black!55, anchor=north] at (\d,-0.2) {\l};
+
+  % 四条版本横条，重叠处即滚动迭代
+  \draw[fill=nightblue!15, draw=nightblue!45, rounded corners=1.5pt]
+    (1,3.1) rectangle (6,3.7);
+  \node[font=\small, text=nightblue!90] at (3.5,3.4) {V1\quad 9.3--9.8};
+
+  \draw[fill=nightblue!25, draw=nightblue!50, rounded corners=1.5pt]
+    (5,2.3) rectangle (9,2.9);
+  \node[font=\small, text=nightblue!90] at (7,2.6) {V2\quad 9.7--9.11};
+
+  \draw[fill=nightblue!35, draw=nightblue!55, rounded corners=1.5pt]
+    (7,1.5) rectangle (13,2.1);
+  \node[font=\small, text=nightblue!95] at (10,1.8) {V3\quad 9.9--9.15};
+
+  \draw[fill=lampgold!45, draw=lampgold!85, rounded corners=1.5pt]
+    (14,0.7) rectangle (18,1.3);
+  \node[font=\small, text=black!80] at (16,1.0) {V4\quad 9.16--9.20};
+\end{tikzpicture}
+\caption{四个版本的迭代时间轴}
+\label{fig:timeline}
+\end{figure}
+
+\section{流程效果}
+
+这套流程在四个版本中保持稳定，效果集中在四点上。
+
+\textbf{需求驱动。} 每个版本的起点是需求评审而不是任务分配，subPR 从评审通过的 PRD 里拆出来。需求在评审中完成增删改与合并，并且必须回写到当代 PRD 与 subPR 清单，不留在聊天记录里。复盘日的总结又是下一代的输入，四个版本因此是连着的，不是四段各自为政的工作。
+
+\textbf{边界清晰。} 每个 subPR 只解决一个需求，范围在开发前就确认。模块之间通过接口约定通信，改动其中一块不需要通知其他模块。
+
+\textbf{分工明确。} 六类责任在每一代都落到具体的人，并且记录在当代 PRD 与 PR 中。轮换之后仍可以查到某一代是谁做的技术审查、谁做的需求验收。
+
+\textbf{并行友好。} 各 subPR 在独立分支上并行开发，冲突集中在合入时刻处理，日常开发时间没有被合并工作占用。开发日的每日合并进一步把冲突摊平到每一天，避免积压。
+
+从 9 月 2 日立项到 9 月 20 日，主线累计 229 次提交，共开出 73 个合并请求，其中 68 个已合入。这四个版本的划分与逐日推进的节奏，是这套数据能够形成的原因。

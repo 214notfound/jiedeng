@@ -64,7 +64,12 @@ localStorage 的容量上限为每个站点 5 至 10\,MB。本项目存档只记
 
 代码按表现层、逻辑层、数据层三层组织，三层之外有一个全局状态对象作为数据中枢。
 
-\pending[此处待补架构图]
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.9\textwidth]{figures/04-technics/framework.png}
+\caption{技术架构图}
+\label{fig:framework}
+\end{figure}
 
 表现层是 HTML 与 CSS。页面使用语义化标签，样式分为全局、页面、游戏三类；全站色值与间距收在 tokens.css 一份变量表里，其余样式表只引用变量名，不写死具体色值。
 

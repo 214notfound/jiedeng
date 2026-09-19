@@ -53,6 +53,12 @@
 \renewcommand{\textfraction}{0.06}      % 一页至少留多少正文
 \renewcommand{\floatpagefraction}{0.85} % 不到这个比例就不单独排浮动页
 
+% ---------- 流程图 ----------
+% 用 TikZ 画在图环境里，不依赖外部工具导出的图片：改节点文字不用重新画图，
+% 编译出来是矢量，缩放不糊。arrows.meta 提供 -{Stealth} 这类箭头样式。
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning}
+
 % ---------- 颜色 ----------
 \usepackage{xcolor}
 \definecolor{nightblue}{RGB}{26,35,58}    % 夜色深蓝：标题主色
