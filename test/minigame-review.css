@@ -1,0 +1,71 @@
+.review-toolbar {
+  position: fixed;
+  z-index: 100;
+  top: max(10px, env(safe-area-inset-top));
+  right: 12px;
+  left: 12px;
+  display: flex;
+  min-height: 58px;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  overflow-x: auto;
+  white-space: nowrap;
+  color: var(--paper);
+  background: rgba(8, 11, 17, .96);
+  border: 1px solid var(--line);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .45);
+}
+.review-brand { flex: none; color: var(--paper); font-weight: 700; text-decoration: none; }
+.review-nav { display: flex; flex: none; gap: 4px; }
+.review-nav a {
+  padding: 7px 10px;
+  color: var(--muted);
+  border: 1px solid transparent;
+  text-decoration: none;
+}
+.review-nav a:hover, .review-nav a:focus-visible, .review-nav a[aria-current="page"] {
+  color: var(--paper);
+  background: rgba(255, 255, 255, .08);
+  border-color: var(--line);
+}
+.review-restart { flex: none; min-height: 34px; padding: 5px 10px; }
+.review-helper { flex: none; min-height: 34px; padding: 5px 10px; }
+.review-status { flex: none; margin-left: auto; color: #a9e9c5; font-size: 12px; }
+.review-menu, .review-game { position: relative; z-index: 1; min-height: 100dvh; }
+.review-menu {
+  display: grid;
+  width: min(1100px, 100%);
+  align-content: center;
+  gap: 32px;
+  margin: auto;
+  padding: 110px clamp(20px, 5vw, 60px) 50px;
+}
+.review-intro { max-width: 690px; }
+.review-kicker { color: var(--accent); font-size: 12px; letter-spacing: .2em; }
+.review-intro h1 { margin: 12px 0; font: 700 clamp(30px, 5vw, 52px)/1.2 "Songti SC", SimSun, serif; }
+.review-intro p { margin: 0; color: var(--muted); line-height: 1.8; }
+.review-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.review-cards a {
+  display: grid;
+  gap: 12px;
+  min-height: 180px;
+  align-content: center;
+  padding: 22px;
+  color: var(--paper);
+  background: rgba(13, 17, 24, .92);
+  border: 1px solid var(--line);
+  text-decoration: none;
+}
+.review-cards a:hover, .review-cards a:focus-visible { border-color: var(--accent); transform: translateY(-2px); }
+.review-cards strong { font: 700 22px/1.35 "Songti SC", SimSun, serif; }
+.review-cards span { color: var(--muted); line-height: 1.5; }
+.review-game { height: 100dvh; overflow: hidden; background: #080b11; }
+.review-game > .v3-minigame-host, .review-game > .v3-minigame { height: 100%; }
+.review-game .mg-network__tile.is-review-hint { z-index: 4; outline: 3px solid #f2c982; outline-offset: -3px; }
+.review-noscript { position: relative; z-index: 1; padding: 100px 20px; }
+@media (max-width: 760px) {
+  .review-cards { grid-template-columns: 1fr; }
+  .review-cards a { min-height: 110px; }
+  .review-status { display: none; }
+}

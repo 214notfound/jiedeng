@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>借灯 · 小游戏独立验收</title>
+    <link rel="stylesheet" href="../assets/css/tokens.css" />
+    <link rel="stylesheet" href="../assets/css/game.css" />
+    <link rel="stylesheet" href="../assets/css/minigames/v3-handoff.css" />
+    <link rel="stylesheet" href="./minigame-review.css" />
+  </head>
+  <body>
+    <header class="review-toolbar">
+      <a class="review-brand" href="./minigame-review.html">小游戏验收</a>
+      <nav class="review-nav" aria-label="选择小游戏">
+        <a href="?game=network" data-review-game="network">控制室网络</a>
+        <a href="?game=mine" data-review-game="mine">矿井路线</a>
+        <a href="?game=chase" data-review-game="chase">数据机房追逐</a>
+      </nav>
+      <a id="review-restart" class="button button--link review-restart" href="./minigame-review.html" hidden>重开本关</a>
+      <button id="review-hint" class="button review-helper" type="button" hidden>下一步提示</button>
+      <button id="review-solve" class="button review-helper" type="button" hidden>演示通关</button>
+      <span id="review-status" class="review-status" role="status">独立验收 · 不写入存档</span>
+    </header>
+
+    <main id="review-menu" class="review-menu">
+      <div class="review-intro">
+        <span class="review-kicker">WHITE LAMP / QA</span>
+        <h1>小游戏独立验收</h1>
+        <p>直接选择关卡，无须从剧情开头重走。这里使用正式小游戏界面和通关规则，但不会改动剧情或存档；通关后的“继续剧情”会返回本选择页。</p>
+      </div>
+      <div class="review-cards">
+        <a href="?game=network"><strong>01 · 拆解控制室网络</strong><span>旋转线路，完成全局闭合。</span></a>
+        <a href="?game=mine"><strong>02 · 还原矿井路线</strong><span>打开排水阀，抵达内部竖井。</span></a>
+        <a href="?game=chase"><strong>03 · 逃离数据机房</strong><span>收集证据，躲避小周并逃离。</span></a>
+      </div>
+    </main>
+    <main id="review-game" class="review-game" hidden aria-label="小游戏验收画面"></main>
+    <noscript><p class="review-noscript">此页面需要 JavaScript 才能运行小游戏。</p></noscript>
+    <script type="module" src="./minigame-review.js"></script>
+  </body>
+</html>
