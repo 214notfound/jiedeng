@@ -170,8 +170,8 @@ export const V3_SCENE_ART = Object.freeze([
     ["ending-accomplice", "ending-accomplice.jpg"],
     ["ending-defeated", "ending-defeated.jpg"],
     ["ending-erasure", "ending-erasure.jpg"],
-    ["ending-curated-truth", "ending-curated-truth.jpg"],
-    ["ending-full-account", "ending-full-account.jpg"]
+    ["ending-curated-truth", "ending-curated-truth.png"],
+    ["ending-full-account", "ending-full-account.png"]
   ].map(([endingId, filename]) => record({
     assetId: endingId,
     sceneId: "village-exit",

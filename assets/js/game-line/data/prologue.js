@@ -257,7 +257,7 @@
             {
               id: "lamp-height",
               blockType: "narration",
-              text: "它不高，大概齐腰。隔着雨，你看不出那是灯泡、是手电，还是别的什么。",
+              text: "它挂在房门上，和人脸一样的高度。隔着雨，你看不出那是灯泡、是手电，还是别的什么。",
             },
             {
               id: "lamp-facing-door",

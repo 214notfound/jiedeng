@@ -39,7 +39,7 @@ async function run() {
   try {
     browser = await chromium.launch({channel: "msedge", headless: true});
     const page = await browser.newPage({viewport: {width: 1280, height: 900}});
-    await page.route("**/assets/images/exploration/items/burned-work-id.svg", (route) => route.abort());
+    await page.route("**/assets/images/exploration/items/burned-work-id.png", (route) => route.abort());
     const pageErrors = [];
     const missingResources = [];
     page.on("pageerror", (error) => pageErrors.push(error.message));
