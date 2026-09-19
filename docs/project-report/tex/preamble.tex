@@ -30,6 +30,15 @@
 \usepackage{tabularx}
 \usepackage{array}
 \usepackage{caption}
+
+% 长表格：xltabular = tabularx 的自动列宽 X + longtable 的跨页断行。
+% 用于行数多到一页放不下的表（如第二章的场景清单），
+% 否则浮动体被推迟到下一页，小标题会和表格分家。
+\usepackage{xltabular}
+\setlength{\LTpre}{8pt}    % 表前距（默认偏大）
+\setlength{\LTpost}{8pt}   % 表后距
+\setlength{\LTcapwidth}{\linewidth}
+\renewcommand{\arraystretch}{1.15}
 \captionsetup{font=small, labelsep=quad, skip=6pt}
 
 % ---------- 颜色 ----------
