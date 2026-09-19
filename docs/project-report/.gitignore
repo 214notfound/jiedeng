@@ -1,0 +1,15 @@
+# LaTeX 构建产物（与 VS Code LaTeX Workshop 的 %DIR%/out 一致）
+out/
+build/
+
+# 万一在根目录直接编译产生的中间文件
+*.aux
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.xdv

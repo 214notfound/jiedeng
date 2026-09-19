@@ -1,0 +1,133 @@
+% ============================================================
+% tex/preamble.tex —— 全局排版设置
+%
+% 只负责"整份文档长什么样"：页面、颜色、章节标题格式、
+% 代码样式、页眉页脚、超链接。
+% 正文命令在 tex/commands.tex，正文内容在 chapters/。
+% ============================================================
+
+% ---------- 中文数字章号：一、二、……十一 ----------
+% 自己定义而不依赖 ctex 的 \chinese / zhnumber，避免宏包版本差异导致编译失败。
+\newcommand{\chapterlabel}{%
+  \ifcase\value{chapter}\or
+  一\or 二\or 三\or 四\or 五\or 六\or
+  七\or 八\or 九\or 十\or 十一\or 十二\fi
+}
+
+% ---------- 页面尺寸与边距 ----------
+\usepackage{geometry}
+\geometry{
+  a4paper,
+  top=2.8cm, bottom=2.5cm,
+  left=3.0cm, right=3.0cm,
+}
+
+\linespread{1.35}
+
+% ---------- 图片与表格 ----------
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{caption}
+\captionsetup{font=small, labelsep=quad, skip=6pt}
+
+% ---------- 颜色 ----------
+\usepackage{xcolor}
+\definecolor{nightblue}{RGB}{26,35,58}    % 夜色深蓝：标题主色
+\definecolor{lampgold}{RGB}{201,146,42}   % 灯焰暖黄：强调色
+\definecolor{papergray}{RGB}{248,248,246} % 纸张灰：代码底色
+
+% ---------- 代码块 ----------
+\usepackage{listings}
+\lstset{
+  basicstyle=\small\ttfamily,
+  backgroundcolor=\color{papergray},
+  commentstyle=\color{black!45},
+  keywordstyle=\color{nightblue}\bfseries,
+  stringstyle=\color{lampgold},
+  numbers=left,
+  numberstyle=\tiny\color{black!35},
+  numbersep=8pt,
+  frame=single,
+  framerule=0.4pt,
+  rulecolor=\color{black!15},
+  breaklines=true,
+  showstringspaces=false,
+  tabsize=2,
+  columns=flexible,
+  keepspaces=true,
+}
+
+% ---------- 章节标题格式 ----------
+\ctexset{
+  chapter = {
+    name       = {},
+    number     = \chapterlabel,
+    aftername  = {、},
+    format     = \centering\Large\bfseries\color{nightblue},
+    beforeskip = 1.0em,
+    afterskip  = 1.8em,
+    pagestyle  = fancy,
+  },
+  section = {
+    format     = \large\bfseries\color{nightblue},
+    aftername  = {\quad},
+    beforeskip = 1.2em,
+    afterskip  = 0.8em,
+  },
+  subsection = {
+    format = \normalsize\bfseries\color{black!85},
+  },
+  subsubsection = {
+    format = \normalsize\bfseries\color{black!75},
+  },
+}
+
+% ---------- 目录里章号的分隔符 ----------
+\usepackage{etoolbox}
+
+% ctex 写入 .toc 时把章号与标题之间的分隔符硬编码成 \hspace{.3em}，
+% 与标题行的「、」对不上，这里改掉。补丁失败会打印警告，不会被无声忽略。
+\makeatletter
+\AtBeginDocument{%
+  \patchcmd{\CTEX@chapter@tocline}
+    {\hspace{.3em}}
+    {、}
+    {}{\PackageWarning{project-report}{目录章号分隔符补丁未生效：TOC 里会显示成“一 标题”}}%
+}
+\makeatother
+
+% ---------- 页眉页脚 ----------
+\usepackage{fancyhdr}
+\setlength{\headheight}{15pt}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{black!50}\ProjectName · 项目文档}
+\fancyhead[R]{\small\color{black!50}\leftmark}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+
+% 章首页沿用相同页眉页脚（否则章首页会退回朴素样式）
+\fancypagestyle{plain}{
+  \fancyhf{}
+  \fancyhead[L]{\small\color{black!50}\ProjectName · 项目文档}
+  \fancyhead[R]{\small\color{black!50}\leftmark}
+  \fancyfoot[C]{\small\thepage}
+  \renewcommand{\headrulewidth}{0.4pt}
+  \renewcommand{\footrulewidth}{0pt}
+}
+
+% ---------- 超链接（必须最后加载）----------
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks        = true,
+  linkcolor         = nightblue,
+  citecolor         = lampgold,
+  urlcolor          = lampgold,
+  bookmarksnumbered = true,
+  bookmarksopen     = true,
+  pdftitle          = {\ProjectName 项目文档},
+  pdfauthor         = {\TeamName},
+}

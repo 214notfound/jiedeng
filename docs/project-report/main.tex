@@ -1,0 +1,42 @@
+% ============================================================
+% 《借灯》项目文档 —— 主控文件
+%
+% 本文件只做两件事：加载配置、按顺序拼装各章节。
+% 正文一个字都不写在这里，请编辑 chapters/ 下对应的章节文件。
+%
+% 编译：bash build.sh      （或 xelatex main.tex，需跑两遍以上）
+% ============================================================
+
+% !TeX program = xelatex
+% 说明：本文档使用 ctex，必须用 XeLaTeX 编译，pdflatex 会失败。
+% 这行是给 Overleaf 等编辑器看的；VS Code 已用全局 recipe 指定 xelatex。
+
+\documentclass[UTF8, fontset=windows, 12pt, a4paper]{ctexrep}
+
+\input{tex/info}        % 项目元信息（项目名、组员、课程……）
+\input{tex/preamble}    % 全局排版设置
+\input{tex/commands}    % 正文自定义命令
+
+\begin{document}
+
+% ---------- 封面 ----------
+\input{tex/cover}
+
+% ---------- 目录 ----------
+\tableofcontents
+\clearpage
+
+% ---------- 正文：按大纲顺序拼装 ----------
+\input{chapters/01-overview}
+\input{chapters/02-game-design}
+\input{chapters/03-aesthetics-ux}
+\input{chapters/04-technical}
+\input{chapters/05-management}
+\input{chapters/06-testing-feedback}
+\input{chapters/07-final-showcase}
+\input{chapters/08-team-summary}
+\input{chapters/09-individual-summary}
+\input{chapters/10-award-application}
+\input{chapters/11-final-score}
+
+\end{document}

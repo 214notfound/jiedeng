@@ -1,0 +1,24 @@
+% ============================================================
+% tex/commands.tex —— 正文里反复使用的自定义命令
+% ============================================================
+
+% ---------- 待补充标记 ----------
+% 编译出来是醒目的红色，防止"某章其实还空着"被无声放过。
+% 定稿前全局搜索 \pending 确认已清空。
+\newcommand{\pending}[1][待补充]{%
+  {\color{red}\bfseries 【#1】}%
+}
+
+% ---------- 插图 ----------
+% 用法：\fig[宽度比例]{图片路径}{图注}{标签}
+%   \fig[0.8]{figures/01-overview/cover.png}{游戏封面}{cover}
+% 正文引用：图\ref{fig:cover}
+% 宽度比例省略时默认 0.8；数值是相对版心宽度的比例。
+\newcommand{\fig}[4][0.8]{%
+  \begin{figure}[htbp]
+    \centering
+    \includegraphics[width=#1\linewidth]{#2}
+    \caption{#3}
+    \label{fig:#4}
+  \end{figure}
+}
