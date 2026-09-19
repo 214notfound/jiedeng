@@ -217,8 +217,23 @@
           blocks: [
             {
               id: "old-house-marked-on-map",
-              blockType: "system",
-              text: "【系统提示】恭喜你，成功解锁【陈家老宅】相关剧情。复原后的地图指向陈家老宅，小周提醒你，那把旧钥匙或许能派上用场。",
+              blockType: "narration",
+              text: "碎片拼上了，断面严丝合缝——它们是从同一张图上撕下来的。",
+            },
+            {
+              id: "map-tear-is-recent",
+              blockType: "narration",
+              text: "纸已经很旧了，可撕口还是白的。是最近才撕开的。",
+            },
+            {
+              id: "chen-house-marked-north",
+              blockType: "narration",
+              text: "拼出来的地图上，有一个标出来的位置在村北，山脚下一处院子，叫做陈宅。",
+            },
+            {
+              id: "key-in-pocket",
+              blockType: "narration",
+              text: "你摸了摸口袋里那把旧钥匙。齿磨得很平，用过很多年……去试试吧，你想到",
             },
           ],
           actionIds: ["go-old-house"],

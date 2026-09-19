@@ -10,6 +10,11 @@
   background: #080b11;
 }
 
+.v3-minigame-host { position: relative; min-height: 100%; overflow: hidden; background: #080b11; }
+.v3-minigame__submit-error { position: absolute; z-index: 100; inset: 0; display: grid; place-items: center; background: rgba(0, 0, 0, .78); }
+.v3-minigame__submit-error-card { display: grid; width: min(380px, calc(100% - 32px)); gap: 14px; padding: 24px; color: var(--paper); background: #11161d; border: 1px solid var(--line); }
+.v3-minigame__submit-error-card p { margin: 0; }
+
 .v3-minigame__image {
   display: block;
   width: min(100%, 1280px);

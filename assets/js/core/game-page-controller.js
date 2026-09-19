@@ -5,6 +5,7 @@ import { createGameView } from "./game-ui.js";
 import { getCurrentUser, goToMenu } from "./navigation.js";
 import { createInteractionModule } from "../exploration/integration/game/interaction-module.js";
 import { mountExploration } from "../exploration/game/exploration-view.js";
+import { sceneAssetFor } from "../exploration/data/scene-assets.js";
 import { createMapPuzzleAdapter } from "../minigames/map-puzzle/adapter/map-puzzle-adapter.js";
 import {
   createV3MinigameGateway,
@@ -14,6 +15,11 @@ import {
 import { getAchievementEvents } from "../achievements/game/achievements.js";
 import { saveGame } from "./storage.js";
 import { STORY_FACT_DEFINITIONS } from "./game-contract.js";
+import {
+  VIDEO_CUE_MAP,
+  createVideoPlayer,
+  videoCueForReading
+} from "./video-player.js";
 
 export const VIEW_STATES = Object.freeze({
   READING: "reading",
@@ -451,6 +457,13 @@ export function setupGamePage() {
   const inventoryRoot = requireElement("inventory-panel");
   const detailRoot = requireElement("detail-root");
   const minigameRoot = requireElement("minigame-root");
+  const pageDocument = typeof document !== "undefined" ? document : null;
+  const videoPlayer = pageDocument?.createElement
+    ? createVideoPlayer({
+      documentTarget: pageDocument,
+      mountTarget: sceneRoot
+    })
+    : null;
   const query = new URLSearchParams(location.search);
   const mode = query.get("mode");
   const debugMode = query.get("debug") === "1";
@@ -461,6 +474,28 @@ export function setupGamePage() {
   const defaultMinigameButtonLabel = openMinigameButton.textContent || "地图";
 
   if (!storyPanel) throw new Error("游戏页面缺少阅读面板。");
+
+  function setShrineSceneVariant(variantId) {
+    const backdrop = sceneRoot.querySelector(".exploration-scene-image");
+    const stage = sceneRoot.querySelector(".exploration-stage");
+    const image = sceneAssetFor("shrine", {variantId});
+    if (!backdrop || !image) return;
+    backdrop.src = image;
+    if (stage?.dataset) stage.dataset.sceneVariant = variantId;
+  }
+
+  function handleReadingVideo(context) {
+    const cue = videoCueForReading(context);
+    if (!cue || !videoPlayer) return undefined;
+    const playback = videoPlayer.playCue(cue);
+    if (cue === VIDEO_CUE_MAP.whiteLampFirstSeen) {
+      return playback.finally(() => setShrineSceneVariant("both-lights"));
+    }
+    if (cue === VIDEO_CUE_MAP.shrinePowerCut) {
+      return playback.finally(() => setShrineSceneVariant("white-lamp-only"));
+    }
+    return playback;
+  }
 
   function getMapCommand() {
     return activeMapCommand;
@@ -628,6 +663,13 @@ export function setupGamePage() {
     else render();
   }
 
+  // 只消费已经由剧情引擎提交的事实，不新增事实、不改变既有接口与状态结构。
+  function reconcileAchievements() {
+    for (const achievementEvent of getAchievementEvents({state: gameFlow.getState()})) {
+      gameFlow.applyAppEvent(achievementEvent);
+    }
+  }
+
   async function dispatchExternalEvent(event) {
     if (debugMode && failNextExternalEventForDebug) {
       failNextExternalEventForDebug = false;
@@ -644,9 +686,7 @@ export function setupGamePage() {
     try {
       result = await gameFlow.handleExternalEvent(event);
       if (result.ok) {
-        for (const achievementEvent of getAchievementEvents({state: gameFlow.getState()})) {
-          gameFlow.applyAppEvent(achievementEvent);
-        }
+        reconcileAchievements();
         result.state = gameFlow.getState();
       }
       return result;
@@ -665,6 +705,16 @@ export function setupGamePage() {
         }
       }
     }
+  }
+
+  async function dispatchStoryAction(actionId) {
+    const result = await gameFlow.handleStoryAction(actionId);
+    if (result.ok) {
+      // 结局确认等事实由剧情按钮提交，因此也要在这里统一核对成就。
+      reconcileAchievements();
+      result.state = gameFlow.getState();
+    }
+    return result;
   }
 
   function createDebugExternalEvent(command) {
@@ -748,7 +798,8 @@ export function setupGamePage() {
 
   gameView = createGameView({
     debugMode,
-    onStoryAction: (actionId) => gameFlow.handleStoryAction(actionId),
+    onStoryAction: dispatchStoryAction,
+    beforeRenderItem: handleReadingVideo,
     onDebugCommand: async (command) => {
       try {
         return await dispatchExternalEvent(createDebugExternalEvent(command));
@@ -926,7 +977,7 @@ export function setupGamePage() {
       getState: gameFlow.getState,
       getStateSnapshot: gameFlow.getStateSnapshot,
       update: gameFlow.applyAppEvent,
-      handleStoryAction: gameFlow.handleStoryAction,
+      handleStoryAction: dispatchStoryAction,
       handleExternalEvent: dispatchExternalEvent,
       save: saveCurrentGame,
       isFlowLocked: gameFlow.isLocked

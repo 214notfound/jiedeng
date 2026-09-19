@@ -141,7 +141,17 @@
           {
             id: "identity-and-company-remain",
             blockType: "narration",
-            text: "老宅只证明陈晋年曾经存在。王阙、公司和这些人造怪事之间，仍缺少关键证据。",
+            text: "雨小了。屋里能翻的，只剩下几口空箱子，和一层灰。",
+          },
+          {
+            id: "chen-jinnian-was-real",
+            blockType: "system",
+            text: "陈晋年这个人，是真实存在的，那刚刚的声音，是在叫他吗？",
+          },
+          {
+            id: "lights-in-village",
+            blockType: "narration",
+            text: "窗外村子的方向，亮着零星几盏灯，忽明忽暗的，像是星星幽暗深邃的眼睛",
           },
         ],
         actionIds: ["confirm-week-one-end"],

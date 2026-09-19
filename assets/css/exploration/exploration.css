@@ -136,7 +136,9 @@
   list-style: none;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  /* 单张地图也保持卡片宽度，不因 1fr 把横向特写拉满整行。 */
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 280px));
+  justify-content: start;
   gap: 1rem;
 }
 .exploration-module .content-card {
@@ -159,6 +161,15 @@
   border: 0;
   background: transparent;
   color: inherit;
+}
+.exploration-module .exploration-item-thumbnail {
+  width: 100%;
+  height: clamp(108px, 13vw, 148px);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: rgb(4 7 12 / 55%);
+  object-fit: contain;
+  object-position: center;
 }
 .exploration-module .exploration-resource-fallback {
   color: inherit;
@@ -190,7 +201,24 @@
 }
 .exploration-module .exploration-item-dialog img {
   display: block;
+  width: auto;
+  max-height: min(62vh, 720px);
   margin: 0 auto;
+  object-fit: contain;
+}
+@media (max-width: 640px) {
+  .exploration-module .exploration-inventory {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .75rem;
+  }
+  .exploration-module .exploration-item-thumbnail {
+    height: clamp(96px, 27vw, 132px);
+  }
+}
+@media (max-width: 420px) {
+  .exploration-module .exploration-inventory {
+    grid-template-columns: 1fr;
+  }
 }
 .exploration-module [hidden] {
   display: none !important;

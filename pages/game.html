@@ -10,6 +10,8 @@
     <link rel="stylesheet" href="../assets/css/exploration/exploration.css" />
     <link rel="stylesheet" href="../assets/css/exploration/game.css" />
     <link rel="stylesheet" href="../assets/css/minigames/v3-handoff.css" />
+    <link rel="stylesheet" href="../assets/css/transitions.css" />
+    <link rel="stylesheet" href="../assets/css/video-player.css" />
   </head>
   <body data-page="game">
     <noscript>
@@ -45,8 +47,10 @@
 
           <section class="story-panel" aria-labelledby="story-heading">
             <h2 id="story-heading" class="visually-hidden">剧情与对话</h2>
+            <div class="reading-surface">
             <div id="game-story" aria-live="polite">
               <p class="story-placeholder">雨声中，剧情正在加载……</p>
+            </div>
             </div>
             <div id="game-actions" class="game-actions" aria-label="可执行操作"></div>
           </section>
@@ -94,5 +98,6 @@
 
     <script type="module" src="../assets/js/core/audio/audio-page-entry.js"></script>
     <script type="module" src="../assets/js/core/game-page-controller.js"></script>
+    <script src="../assets/js/core/transitions.js"></script>
   </body>
 </html>

@@ -80,12 +80,17 @@
             {
               id: "four-threads-emerge",
               blockType: "narration",
-              text: "老宅里的线索告一段落，四条线索几乎同时浮出水面。",
+              text: "从老宅出来，天已经黑了。村里的灯，只有零星几盏。",
+            },
+            {
+              id: "four-threads-named",
+              blockType: "narration",
+              text: "陈晋年。公司留下的那份项目记录。苏禾。还有邮电所里那些没署名的纸。",
             },
             {
               id: "investigate-four-threads",
-              blockType: "system",
-              text: "陈晋年的坠沟、王阙的项目记录、苏禾的失踪、白灯客的材料，四条线可以按任意顺序追查。",
+              blockType: "narration",
+              text: "四件事，哪一件都还没有答案。……先从哪里开始。",
             },
           ],
           actionIds: [],
@@ -139,12 +144,17 @@
             {
               id: "three-signs-one-web",
               blockType: "narration",
-              text: "白灯、深夜广播、湿脚印——三样异象都指向同一张看不见的网。",
+              text: "三样东西，三个地方，同一个晚上。",
+            },
+            {
+              id: "three-signs-not-ghosts",
+              blockType: "system",
+              text: "白灯、深夜广播、湿脚印。……它们不像是鬼。",
             },
             {
               id: "decrypt-haunting-network",
               blockType: "system",
-              text: "还原白灯、广播和湿脚印的物理网络，证明它们都来自可控的人工系统。",
+              text: "把这三样摆在一张图上看看。",
             },
           ],
           actionIds: [],

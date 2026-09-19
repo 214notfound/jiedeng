@@ -117,6 +117,50 @@ function readingInput(overrides = {}) {
   };
 }
 
+test("V4 mixed labels change only the visual skin and preserve completion identity", () => withFakeDocument(() => {
+  const storyElement = new FakeElement("div");
+  const actionsElement = new FakeElement("div");
+  const panel = new FakeElement("section");
+  storyElement.closest = () => panel;
+  const completions = [];
+  const input = readingInput({mode: "conversation", items: [{
+    id: "mixed", kind: "dialogue", text: "【小周】别出去。\n【旁白】雨声更近了。\n【独白】他在怕什么？\n【你】为什么？"
+  }]});
+  const before = JSON.stringify(input);
+  const view = createReadingView({storyElement, actionsElement, onComplete: r => completions.push(r)});
+  view.open(input);
+  for (const [index, skin] of ["dialogue", "narration", "inner", "dialogue"].entries()) {
+    if (index) view.next();
+    assert.equal(panel.dataset.visualKind, skin);
+    assert.equal(panel.dataset.contentKind, "dialogue");
+    assert.equal(storyElement.children.length, skin === "dialogue" ? 2 : 1);
+    assert.equal(completions.length, 0);
+  }
+  view.next();
+  view.next();
+  assert.equal(completions.length, 1);
+  assert.equal(completions[0].finalItemId, "mixed");
+  assert.equal(completions[0].mode, "conversation");
+  assert.equal(JSON.stringify(input), before);
+  view.close();
+  assert.equal(panel.dataset.visualKind, undefined);
+}));
+
+test("V4 system prompt keeps its type and action while sharing the inner skin", () => withFakeDocument(() => {
+  const storyElement = new FakeElement("div");
+  const actionsElement = new FakeElement("div");
+  const calls = [];
+  const view = createReadingView({storyElement, actionsElement, onAction: id => calls.push(id)});
+  view.open(readingInput({items: [{id: "entry", kind: "system", text: "【系统提示】是否进入？"}]}));
+  assert.equal(storyElement.dataset.contentKind, "system");
+  assert.equal(storyElement.dataset.visualKind, "inner");
+  assert.equal(storyElement.children.length, 1);
+  assert.equal(storyElement.children[0].textContent, "是否进入？");
+  view.next();
+  actionsElement.children[0].dispatch("click");
+  assert.deepEqual(calls, ["continue-story"]);
+}));
+
 test("橙光式姓名牌只拆分正文开头的完整角色标签", () => {
   assert.deepEqual(
     splitSpeakerLabel("【老板】买东西自己拿。"),
@@ -180,6 +224,28 @@ test("阅读器逐段显示且只在末尾触发一次完成回调", async () =>
 
   view.close();
   assert.equal(completions.length, 1, "关闭不得伪装成阅读完成");
+}));
+
+test("异步段落前置钩子完成前不显示正文且阻止继续操作", async () => withFakeDocument(async () => {
+  const storyElement = new FakeElement("div");
+  const actionsElement = new FakeElement("div");
+  let release;
+  const gate = new Promise((resolve) => { release = resolve; });
+  const view = createReadingView({
+    storyElement,
+    actionsElement,
+    beforeRenderItem: () => gate
+  });
+
+  view.open(readingInput());
+  assert.equal(storyElement.children.length, 0);
+  assert.equal(actionsElement.children[0].disabled, true);
+  view.next();
+  release();
+  await Promise.resolve();
+  await Promise.resolve();
+  assert.equal(storyElement.children.at(-1).textContent, "第一段。");
+  assert.equal(actionsElement.children[0].disabled, false);
 }));
 
 test("同一条对白中的角色与旁白按段落推进，不在一个对话框内形成长滚动文本", () => withFakeDocument(() => {
@@ -306,7 +372,9 @@ test("系统提示复用统一阅读框并把选择交回页面控制器", async
       }
     });
 
-    assert.equal(storyElement.children[0].textContent, "系统提示");
+    assert.equal(storyElement.children.length, 1, "操作提示不冒充人物姓名");
+    assert.equal(storyElement.dataset.contentKind, "system");
+    assert.equal(storyElement.dataset.visualKind, "inner");
     assert.match(storyElement.children.at(-1).textContent, /三块地图碎片已经集齐/);
     assert.deepEqual(
       actionsElement.querySelectorAll("button").map((button) => button.textContent),

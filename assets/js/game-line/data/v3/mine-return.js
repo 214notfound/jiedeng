@@ -47,12 +47,22 @@
             {
               id: "route-from-map",
               blockType: "narration",
-              text: "旧矿图、坠沟地形和排水洞坐标，在纸上拼成了一条绕开封墙的路。",
+              text: "旧矿图、坠沟的地形，还有那组排水洞的坐标，在纸上拼成了一条路。",
+            },
+            {
+              id: "route-through-drain",
+              blockType: "narration",
+              text: "这条路不经过矿口。它从山腰的排水洞下去。",
+            },
+            {
+              id: "lifted-from-that-gorge",
+              blockType: "system",
+              text: "十几年前，我是从那条沟里被抬上来的。",
             },
             {
               id: "bypass-sealed-mine",
               blockType: "system",
-              text: "绕过唯一公开入口的封墙，进入矿井内部平台。",
+              text: "……现在要从下面再走进去一次。",
             },
           ],
           actionIds: [],
@@ -125,12 +135,17 @@
             {
               id: "shaft-records-remain",
               blockType: "narration",
-              text: "内部竖井边，苏禾的录音、封墙和夜间施工记录都还留在原地。",
+              text: "竖井边上还留着一个文件袋，边角被水泡过，袋口是开的。",
+            },
+            {
+              id: "recorder-still-has-power",
+              blockType: "narration",
+              text: "里面有一支录音笔。还有电。",
             },
             {
               id: "reconstruct-su-death-chain",
               blockType: "system",
-              text: "还原小周推人、王阙拒绝施救、集团掩盖的完整证据链。",
+              text: "我大概知道里面是什么。",
             },
           ],
           actionIds: [],
