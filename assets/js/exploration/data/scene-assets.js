@@ -2,8 +2,6 @@ import {v3SceneArtFor} from "./v3-scene-assets.js";
 
 const SCENE_ASSETS = Object.freeze({
   shrine: Object.freeze({
-    // 杨梦的视频衔接状态：A（默认）→ B → C → A。
-    // 恢复供电时灯泡亮起、白灯同时熄灭，因此复用 bulb-only。
     default: new URL("../../../images/exploration/scenes/shrine.png", import.meta.url).href,
     "bulb-only": new URL(
       "../../../images/exploration/scenes/shrine.png",
@@ -37,7 +35,7 @@ export function sceneAssetFor(sceneId, {variantId} = {}) {
   const variants = SCENE_ASSETS[sceneId];
   if (!variants) return null;
   const resolvedVariant = variantId
-    ?? (sceneId === "old-house" ? "door-closed" : "default");
+    ?? (sceneId === "old-house" ? "door-closed" : sceneId === "shrine" ? "bulb-only" : "default");
   return variants[resolvedVariant] ?? null;
 }
 
@@ -70,7 +68,9 @@ export function scenePresentationFor(sceneId, {facts = [], nodeId} = {}) {
   }
   const variantId = sceneId === "old-house"
     ? (facts.includes("old-house-door-opened") ? "door-open" : "door-closed")
-    : "default";
+    : sceneId === "shrine"
+      ? (facts.includes("white-lamp-witnessed") ? "both-lights" : "bulb-only")
+      : "default";
   const image = sceneAssetFor(sceneId, {variantId});
   return image ? {sceneId, variantId, image} : null;
 }

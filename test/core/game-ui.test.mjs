@@ -226,6 +226,28 @@ test("阅读器逐段显示且只在末尾触发一次完成回调", async () =>
   assert.equal(completions.length, 1, "关闭不得伪装成阅读完成");
 }));
 
+test("异步段落前置钩子完成前不显示正文且阻止继续操作", async () => withFakeDocument(async () => {
+  const storyElement = new FakeElement("div");
+  const actionsElement = new FakeElement("div");
+  let release;
+  const gate = new Promise((resolve) => { release = resolve; });
+  const view = createReadingView({
+    storyElement,
+    actionsElement,
+    beforeRenderItem: () => gate
+  });
+
+  view.open(readingInput());
+  assert.equal(storyElement.children.length, 0);
+  assert.equal(actionsElement.children[0].disabled, true);
+  view.next();
+  release();
+  await Promise.resolve();
+  await Promise.resolve();
+  assert.equal(storyElement.children.at(-1).textContent, "第一段。");
+  assert.equal(actionsElement.children[0].disabled, false);
+}));
+
 test("同一条对白中的角色与旁白按段落推进，不在一个对话框内形成长滚动文本", () => withFakeDocument(() => {
   const storyElement = new FakeElement("div");
   const actionsElement = new FakeElement("div");

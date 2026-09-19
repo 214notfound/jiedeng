@@ -65,20 +65,33 @@ export function splitReadingText(text) {
   return Object.freeze(segments);
 }
 
+function getReadingSegment(item, segmentIndex = 0) {
+  const segments = splitReadingText(item?.text ?? "");
+  return {
+    segments,
+    segment: segments[segmentIndex] ?? segments[0] ?? null
+  };
+}
+
+function applyReadingVisual(storyElement, item, labelledText) {
+  if (!labelledText) return;
+  const storyPanel = storyElement.closest?.(".story-panel");
+  const visualKind = labelledText.visualKind
+    ?? (labelledText.speaker ? "dialogue" : item.kind === "system" ? "inner" : item.kind);
+  storyElement.dataset.contentKind = item.kind;
+  if (storyPanel) storyPanel.dataset.contentKind = item.kind;
+  storyElement.dataset.visualKind = visualKind;
+  if (storyPanel) storyPanel.dataset.visualKind = visualKind;
+}
+
 function renderTextItem(storyElement, item, segmentIndex = 0) {
   storyElement.replaceChildren();
   const storyPanel = storyElement.closest?.(".story-panel");
-  const segments = splitReadingText(item.text);
-  const labelledText = segments[segmentIndex] ?? segments[0];
+  const {segments, segment: labelledText} = getReadingSegment(item, segmentIndex);
 
   if (!labelledText) return segments.length;
 
-  storyElement.dataset.contentKind = item.kind;
-  if (storyPanel) storyPanel.dataset.contentKind = item.kind;
-  const visualKind = labelledText.visualKind
-    ?? (labelledText.speaker ? "dialogue" : item.kind === "system" ? "inner" : item.kind);
-  storyElement.dataset.visualKind = visualKind;
-  if (storyPanel) storyPanel.dataset.visualKind = visualKind;
+  applyReadingVisual(storyElement, item, labelledText);
 
   if (labelledText.speaker) {
     const speaker = document.createElement("p");
@@ -179,7 +192,8 @@ export function createReadingView({
   actionsElement = requiredElement("game-actions"),
   onComplete,
   onAction,
-  onClose
+  onClose,
+  beforeRenderItem
 } = {}) {
   const storyPanel = storyElement.closest?.(".story-panel");
   let input = null;
@@ -187,6 +201,8 @@ export function createReadingView({
   let currentSegmentIndex = 0;
   let completed = false;
   let busy = false;
+  let rendering = false;
+  let renderToken = 0;
   let actionStatus = null;
 
   function clear() {
@@ -242,6 +258,7 @@ export function createReadingView({
           makeButton("结束阅读", "story-action story-action--close", close)
         );
       }
+      setButtonsDisabled(rendering || busy);
       return;
     }
 
@@ -259,13 +276,42 @@ export function createReadingView({
         makeButton("结束阅读", "story-action story-action--close", close)
       );
     }
+    setButtonsDisabled(rendering || busy);
   }
 
   function renderCurrentItem() {
     const item = input?.items[currentIndex];
+    const currentToken = ++renderToken;
     if (item) {
+      const {segment} = getReadingSegment(item, currentSegmentIndex);
+      applyReadingVisual(storyElement, item, segment);
+      const beforeRenderResult = beforeRenderItem?.({
+        input,
+        item,
+        segment,
+        segmentIndex: currentSegmentIndex,
+        itemIndex: currentIndex
+      });
+      if (beforeRenderResult && typeof beforeRenderResult.then === "function") {
+        rendering = true;
+        storyElement.replaceChildren();
+        renderActions();
+        Promise.resolve(beforeRenderResult)
+          .catch((error) => {
+            console.warn("[white-lamp:video] 视频播放失败，继续显示剧情", error);
+          })
+          .finally(() => {
+            if (currentToken !== renderToken || !input) return;
+            rendering = false;
+            renderTextItem(storyElement, item, currentSegmentIndex);
+            renderActions();
+          });
+        return;
+      }
+      rendering = false;
       renderTextItem(storyElement, item, currentSegmentIndex);
     } else {
+      rendering = false;
       storyElement.replaceChildren();
     }
     renderActions();
@@ -283,7 +329,7 @@ export function createReadingView({
   }
 
   function next() {
-    if (!input || completed || busy) return;
+    if (!input || completed || busy || rendering) return;
 
     const currentItem = input.items[currentIndex];
     const segmentCount = splitReadingText(currentItem?.text ?? "").length;
@@ -338,6 +384,7 @@ export function createReadingView({
   function open(nextInput) {
     validateReadingInput(nextInput);
 
+    renderToken += 1;
     input = nextInput;
     currentIndex = 0;
     currentSegmentIndex = 0;
@@ -360,6 +407,7 @@ export function createReadingView({
   }
 
   function close() {
+    renderToken += 1;
     input = null;
     currentIndex = 0;
     currentSegmentIndex = 0;
@@ -374,7 +422,7 @@ export function createReadingView({
   return Object.freeze({open, update, next, close});
 }
 
-export function createGameView({onStoryAction} = {}) {
+export function createGameView({onStoryAction, beforeRenderItem} = {}) {
   const storyElement = requiredElement("game-story");
   const actionsElement = requiredElement("game-actions");
   let readingView;
@@ -409,7 +457,8 @@ export function createGameView({onStoryAction} = {}) {
     actionsElement,
     onAction: (actionId, metadata) => onReadingAction(actionId, metadata),
     onComplete: (result) => onReadingComplete(result),
-    onClose: () => onReadingClose()
+    onClose: () => onReadingClose(),
+    beforeRenderItem
   });
 
   return Object.freeze({

@@ -177,6 +177,11 @@ test("E1 正式场景按地点和老宅门状态选择同一坐标空间背景",
     scenePresentationFor("old-house", {facts: ["old-house-door-opened"]}).variantId,
     "door-open"
   );
+  assert.equal(scenePresentationFor("shrine", {facts: []}).variantId, "bulb-only");
+  assert.equal(
+    scenePresentationFor("shrine", {facts: ["white-lamp-witnessed"]}).variantId,
+    "both-lights"
+  );
   assert.equal(sceneAssetFor("unknown"), null);
 });
 
