@@ -47,6 +47,35 @@ test("Game 1 rejects dangling connectors even when all terminals remain connecte
   assert.ok(result.openEnds.length > 0);
 });
 
+test("Game 1 reproduces the all-lit but unclosed server shown in the report", () => {
+  for (const rotation of [90, 180, 270]) {
+    const board = createSolvedBoard();
+    board[12] = {...board[12], rotation};
+    const result = analyzeNetwork(board);
+    assert.deepEqual(result.terminals, {lamp: true, broadcast: true, drain: true});
+    assert.equal(result.connectedTileCount, 16);
+    assert.equal(result.activeTileCount, 16);
+    assert.equal(result.openEnds.length, 2);
+    assert.equal(result.completed, false);
+  }
+});
+
+test("Game 1 recovers from the two isolated upper-left tiles in the second screenshot", () => {
+  let board = createSolvedBoard();
+  for (const [index, rotation] of [[7, 90], [10, 90], [11, 180], [12, 270]]) {
+    board[index] = {...board[index], rotation};
+  }
+  const stuck = analyzeNetwork(board);
+  assert.equal(stuck.connectedTileCount, 14);
+  assert.deepEqual(stuck.openEnds.map(({index, direction}) => `${index}${direction}`), ["5S", "6E"]);
+  assert.equal(stuck.completed, false);
+
+  for (const [index, clicks] of [[7, 3], [10, 3], [11, 3], [12, 1]]) {
+    for (let turn = 0; turn < clicks; turn += 1) board = rotateTile(board, index);
+  }
+  assert.equal(analyzeNetwork(board).completed, true);
+});
+
 test("Game 1 detects connectors aimed at the edge, a blank, or a mismatched neighbor", () => {
   const edge = createSolvedBoard();
   edge[2] = {...edge[2], rotation: 0};
