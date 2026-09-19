@@ -41,6 +41,18 @@
 \renewcommand{\arraystretch}{1.15}
 \captionsetup{font=small, labelsep=quad, skip=6pt}
 
+% 浮动体放置参数。默认值下，同一节里挨着的两张表很容易被 LaTeX 判定为
+% "这一页放不下正文了"，于是单独排成一页浮动页，正文被推到前后两页，
+% 中间留出半页空白（第三章的色板表与字体表、视频表与转场表都撞上过）。
+% 放宽"一页能放几个浮动体"和"浮动体最多占多大比例"，让表和正文同页。
+\setcounter{topnumber}{3}
+\setcounter{bottomnumber}{2}
+\setcounter{totalnumber}{4}
+\renewcommand{\topfraction}{0.92}      % 顶部浮动体最多占版心的比例
+\renewcommand{\bottomfraction}{0.85}
+\renewcommand{\textfraction}{0.06}      % 一页至少留多少正文
+\renewcommand{\floatpagefraction}{0.85} % 不到这个比例就不单独排浮动页
+
 % ---------- 颜色 ----------
 \usepackage{xcolor}
 \definecolor{nightblue}{RGB}{26,35,58}    % 夜色深蓝：标题主色

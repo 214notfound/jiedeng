@@ -2,12 +2,166 @@
 % 第四章 · 技术方案与质量保证
 % 对应大纲：# 四、技术方案与质量保证
 %
-% 本章含代码片段，用 lstlisting 环境排版：
-%   \begin{lstlisting}[language=JavaScript, caption={...}, label={lst:xxx}]
-%   ...
-%   \end{lstlisting}
+% 事实来源（V4 代码，写前逐项核对过）：
+%   assets/js/ 七个功能域、92 个文件 / 15,677 行
+%   assets/css/ 12 个样式表 / 3,802 行，变量表为 tokens.css
+%   assets/js/core/storage.js                   存档键格式与版本校验
+%   assets/js/core/audio/audio-coordinator.js   音频失败码
+%   assets/js/core/video-player.js              过场播放的失败兜底
+%   test/ 35 个文件 / 6,122 行，node:test 单测 + Playwright 回归
+%
+% 本章只对质量保障作概述，测试结果与分工进度分别见第五、六章。
+% 代码与目录树用 lstlisting 排版（样式见 tex/preamble.tex）。
+%
+% 目录树用 ASCII 的 +-- / | / \-- 画，不用 Unicode 的 ├ │ └：
+% 等宽字体里没有这几个制表符，编译会报一百多条 Missing character，树会缺笔画。
+% 树里的说明也写英文，中英混排在等宽字体下对不齐。
 % ============================================================
 
 \chapter{技术方案与质量保证}
 
-\pending
+\section{开发与运行平台}
+
+本项目是纯前端静态站点，全部代码在浏览器端运行，不依赖服务器进程与数据库。平台选择与三周的开发周期有关：成员使用的操作系统并不一致，项目因此不能依赖任何平台特有的工具链；没有服务端与构建步骤，任何人克隆仓库之后可以直接打开页面验证效果。
+
+\begin{table}[htbp]
+\centering
+\caption{开发与运行平台}
+\small
+\begin{tabularx}{\linewidth}{@{}l X@{}}
+\toprule
+项目 & 方案 \\
+\midrule
+开发平台 & 常规代码编辑器、Git、GitHub；成员可使用 Windows、macOS 或 Linux \\
+前端技术 & 原生 HTML5、CSS3、JavaScript，不引入没有实际需要的框架和打包器 \\
+运行方式 & 静态站点，通过本地 HTTP 服务或部署后的站点地址访问 \\
+运行平台 & 最新版 Chrome、Edge；桌面端与移动端浏览器视口 \\
+数据保存 & 浏览器 localStorage，注册用户与游客使用不同存储键 \\
+版本管理 & GitHub Flow，\texttt{main} 为唯一长期分支，功能在短期 Feature 分支开发 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{技术选型}
+
+\subsection{原生技术栈}
+
+本项目不使用框架和打包器。组内成员的编程基础不一致，原生 HTML、CSS 和 JavaScript 可以让所有人立即投入开发，省去框架与配套工具链的学习成本。调试链路也是最短的：改完代码刷新浏览器就能看到结果，没有编译等待。轮值交接时，接手的人不需要先理解框架的生命周期或响应式机制。
+
+代价是没有现成的组件复用与路由方案，这部分需要自行实现。本项目页面数量有限，全局状态集中在存档与进度上，自建的成本低于引入框架的成本。
+
+\subsection{浏览器本地存储}
+
+玩家进度保存在浏览器的 localStorage 中，不经过服务端。
+
+存档键的格式为 \texttt{white-lamp:save:\{身份\}:v2}。身份段有两种取值，游客为 \texttt{guest}，注册用户为 \texttt{account:} 加账户 ID。两种身份的数据物理隔离，游客存档不会覆盖注册用户的存档。键名中带存档格式版本号，格式升级时不覆盖旧数据：读到旧版本的存档会提示玩家开始新游戏，旧档保留在原处。
+
+账户信息另存于两个键，前缀同为 \texttt{white-lamp:auth:}，其后分别是账户表 \texttt{accounts:v1} 与当前会话 \texttt{session:v1}。
+
+localStorage 的容量上限为每个站点 5 至 10\,MB。本项目存档只记录进度、已读文本与成就状态，体积远低于这一上限。
+
+\section{技术架构}
+
+代码按表现层、逻辑层、数据层三层组织，三层之外有一个全局状态对象作为数据中枢。
+
+\pending[此处待补架构图]
+
+表现层是 HTML 与 CSS。页面使用语义化标签，样式分为全局、页面、游戏三类；全站色值与间距收在 tokens.css 一份变量表里，其余样式表只引用变量名，不写死具体色值。
+
+逻辑层是原生 JavaScript，按功能域拆成七个模块：核心、主线、探索、小游戏、账户、成就与介绍页。模块之间的调用关系是单向的，主线、探索与小游戏各自读写全局状态，彼此不直接引用。改动其中任一模块，不需要通知另外两个。
+
+数据层是浏览器本地存储，读写统一经过 core/storage.js，带版本校验与失败兜底。剧情内容不放在这一层，它是随代码一起发布的静态数据，不写入玩家设备。
+
+\section{代码组织}
+
+目录结构的设计目标是让任何人打开仓库都能迅速定位到目标文件。四条规则：一个功能放在一个明确位置；页面数量可数；资源按类型分层，并在二级目录下继续按功能细分；数据与逻辑分离，全部剧情内容放在 game-line/data/ 下，引擎只负责渲染和推进，不硬编码具体对白。新增剧情阶段时只增加数据文件，引擎核心代码不动。
+
+\begin{lstlisting}[caption={项目目录结构}, label={lst:tree}]
+jiedeng/
++-- index.html              cover page
++-- pages/                  12 game pages
+|   +-- game.html           main story
+|   +-- menu.html           main menu
+|   +-- authorize/          login / register
+|   +-- achievements/       achievements
+|   \-- about/              project, team, 5 member pages
++-- assets/
+|   +-- css/
+|   |   +-- tokens.css      design tokens (single source)
+|   |   \-- ...             per-page stylesheets
+|   +-- js/
+|   |   +-- core/           global state, save, nav, transitions, audio
+|   |   +-- game-line/      story engine; data/ holds all story data
+|   |   +-- exploration/    hotspots, items, branching dialogue
+|   |   +-- minigames/      4 minigames + shared 2D engine
+|   |   +-- authorize/      account, session, permission
+|   |   +-- achievements/   definitions and checks
+|   |   \-- about/
+|   +-- images/             scenes, characters, items, UI
+|   +-- audio/              background music
+|   +-- videos/             7 cutscene videos
+|   \-- fonts/
++-- test/                   unit tests and browser regression
+\-- docs/                   requirements, interfaces, story, this report
+\end{lstlisting}
+
+各模块的规模如表 \ref{tab:modules}。
+
+\begin{table}[htbp]
+\centering
+\caption{代码模块划分与规模}
+\label{tab:modules}
+\small
+\begin{tabularx}{\linewidth}{@{}l l l X@{}}
+\toprule
+模块 & 文件 & 行数 & 职责 \\
+\midrule
+core         & 13 & 4167 & 全局状态、存档、页面控制、导航、过场与音频 \\
+game-line    & 13 & 4126 & 剧情引擎与全部剧情数据 \\
+exploration  & 22 & 2545 & 场景热点、物品与背包、分支对话 \\
+minigames    & 23 & 2428 & 四个小游戏与共用 2D 引擎 \\
+authorize    &  8 & 1142 & 注册、登录、会话与权限 \\
+about        &  4 &  690 & 项目介绍与制作组页面 \\
+achievements &  9 &  579 & 成就定义、判定与展示 \\
+\midrule
+合计         & 92 & 15677 & \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+样式表另有 12 个文件、3{,}802 行，其中 tokens.css 是全站唯一的变量来源。图片资源 86 个，按用途分为场景图、人物立绘、物品与界面四类；过场视频 7 段，与第三章的清单一一对应。
+
+\section{质量保证}
+
+\subsection{异常与降级}
+
+原则是所有可能失败的外部调用都返回结构化错误码，由调用方转成玩家可读的中文提示，不让异常中断流程。
+
+\begin{itemize}
+  \item \textbf{本地存储不可用。} 浏览器的隐私模式或配额写满都会让读写抛错，所有读写都包在 try/catch 里，失败统一返回 \path{STORAGE_UNAVAILABLE}，界面提示“浏览器存储暂时不可用”，游戏本身不崩溃。
+  \item \textbf{音频自动播放被拦截。} \path{audio.play()} 的失败被捕获为 \path{AUDIO_PLAY_BLOCKED}，音乐改为等待玩家的第一次点击或按键后起播，界面上另有常驻的静音开关。
+  \item \textbf{过场视频无法播放。} 播放器的结束、出错、中断三个事件绑定同一个收尾函数，\path{play()} 的失败也走这条路径。任何失败都让剧情直接继续，玩家可能看不到某一段过场，但不会停在黑屏前。
+  \item \textbf{存档版本不匹配。} 读到版本号低于当前格式的存档时返回 \path{SAVE_VERSION_UNSUPPORTED}，提示玩家开始新游戏，旧数据保留在原处不删除。
+\end{itemize}
+
+有一处刻意不做降级：小游戏的渲染循环在检测不到 requestAnimationFrame 时直接抛错停止。项目假定运行环境是现代浏览器，这里做静默兜底只会把问题推迟到更难定位的地方。
+
+\subsection{测试}
+
+测试代码在 test/ 目录下，35 个文件、6122 行，分两层。
+
+逻辑层用 Node 内置的 node:test 运行单元测试，覆盖存档读写与版本兼容、账户与权限、主线与探索之间的接口契约、小游戏规则与成就判定。
+
+页面层用 Playwright 驱动浏览器回归脚本，脚本自带本地静态服务器，真实打开游戏页面走一遍主流程，检查存档写入与页面状态。这一层覆盖单元测试看不到的部分：脚本加载顺序、模块之间的实际联动，以及存档在真实浏览器中的落盘结果。
+
+另有一份主线引擎的冻结副本放在 test/exploration/vendor/ 下，探索模块针对这份副本做契约测试。主线改动接口时，契约测试会在合并前失败，避免上游的改动无声地破坏下游。
+
+详细的测试结果见第六章。
+
+\subsection{协作流程与 subPR 分工}
+
+版本管理使用 GitHub Flow。\texttt{main} 是唯一长期分支，始终保持可运行、可演示的状态；功能在短期 Feature 分支上开发，一个分支对应一个 subPR，只解决一个需求，合并即交付。
+
+每个 subPR 在合入前经过技术审查与需求验收两道检查。技术审查关注实现是否清晰、有没有引入不必要的依赖；需求验收对照该 subPR 对应的需求条目逐项确认。审查在 GitHub 上进行，讨论记录随 PR 保留，后续出现问题时可以回溯当时的判断依据。
+
+详细的成员分工与进度安排见第五章。

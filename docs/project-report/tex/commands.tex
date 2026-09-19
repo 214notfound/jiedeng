@@ -9,6 +9,35 @@
   {\color{red}\bfseries 【#1】}%
 }
 
+% ---------- 色块（第三章色板表用）----------
+% 用法：\swatch{cBg}
+% 在表格里直接画出颜色本身，省掉一张色板截图（截图里的色值会被屏幕和
+% 压缩改掉，色块不会）。
+%
+% 块里必须 \phantom 占位，不能写 \colorbox{#1}{\rule{...}}：\rule 是用
+% 当前文字色（黑）画的，会盖住底色，只漏出 \fboxsep 那圈彩边，看起来
+% 就是一个黑心彩环。\phantom 只占尺寸不着色，底色才透得出来。
+% 外面套一层 \fcolorbox 加细灰边，--lamp 这类浅色在纸上才有边界。
+%
+% 颜色必须先 \definecolor 起名再引用，不写 \swatch{#07090e}：tabularx
+% 会把表体整段抓成宏，表体里裸的 # 会被当成参数号，报
+% "Illegal parameter number in definition of \XC@@tmp"。
+\definecolor{cBg}{HTML}{07090E}
+\definecolor{cBgElevated}{HTML}{0D1118}
+\definecolor{cLamp}{HTML}{F5F0E3}
+\definecolor{cPaper}{HTML}{ECE7DC}
+\definecolor{cPaperDim}{HTML}{CFC8B8}
+\definecolor{cAccent}{HTML}{D8C6A4}
+\definecolor{cAccentDeep}{HTML}{B89B6E}
+\definecolor{cMist}{HTML}{8FB8CE}
+\definecolor{cRain}{HTML}{5D7F9E}
+\definecolor{cCinnabar}{HTML}{A6534A}
+\definecolor{cDanger}{HTML}{C17A74}
+\newcommand{\swatch}[1]{%
+  {\setlength{\fboxsep}{0pt}\setlength{\fboxrule}{0.4pt}%
+   \fcolorbox{black!35}{#1}{\phantom{\rule{1.7em}{1.05em}}}}%
+}
+
 % ---------- 插图 ----------
 % 用法：\fig[宽度比例]{图片路径}{图注}{标签}
 %   \fig[0.8]{figures/01-overview/cover.png}{游戏封面}{cover}
