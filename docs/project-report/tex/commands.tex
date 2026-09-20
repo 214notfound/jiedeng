@@ -51,3 +51,23 @@
     \label{fig:#4}
   \end{figure}
 }
+
+% ---------- 截图占位 ----------
+% 第七章的截图未到位时先用它顶上，文件本身不依赖任何图片，编译能过。
+% 用法与 \fig 完全一致（后三个参数原样保留），图片就位后把 \figph 改成
+% \fig、再把第二参数换成图片路径即可，其余不用动。
+%   \figph[0.8]{入口页·封面首屏}{入口页封面}{entry}
+% 第一个可选参数仍是宽度比例。框体高度固定为 0.45\linewidth：桌面图传
+% 0.8 得到 16:9，手机竖版图传 0.22 得到接近真机的长宽比。
+\newcommand{\figph}[4][0.8]{%
+  \begin{figure}[htbp]
+    \centering
+    \setlength{\fboxsep}{5pt}%
+    \fcolorbox{black!30}{black!4}{%
+      \parbox[c][0.45\linewidth][c]{#1\linewidth}{%
+        \centering\small\color{black!55}%
+        {\color{red}\bfseries 待截图}\\[4pt] #2}}%
+    \caption{#3}
+    \label{fig:#4}
+  \end{figure}
+}
