@@ -19,6 +19,13 @@ function makeButton(label, className, onClick) {
 }
 
 const SPEAKER_LABEL_PATTERN = /^【([^】]+)】\s*/u;
+const ENDING_TITLES = Object.freeze({
+  "ending-accomplice": "共犯的终点",
+  "ending-defeated": "封井之人",
+  "ending-erasure": "无名者",
+  "ending-curated-truth": "白灯之后",
+  "ending-full-account": "不再借灯",
+});
 
 // 特殊标签只决定当前段的前端视觉；业务 kind、完成 ID 与剧情顺序保持不变。
 function labelledSegment(label, text) {
@@ -432,14 +439,51 @@ export function createGameView({onStoryAction, beforeRenderItem} = {}) {
 
   function renderState() {}
 
+  function renderFinale(response) {
+    readingView?.close();
+    const storyPanel = storyElement.closest?.(".story-panel");
+    storyPanel?.removeAttribute("data-content-kind");
+    storyPanel?.removeAttribute("data-visual-kind");
+    storyElement.removeAttribute("data-content-kind");
+    storyElement.removeAttribute("data-visual-kind");
+    storyPanel?.setAttribute("data-reading-mode", "finale");
+    storyElement.dataset.readingMode = "finale";
+
+    const endingId = response.notifications?.find((item) => item.eventType === "STORY_ENDED")?.payload?.endingId
+      ?? response.commit?.checkpoint?.nodeId;
+    const title = ENDING_TITLES[endingId] ?? "故事已落幕";
+    const label = document.createElement("p");
+    label.className = "finale-card__eyebrow";
+    label.textContent = "终章";
+    const heading = document.createElement("h3");
+    heading.className = "finale-card__title";
+    heading.textContent = title;
+    const description = document.createElement("p");
+    description.className = "finale-card__description";
+    description.textContent = "这一夜的故事已落定。";
+    storyElement.replaceChildren(label, heading, description);
+
+    const achievements = document.createElement("a");
+    achievements.className = "finale-card__link finale-card__link--primary";
+    achievements.href = "achievements/achievements.html";
+    achievements.textContent = "查看成就";
+    const menu = document.createElement("a");
+    menu.className = "finale-card__link";
+    menu.href = "menu.html";
+    menu.textContent = "返回主菜单";
+    actionsElement.replaceChildren(achievements, menu);
+  }
+
   function renderResponse(response, {onComplete = () => {}, onClose = () => {}} = {}) {
     onReadingComplete = onComplete;
     onReadingAction = (actionId) => onStoryAction?.(actionId);
     onReadingClose = onClose;
     if (!response.presentation) {
-      const text = response.status === "ended"
-        ? "这一阶段的调查暂告一段落。"
-        : "当前剧情正在等待外部交互完成。";
+      if (response.status === "ended") {
+        renderFinale(response);
+        return;
+      }
+      const text = "当前剧情正在等待外部交互完成。";
       readingView?.open({
         mode: "story",
         items: [{id: "story-status", kind: "system", text}],

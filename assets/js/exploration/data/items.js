@@ -17,7 +17,7 @@ const rows = [
  ["burned-work-id","烧毁的工作证","随身物品","烧毁大半的工作证，公司信息已经模糊，只能辨认姓名栏中的姓氏“王”。",null,"burned-work-id.png"],
  ["blue-glass-bead","蓝玻璃珠","随身物品","一颗蓝玻璃珠，来历尚待调查。","blue-glass-bead.png"],
  ["su-he-notice","苏禾寻人启事","村口墙面","寻人启事上写着：苏禾，村小学教师，近日失踪。","su-he-notice.png","su-he-notice.png"],
- ["key-a","无标记旧钥匙","小周交付","没有字母或名字标记的旧钥匙。"],
+ ["key-a","旧钥匙","小周交付","小周在你出事地点附近捡到的旧钥匙。齿磨得很平，握柄已被多年使用磨亮。","key-a.png","key-a.png"],
  ["map-fragment-1","手绘地图碎片一","小卖部老板","村庄手绘图的一部分。",null,"map-fragment-1.png"],
  ["map-fragment-2","手绘地图碎片二","拒签户","村庄手绘图的一部分。",null,"map-fragment-2.png"],
  ["map-fragment-3","手绘地图碎片三","年老村民","村庄手绘图的一部分。",null,"map-fragment-3.png"],

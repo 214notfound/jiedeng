@@ -327,8 +327,14 @@ test("外围四线全部 24 种顺序可完成且已完成命令不再发出", (
   permutations(outerLines).forEach((order) => {
     const game = createGame(createHarness());
     enterV3(game);
+    assert.deepEqual(Array.from(game.response.presentation?.blocks ?? [], (block) => block.text), [
+      "从老宅出来，天已经黑了。村里的灯，只有零星几盏。",
+    ]);
     order.forEach(([targetId, factId], index) => {
       completeExploration(game, targetId, [factId]);
+      if (index < 3) {
+        assert.equal(game.response.presentation, null, "完成一条线后不重播过渡旁白");
+      }
       const remainingTargets = game.response.commands.map(
         (command) => command.payload.explorationId,
       );

@@ -75,22 +75,20 @@
       presentations: [
         {
           id: "four-threads-open",
+          when: {
+            noneFacts: [
+              "a-gorge-thread-complete",
+              "project-record-thread-complete",
+              "su-thread-complete",
+              "white-lamp-first-thread-complete",
+            ],
+          },
           sceneId: "village",
           blocks: [
             {
               id: "four-threads-emerge",
               blockType: "narration",
               text: "从老宅出来，天已经黑了。村里的灯，只有零星几盏。",
-            },
-            {
-              id: "four-threads-named",
-              blockType: "narration",
-              text: "陈晋年。公司留下的那份项目记录。苏禾。还有邮电所里那些没署名的纸。",
-            },
-            {
-              id: "investigate-four-threads",
-              blockType: "narration",
-              text: "四件事，哪一件都还没有答案。……先从哪里开始。",
             },
           ],
           actionIds: [],
