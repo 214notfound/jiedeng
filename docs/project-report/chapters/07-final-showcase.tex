@@ -17,6 +17,15 @@
 % 换成图片路径，后三个参数原样保留。占位框里那行小字是给截图的人看的
 % 操作说明，换成 \fig 之后自然消失；图注是永久的，已按最终效果写好。
 %
+% ---------- 截图怎么变成 \fig 里引用的那张图 ----------
+% 截图直接扔进 figures/07-final-showcase/ 就行，浏览器标签栏和地址栏
+% 不必自己裁，原始分辨率也不用管。截完一批跑一次：
+%   powershell -ExecutionPolicy Bypass -File tools/compress-figures.ps1
+% 脚本会裁掉顶部的浏览器界面、缩到长边 1920、存成 JPEG 质量 92，输出到
+% figures/07-final-showcase/compressed/，一张约 250KB。
+% \fig 里引用的是 compressed/ 下的 .jpg，不是目录里的原始截图。
+% 直接引用原始截图也能编译，但一张 4MB，十二张会把 PDF 撑到 50MB 以上。
+%
 % ---------- 12 张截图 ----------
 %   7.1  入口页首屏 / 祠堂首屏
 %   7.2  人物对白与立绘 / 村口 / 陈家老宅 / 线索详情卡
@@ -52,32 +61,32 @@
 入口页是全篇唯一使用毛笔手写字体的位置。冷调雨幕压满整屏，白灯是画面上唯一的暖光源，第三章定下的冷暖对比在这里第一次出现。
 
 % 【必】
-\figph[0.85]{入口页首屏：整屏雨幕 + 白灯 + 毛笔标题 + 「进入」按钮。浏览器全屏截图，不要带上书签栏和地址栏}{入口页首屏}{entry}
+\fig[0.85]{figures/07-final-showcase/compressed/entry.jpg}{入口页首屏}{entry}
 
 祠堂是序章的全部场景。主角从地上醒来，身上只有三件物品，旁边有一个自称小周的年轻人。这一屏同时是场景层、阅读层与对话框的第一次合流。
 
 % 【必】
-\figph[0.85]{祠堂首屏：主角醒来。截白灯亮起后的那一屏（祠堂有三张背景图：只有灯泡、灯泡与灯笼都亮、只有白灯笼），画面里要有小周和几处可点的热点}{祠堂首屏}{prologue-hall}
+\fig[0.85]{figures/07-final-showcase/compressed/prologue-hall.jpg}{祠堂首屏}{prologue-hall}
 
 \section{剧情与探索}
 
 剧情文本分旁白、独白与角色对白三层，渲染上靠名牌区分：旁白不出名牌，独白出名牌，玩家始终知道一句话是谁说的，或者知道它没有来源。立绘只有左右两个站位，站位变化即表示说话人更换。
 
 % 【必】
-\figph[0.85]{人物对白：带立绘的一屏，角色站在画面左侧或右侧，名牌与正文分行显示}{人物对白与立绘}{dialogue-npc}
+\fig[0.85]{figures/07-final-showcase/compressed/dialogue-npc.jpg}{人物对白与立绘}{dialogue-npc}
 
 探索以整张场景图作交互载体，全篇 18 个场景，覆盖村庄中枢、三条身份线、三处玩法场景和五个结局画面。场景里可调查的对象一律做成热点，调查后留下痕迹或标记为已调查。下面两张是其中的两个地址：村口是唯一的中枢，玩家在这里反复出入，把三条线的进度带回同一个地方；陈家老宅是陈晋年线的第一站，也是全篇第一处门后主光源。
 
 % 【必】
-\figph[0.85]{村口：中枢场景，画面上有多个可点热点。截玩家刚到这里、还没有调查过的状态}{村口·村庄中枢}{scene-village}
+\fig[0.85]{figures/07-final-showcase/compressed/scene-village.jpg}{村口·村庄中枢}{scene-village}
 
 % 【必】
-\figph[0.85]{陈家老宅：用刻名钥匙开门后的内景，带门后主光源}{陈家老宅}{scene-chen-house}
+\fig[0.85]{figures/07-final-showcase/compressed/scene-chen-house.jpg}{陈家老宅}{scene-chen-house}
 
 调查得到的物证进入背包，线索独立成页。玩家拿到的是物证，理解的是线索，证据链由线索之间互相印证构成。
 
 % 【必】
-\figph[0.85]{线索详情卡：点开一条关键线索后的卡片，朱砂红只出现在关键真相上}{线索详情卡}{clue-card}
+\fig[0.85]{figures/07-final-showcase/compressed/clue-card.jpg}{线索详情卡}{clue-card}
 
 \section{玩法与终局}
 
