@@ -12,7 +12,7 @@ figures/
 ├── 07-final-showcase/
 │   ├── *.png                      # 原始截图，不提交进仓库
 │   └── compressed/                # 压缩后的成品图，正文引用这一份
-└── 10-award-application/          # 评优申请的系统全景图（AI 生成）
+└── 010-award/                     # 评优申请的系统全景图（AI 生成）
 ```
 
 第五、八、九、十一章暂时没有插图。需要哪一章的图就建哪个目录，用不到的不要提前建。
@@ -30,19 +30,21 @@ powershell -ExecutionPolicy Bypass -File tools/compress-figures.ps1
 
 ## 第十章那张 AI 图
 
-`10-award-application.tex` 引言之后有一处 `\figph` 占位（标签 `fig:tech-overview`）。这处要的不是截图，是一张 AI 生成的系统全景图，用来说明五个模块如何围绕同一个核心咬合。把下面这段发给 GPT：
+`figures/010-award/tech-overview.png`，正文引用在 `10-award-application.tex` 引言之后（标签 `fig:tech-overview`，宽 0.9）。六个模块环绕中央的状态核心——主线、探索、小游戏、账户、成就、介绍页，与第四章「七个模块」的说法一一对应。图上模块只与核心通信，模块之间没有连线，这正是第十章 10.1 的论点。
+
+图已就位，下面是当初的提示词，需要重画时用：
 
 > An isometric technical diagram of a modular software system. Seven small geometric module blocks are arranged in a ring around one single glowing central core. Thin amber light lines run from every module inward to the core; there are no lines between the modules themselves. Style: precise flat isometric engineering diagram, thin outlines, no glossy or 3D-photoreal effects. Palette: very dark navy background (#07090E), module blocks in slightly lighter navy (#0D1118), all lines and highlights in warm amber (#F5F0E3 and #C9922A). Mood: quiet night, faint mist. Labels: seven short English words, uppercase, small sans-serif, placed next to their blocks with thin leader lines. No other text anywhere in the image. Composition: centered, generous margins, wide 16:9.
 
-拿到图之后三步：
+重画之后存成 `figures/010-award/tech-overview.png` 覆盖原图即可，正文那一行不用动。
 
-1. 存成 `figures/10-award-application/tech-overview.png`
-2. 超过 1\,MB 就压一次，注意加 `-SkipCrop`，否则会把图的顶部当成浏览器标签栏裁掉：
-   `powershell -ExecutionPolicy Bypass -File tools/compress-figures.ps1 -SourceDir figures/10-award-application -SkipCrop`
-3. 把第十章里那行 `\figph` 换成 `\fig`（四个参数，别漏图注）：
-   `\fig[0.9]{figures/10-award-application/tech-overview.png}{项目技术全景}{fig:tech-overview}`
+目前这张 PNG 有 1.4 MB，偏大。真要压的话注意加 `-SkipCrop`：这张是 AI 生成的位图而不是浏览器截图，顶边是浅色，脚本默认会按「顶部是不是浅色行」把它当成浏览器标签栏裁掉。
 
-**AI 生图的通病是文字拼错。** 拿到图先放大看一遍那七个标签，有拼错就重新生成，或者改用不带文字版本——把提示词里 Labels 那一句删掉即可。宁可没有标签，也不要留下拼错的英文单词。
+```powershell
+powershell -ExecutionPolicy Bypass -File tools/compress-figures.ps1 -SourceDir figures/010-award -SkipCrop
+```
+
+**AI 生图的通病是文字拼错。** 重画之后放大看一遍那六个模块名，有拼错就重新生成。宁可没有标签，也不要留下拼错的字。
 
 ## 在正文里插图
 
