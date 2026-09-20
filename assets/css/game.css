@@ -343,6 +343,42 @@ body:has(.game-main[data-view-state="minigame"]) {
 .story-action--close { color: var(--paper); background: rgba(255, 255, 255, 0.04); border-color: var(--line); }
 .ending-label { padding: 20px; color: var(--accent); border: 1px solid var(--accent); text-align: center; letter-spacing: 0.2em; }
 
+/* The terminal state is an archival end card, not another line of dialogue. */
+.game-main[data-view-state="reading"] .story-panel[data-reading-mode="finale"] {
+  grid-template-rows: auto auto;
+  gap: 18px;
+  min-height: 224px;
+  max-height: none;
+  padding: 26px clamp(24px, 5vw, 64px);
+  background: linear-gradient(120deg, rgba(8, 12, 18, .98), rgba(20, 27, 36, .96));
+  border-color: rgba(216, 198, 164, .72);
+}
+
+.story-panel[data-reading-mode="finale"] .reading-surface { min-width: 0; }
+.story-panel[data-reading-mode="finale"] #game-story {
+  display: grid;
+  justify-items: center;
+  gap: 5px;
+  text-align: center;
+}
+.finale-card__eyebrow { margin: 0; color: var(--accent); font-size: 12px; letter-spacing: .42em; }
+.finale-card__title { margin: 0; color: var(--paper); font-family: "Songti SC", SimSun, serif; font-size: clamp(28px, 3vw, 40px); font-weight: 500; letter-spacing: .16em; }
+.finale-card__description { margin: 0; color: var(--muted); font-size: 13px; letter-spacing: .1em; }
+.story-panel[data-reading-mode="finale"] .game-actions { justify-content: center; }
+.finale-card__link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 8px 20px;
+  color: var(--paper);
+  background: rgba(255, 255, 255, .04);
+  border: 1px solid var(--line);
+  text-decoration: none;
+}
+.finale-card__link--primary { color: #11151c; background: var(--paper); border-color: var(--paper); }
+.finale-card__link:hover, .finale-card__link:focus-visible { border-color: var(--accent); outline: 2px solid var(--accent); outline-offset: 2px; }
+
 /* V4 artwork is a display skin, independent of the reading contract's kind. */
 .game-main[data-view-state="reading"] .story-panel[data-visual-kind] {
   isolation: isolate;
@@ -655,4 +691,18 @@ body:has(.game-main[data-view-state="minigame"]) {
     right: 2%;
     left: auto;
   }
+}
+
+@media (max-width: 520px) {
+  .game-main[data-view-state="reading"]:has(.story-panel[data-reading-mode="finale"]) {
+    grid-template-rows: minmax(0, 1fr) auto auto;
+  }
+  .game-main[data-view-state="reading"] .story-panel[data-reading-mode="finale"] {
+    min-height: 0;
+    max-height: none;
+    padding: 20px 16px;
+    overflow: visible;
+  }
+  .story-panel[data-reading-mode="finale"] .game-actions { gap: 8px; }
+  .finale-card__link { flex: 1 1 120px; padding-inline: 8px; font-size: 13px; }
 }
