@@ -1,8 +1,430 @@
 % ============================================================
 % 第十章 · 评优申请
 % 对应大纲：# 十、评优申请
+%
+% 本章写给评委与任课教师，展示作品的技术做法与完成度。
+%
+% 与第四章的分工：第四章交代系统由哪些部分组成，本章讲这些部分
+% 为什么不会互相瓦解。三层架构、七个模块、技术选型理由、存档键
+% 格式、错误码、测试体系与协作流程已在第四章写过，本章不重复，
+% 需要时以「见第四章」带过。
+%
+% 事实来源：
+%   assets/js/core/game-contract.js      事实登记表与契约常量
+%   assets/js/core/state.js              状态写入口与事务提交
+%   assets/js/core/transitions.js        转场观察者
+%   assets/js/game-line/game/            剧情引擎五层
+%   assets/js/minigames/shared-2d/       共享内核（7 文件 232 行）
+%   assets/js/minigames/v3-handoff/      小游戏交接网关
+%   chapters/04-technical.tex            代码规模与平台事实
+%   chapters/08-team-summary.tex         V1--V4 的复盘记录
+%
+% 代码片段的处理：为适应排版，注释译为英文并精简，个别长行折行，
+% 逻辑未作改动。10.4 的转场对照表中出现的中文是游戏台词本身，
+% 属于设计的一部分，未作翻译。
+%
+% 图内文字用中文，与第五章、第八章的 tikz 图保持一致。
+% 三张图只使用 arrows.meta 与 positioning 两个 tikz 库。
 % ============================================================
 
 \chapter{评优申请}
 
-\pending
+《借灯》由五个人在十八天里分四代推出来。这四个版本首尾相接，上一代还在收尾，下一代的需求评审已经开完。四个模块各自生长，同时还要共用一份状态、一张场景图、一套存档格式。项目没有在某一代散架，靠的不是运气或默契。
+
+第四章交代了这个项目由哪些部分组成。本章讲剩下的一半：这些部分之间靠什么咬合，边界靠什么维持，内容变化时为什么不会牵动全局。每一处都给出仓库里的真实代码。
+
+本章引用的代码片段取自仓库中的实际文件。为适应排版，注释译为英文并作了精简，个别长行折行，逻辑未作改动。
+
+\fig[0.9]{figures/010-award/tech-overview.png}{项目技术全景}{fig:tech-overview}
+
+\section{模块边界：从文档约定到代码约束}
+
+分工写在文档里，文档管不住代码。
+
+V2 时小组对分工文档做过一次调整，从「谁做什么」改成「谁拥有哪些文件、不负责什么」，每个模块的章节开头列出明确的修改禁区。这次调整减少了误会，但没有解决根本问题：文档只能提醒，不能阻止。一个模块仍然可以在代码里写下不属于自己的东西，直到集成那天才被发现。
+
+真正兜住边界的是另一层东西。
+
+游戏进程中所有会改变走向的事情，项目里统一称作\textbf{事实}。一个场景被调查过、一个 NPC 被问完话、一个小游戏完成、玩家拾到某件物品，都是事实。全部事实登记在 \texttt{core/game-contract.js} 的一张表里，每条都写明由谁生产。
+
+\begin{lstlisting}[language=JavaScript, caption={剧情事实登记表（节选）}, label={lst:fact-table}]
+// Fact registry. `producer` is the module allowed to report the fact.
+export const STORY_FACT_DEFINITIONS = Object.freeze([
+  { id: "prologue-wake-context-known", producer: "story" },
+  { id: "white-lamp-witnessed",        producer: "story" },
+  { id: "key-a-given-by-x",            producer: "conversation" },
+  {
+    id: "burned-work-id-investigated",
+    producer: "exploration",
+    externalTargetId: "burned-work-id"
+  },
+  { id: "map-puzzle-completed", producer: "minigame" },
+  {
+    id: "key-a-acquired",
+    producer: "state",
+    derivedFrom: { eventType: "ITEM_ACQUIRED", targetId: "key-a" }
+  }
+]);
+\end{lstlisting}
+
+\texttt{producer} 有四种取值，对应四类模块。另有一类事实由状态模块自行派生：玩家拾到钥匙这个动作本身就会产生 \texttt{key-a-acquired}，不需要任何模块手动上报，\texttt{derivedFrom} 字段把这件事交给状态模块自动完成。整张表共 70 条，覆盖全部四个版本。
+
+这张表的价值在执行，不在记录。每条事实都带着归属字段，探索模块报告一条不属于自己的事实时，状态模块不会记下它，而是直接抛错。
+
+\begin{lstlisting}[language=JavaScript, caption={两处越权检查}, label={lst:fact-guard}]
+// state.js — the story module may only record facts it owns.
+const definition = FACT_BY_ID.get(targetId);
+if (!definition || definition.producer !== "story") {
+  throw new Error(`Story module may not record fact: ${targetId}`);
+}
+
+// state.js — external modules are checked against the same registry.
+for (const factId of event.resultFactIds) {
+  const definition = FACT_BY_ID.get(factId);
+  if (!definition) {
+    throw new Error(`External event declared unregistered fact: ${factId}`);
+  }
+  if (definition.producer !== source) {
+    throw new Error(`Source ${source} may not produce fact: ${factId}`);
+  }
+}
+\end{lstlisting}
+
+剧情模块想记录一条不属于自己的事实，同样会被拒绝。边界在这里不再是一句约定，而是一个会报错的断言。谁越界，谁在开发当天的自测里就会知道。
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[
+  mod/.style={draw=nightblue!45, fill=nightblue!6, rounded corners=2pt,
+              align=center, font=\small, text width=2.3cm,
+              minimum height=8mm, inner sep=3pt},
+  hub/.style={draw=lampgold!80, fill=lampgold!12, rounded corners=2pt,
+              align=center, font=\small, text width=3.2cm,
+              minimum height=8mm, inner sep=3pt},
+  fl/.style={-{Stealth[length=2mm]}, draw=black!60, thick},
+  bad/.style={-{Stealth[length=2mm]}, draw=black!40, thick, dashed}
+]
+\node[mod] (story)  at (0,0)     {剧情模块};
+\node[mod] (expl)   at (0,-1.5)  {探索模块};
+\node[mod] (conv)   at (0,-3.0)  {对话模块};
+\node[mod] (mini)   at (0,-4.5)  {小游戏模块};
+
+\node[hub] (reg)    at (5.6,-2.25) {事实登记表\\\texttt{producer} 校验};
+\node[mod] (state)  at (10.8,-2.25) {状态模块\\唯一写入口};
+
+\draw[fl] (story.east) -- (reg.west);
+\draw[fl] (expl.east)  -- (reg.west);
+\draw[fl] (conv.east)  -- (reg.west);
+\draw[fl] (mini.east)  -- (reg.west);
+\draw[fl] (reg.east)   -- (state.west);
+
+\draw[bad] (expl.south east) to[out=-20, in=-115] (state.south west);
+\node[font=\footnotesize, text=black!55] at (5.4,-4.6) {越权事实：拒绝并抛错};
+\end{tikzpicture}
+\caption{事实的流向与越权拒绝}
+\label{fig:fact-flow}
+\end{figure}
+
+四条实线是合法路径，模块报告事实、登记表核对归属、状态模块写入。虚线是越权路径，它在登记表这一步就被截断。这张图也说明了一件事：\textbf{没有任何模块可以直接触到状态}，它们只能提出请求，由登记表判断这个请求是否成立。
+
+\section{状态一致性：唯一写入口与事务提交}
+
+游戏的存档是一整棵状态树：读过的剧情、调查过的场景、身上的物品、解锁的地点、成就、小游戏的完成情况。这棵树任何一处写错，玩家都可能卡在某个节点走不下去，或者重复领到同一份奖励。
+
+项目给它设了一条规则：没有任何模块可以就地修改状态。所有更新写在 \texttt{core/state.js} 里，每个入口都返回一个新对象。
+
+外部模块报告事实的那个入口刻着一条刻意的限制，就写在函数上方：\textbf{它只记录已经发生的事情，不决定下一个剧情节点}。探索模块调查完一个场景，它只能说这件事发生了，不能说接下来跳到哪。下一步由剧情引擎根据事实集合自行判断。这条限制把探索和剧情彻底分开——探索不知道剧情结构，剧情也不关心是谁触发的调查。V1 时这两块由两个人分别负责，整个周期里他们的代码没有互相调用过。
+
+剧情推进走的是另一个入口，也是全项目唯一能改动进度的地方。
+
+\begin{lstlisting}[language=JavaScript, caption={事务化提交}, label={lst:commit}]
+// Commit a checkpoint and its state events atomically:
+// if any step throws, the previous state is left untouched.
+export function commitStoryTransaction(gameState, requestId, commit) {
+  requireState(gameState);
+  requireText(requestId, "requestId");
+
+  // Idempotent: a request already applied is never applied twice.
+  if (gameState.processedRequestIds.includes(requestId)) {
+    return gameState;
+  }
+  if (!isPlainObject(commit) || !Array.isArray(commit.events)) {
+    throw new TypeError("Story response has no valid commit.events.");
+  }
+  validateCheckpoint(commit.checkpoint);
+
+  // Apply to a draft copy; the old state survives any throw below.
+  let draft = gameState;
+  for (const event of commit.events) {
+    draft = applyStoryStateEvent(draft, event);
+  }
+
+  return {
+    ...draft,
+    ...createStoryCompatibilityProjection(commit.checkpoint),
+    storyCheckpoint: { ...commit.checkpoint },
+    processedRequestIds: addUnique(draft.processedRequestIds, requestId)
+  };
+}
+\end{lstlisting}
+
+事务提交做三件事：校验整个检查点的结构，在草稿上逐条应用事件，最后一次性替换。任何一条事件抛出异常，草稿被丢弃，旧状态原封不动。玩家不会遇到更新了一半的存档。
+
+重复送达是这类系统里最常见的问题，这个项目同样遇到。同一个请求可能因为快速点击被发两次，同一个小游戏结果可能因为网络或渲染重试被上报两次。项目用三层去重挡住它们：请求 ID、事件 ID、动作的一次性键。三层的判据各不相同，覆盖的重复场景也不同。
+
+有一处处理值得单独说。剧情已经提交成功、但紧接着的渲染或通知失败时，系统不会回滚这次提交。理由是玩家已经看到了内容，把进度退回去等于要求他重玩一遍。这种情况下游戏给出一个存档入口并提示重新进入，而不是假装什么都没发生。
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[
+  ph/.style={draw=nightblue!45, fill=nightblue!6, rounded corners=2pt,
+             align=center, font=\small, text width=3.6cm,
+             minimum height=8mm, inner sep=3pt},
+  note/.style={font=\footnotesize, text=black!55, align=left, text width=5.6cm},
+  fl/.style={-{Stealth[length=2mm]}, draw=black!60, thick}
+]
+\node[ph] (req)   at (0,0)     {探索 / 对话 / 小游戏\\提交结果};
+\node[ph] (valid) at (0,-1.6)  {契约校验\\来源与事实归属};
+\node[ph] (tx)    at (0,-3.2)  {事务提交\\草稿上逐条应用};
+\node[ph] (swap)  at (0,-4.8)  {状态原子替换};
+\node[ph] (paint) at (0,-6.4)  {渲染剧情与通知};
+
+\draw[fl] (req)   -- (valid);
+\draw[fl] (valid) -- (tx);
+\draw[fl] (tx)    -- (swap);
+\draw[fl] (swap)  -- (paint);
+
+\node[note] at (6.6,-1.6) {不通过：拒绝并抛错，\\状态不变};
+\node[note] at (6.6,-3.2) {任一条事件抛错：\\草稿丢弃，旧状态不变};
+\node[note] at (6.6,-6.4) {失败不回滚已提交进度，\\改为提示保存并重进};
+\end{tikzpicture}
+\caption{一次剧情推进的完整链路}
+\label{fig:commit-chain}
+\end{figure}
+
+链条越往下，失败的处理越保守。校验阶段的失败直接拒绝，事务阶段的失败整体丢弃，只有最后一步失败时系统选择保住已经确认的进度。这个顺序是有意的：越靠近玩家的操作越不可逆，系统就越不该替玩家做回退的决定。
+
+\section{内容演进：数据与引擎的分离}
+
+剧情引擎拆成五个文件，每个只做一件事。
+
+\begin{table}[htbp]
+\centering
+\caption{剧情引擎五层的职责与自我约束}
+\label{tab:engine-layers}
+\small
+\begin{tabularx}{\linewidth}{@{}l l X@{}}
+\toprule
+文件 & 负责 & 明确不做 \\
+\midrule
+story-registry.js  & 装载剧情数据，注册阶段与节点 & 不校验数据，不推进节点 \\
+story-validator.js & 启动时检查全部数据引用 & 不保存状态，不修改数据 \\
+story-runtime.js   & 里程碑对账与效果缓冲 & 不接触外部模块 \\
+story-request.js   & 请求边界的形态校验 & 不决定推进结果 \\
+story-engine.js    & 协调请求、规则与响应 & 不保存任何游戏状态 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+最上面一层的文件头注释写明了它的自我约束：只协调请求边界、运行规则和公开响应，不保存任何游戏状态。这句话不是修饰，它解释了为什么同一个引擎能被 V2、V3、V4 三代反复扩展而没有失控——引擎手里没有需要迁移的东西。
+
+引擎在加载时会把全部剧情数据过一遍。每个节点的 ID 引用是否完整、条件字段是否在允许的集合里、跳转出口是否存在、演出条目有没有唯一命中，都在检查范围内。校验不通过，引擎不会带着坏数据跑起来，而是把每一条错误打印出来，并让所有进入剧情的请求返回同一个错误码。
+
+\begin{lstlisting}[language=JavaScript, caption={自动循环保护}, label={lst:loop-guard}]
+// A transition that leads back into an already-visited node would spin
+// forever. Stop as soon as the count exceeds the number of nodes.
+transitionCount += 1;
+if (transitionCount > storyData.nodes.length) {
+  return {
+    node,
+    error: {
+      code: "STORY_INVALID_NODE_DATA",
+      message: "More transitions than nodes: automatic loop suspected",
+      recoveryActions: ["return-menu"],
+    },
+  };
+}
+\end{lstlisting}
+
+这段代码防的是一种很难排查的错误：数据里的跳转互相指回，游戏在几个节点之间空转，玩家看到的画面停在原地。转移次数超过节点总数就立刻中止，并给出返回主菜单的出口。
+
+V3 需要在不修改 V1 数据文件的前提下追加剧情。项目用了两个办法。追加注册用于新增阶段、事实与小游戏，V1 的文件一个字节不动。替换节点则要求调用方带上这一节点上一版的 revision，对不上就拒绝。两个人在同一代里改同一个节点，不会互相覆盖。
+
+这套结构在 V4 得到验证：46 处剧情文本修订全部落在数据文件上，引擎代码一行没动。改文案的人不需要读懂引擎。
+
+\section{演出层：不侵入的旁路}
+
+11 处转场要在特定台词出现时播放。最直接的做法是在剧情数据里埋标记——某个节点带一个字段，引擎读到就播。
+
+项目没有这么做。
+
+转场写在 \texttt{core/transitions.js} 里，是一个独立的观察者。它不修改渲染内核，不修改剧情数据，也不要求任何模块为它提供接口。它只做一件事：监听剧情文本的渲染结果，拿每一段新出现的文本去比对一张表。
+
+\begin{lstlisting}[language=JavaScript, caption={台词与转场的对照表}, label={lst:transitions}]
+// Line-to-effect table. Reads rendered text only; story data untouched.
+function has(text, needle) {
+  return text.indexOf(needle) !== -1;
+}
+const triggers = [
+  { test: (t) => has(t, "按下播放"), run: () => fx.staticNoise() },
+  { test: (t) => has(t, "一声闷响"), run: () => fx.shake() },
+  { test: (t) => has(t, "一声枪响"), run: () => fx.shakeToBlack() },
+  { test: isDoorCall,               run: () => fx.shake() }
+];
+
+// Watch rendered story text and merge one render's DOM changes.
+new MutationObserver(scheduleScan).observe(story, {
+  childList: true,
+  subtree: true,
+  characterData: true
+});
+\end{lstlisting}
+
+表中的中文是游戏台词，不是注释。它恰好说明了这个设计的要点：\textbf{转场绑在文本上，不绑在节点编号上}。写剧情的人只管写台词，写完不必通知做转场的人去改数据结构；做转场的人也不必理解剧情引擎如何推进节点。两边唯一的约定是一句话本身。
+
+代价同样明确：台词一旦改动，对应的转场会静默失效，不会有任何报错。小组接受这个代价，因为改台词要经过需求评审，而改剧情数据结构的影响面大得多。
+
+扫描被合并进一次微任务。一次渲染会写入多个文本块，DOM 变更可能触发多次回调，直接在回调里扫描会重复执行。项目把同一次渲染的多次变更合并成一次扫描，再用内容 ID 去重，保证一条转场只播一次。
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[
+  box/.style={draw=nightblue!45, fill=nightblue!6, rounded corners=2pt,
+              align=center, font=\small, text width=3.4cm,
+              minimum height=8mm, inner sep=3pt},
+  obs/.style={draw=lampgold!80, fill=lampgold!12, rounded corners=2pt,
+              align=center, font=\small, text width=3.4cm,
+              minimum height=8mm, inner sep=3pt},
+  fl/.style={-{Stealth[length=2mm]}, draw=black!60, thick},
+  watch/.style={-{Stealth[length=2mm]}, draw=black!45, thick, dashed}
+]
+\node[box] (data) at (0,0)      {剧情数据\\（纯文本，无标记）};
+\node[box] (core) at (5.2,0)    {渲染内核\\写入 \texttt{.story-block}};
+\node[obs] (tran) at (5.2,-2.4) {转场层\\观察并匹配台词};
+
+\draw[fl] (data) -- (core);
+\draw[watch] (core) -- (tran);
+\end{tikzpicture}
+\caption{转场层与渲染内核的单向观察关系}
+\label{fig:transition-layer}
+\end{figure}
+
+虚线只有一条，方向向下。转场层读取渲染结果，不写回任何东西，也不进入剧情数据的链路。删掉这个文件，游戏照常推进，只是少了十一次演出。
+
+\section{共享内核与跨模块结果交接}
+
+四个小游戏里有三个是 V3 新增的，其中矿井地图与终局追逐是实时 2D 玩法。两者的表面差别很大——一个是俯视地图上开关阀门，一个是被人追着跑并收集证据——但底层要处理的是同一批事情：一个稳定的帧循环、相机跟随、碰撞、移动、按键。
+
+项目没有把这两个各写一遍，也没有为此引入游戏引擎，而是抽出七个文件、共 232 行作为共享内核。
+
+\begin{lstlisting}[language=JavaScript, caption={共享内核的两个片段}, label={lst:shared-2d}]
+// game-loop.js — fixed step, so a backgrounded tab cannot teleport the player.
+function tick(timestamp) {
+  if (!running) return;
+  const dt = previous
+    ? Math.min(maxDelta, Math.max(0, (timestamp - previous) / 1000))
+    : 0;
+  previous = timestamp;
+  update(dt, timestamp);
+  if (running) frameId = requestFrame(tick);
+}
+
+// collision.js — resolve one axis at a time, so corners never leak.
+export function moveWithCollisions(entity, dx, dy, walls) {
+  const next = {...entity};
+  next.x += dx;
+  for (const wall of walls) {
+    if (!overlaps(next, wall)) continue;
+    next.x = dx > 0 ? wall.x - next.w : wall.x + wall.w;
+  }
+  next.y += dy;
+  for (const wall of walls) {
+    if (!overlaps(next, wall)) continue;
+    next.y = dy > 0 ? wall.y - next.h : wall.y + wall.h;
+  }
+  return next;
+}
+\end{lstlisting}
+
+步长被夹在 0.05 秒以内。浏览器切到后台再切回来，两帧之间可能隔了几秒，不夹住的话角色会瞬移穿过墙壁。碰撞分两次解算，先横后纵，贴着墙走的时候不会从墙角漏出去。斜向移动用斜边长度归一化，按住两个方向键不会比按一个键快四成。
+
+\begin{table}[htbp]
+\centering
+\caption{共享内核被三个小游戏复用的部分}
+\label{tab:shared-2d}
+\small
+\begin{tabularx}{\linewidth}{@{}l l c c c@{}}
+\toprule
+内核文件 & 职责 & 矿井地图 & 管道盘 & 终局追逐 \\
+\midrule
+game-loop.js  & 固定步长帧循环，防止切后台跳帧 & 复用 & — & 复用 \\
+camera.js     & 相机跟随并夹取到地图边界     & 复用 & — & 复用 \\
+movement.js   & 归一化对角移动               & 复用 & — & 复用 \\
+collision.js  & 分轴 AABB 碰撞解算           & — & — & 复用 \\
+interaction.js & 邻近交互判定                & 复用 & — & 复用 \\
+input.js      & 键盘输入，失焦时清空按键      & 复用 & — & 复用 \\
+ui-base.js    & 入场说明与暂停浮层           & 复用 & 复用 & 复用 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+内核小到可以一次通读，省掉的重复却不少。矿井地图只需要写阀门与闸门的规则，追逐只需要写敌人行为和证据收集，其余的循环、相机、输入、浮层全部来自共享层。管道盘是网格旋转玩法，用不上实时循环，但它的入场说明与暂停界面同样取自 \texttt{ui-base.js}。
+
+小游戏结束后的结果要交回主线，这一步最容易出脏数据——小游戏可能返回一个剧情不认识的结局，也可能返回两个互相矛盾的结果。项目在交接处做的是集合级校验：检查的不是「返回的是不是一个合法结果」，而是「允许返回的结果集合与契约声明的集合是否完全相等」，多一个少一个都拒绝。
+
+\begin{lstlisting}[language=JavaScript, caption={小游戏结果的集合级校验}, label={lst:gateway}]
+// The allowed result set must equal the contract's set, not merely
+// be a subset of it: one extra or one missing result is a failure.
+const expected = Object.keys(definition.results);
+if (!Array.isArray(payload.allowedResultFactIds)
+  || payload.allowedResultFactIds.length !== expected.length
+  || new Set(payload.allowedResultFactIds).size !== expected.length
+  || expected.some((factId) => !payload.allowedResultFactIds.includes(factId))) {
+  throw new TypeError("Minigame results do not match the V3 contract.");
+}
+\end{lstlisting}
+
+这类检查写起来比「判断是否为合法值」麻烦，但它挡住的是真正的风险：剧情按集合相等的前提推导后续走向，只要集合被动过，推导就会出错。把校验做成严格相等，脏数据在交接的那一刻就被拦下，而不是等到几十分钟后的某个结局分支才暴露。
+
+\section{关键设计取舍}
+
+上面每一条做法都有代价。这一节把它们摊开。
+
+\begin{table}[htbp]
+\centering
+\caption{四项关键技术取舍}
+\label{tab:tradeoffs}
+\small
+\begin{tabularx}{\linewidth}{@{}l X X@{}}
+\toprule
+决策 & 换来的 & 付出的 \\
+\midrule
+不使用框架与构建工具 &
+调试链路最短，克隆即运行 &
+组件复用与页面路由需自建 \\ \addlinespace
+状态只有一个写入口 &
+模块无法就地写坏状态 &
+入口成为所有模块的关键路径，必须稳定 \\ \addlinespace
+转场绑台词而非节点编号 &
+剧情与演出互不知情，可并行推进 &
+改台词会使对应转场静默失效 \\ \addlinespace
+剧情内容与引擎分离 &
+改文案不必理解引擎 &
+数据规模增长，需要校验器 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+代价不是没算过。立项时小组就知道不用框架意味着组件复用和路由要自己写，也知道转场绑台词会让文案改动带上额外成本。这些代价被接受，是因为它们换来的是另一些东西：交接时不必理解框架的生命周期，改文案时不必理解引擎，做演出时不必理解剧情结构。
+
+三项取舍在后续两代里直接兑现。转场绑台词使 V4 的文本修订与转场调整能够并行推进；内容与引擎分离让 46 处修订没有产生一行引擎改动；唯一写入口把状态相关的问题都收敛到了规则层，第八章记录的那几处返工全部发生在边界规则的定义上。不用框架的代价兑现得最晚——直到 V4 收尾，自建的组件复用与路由仍然是工作量的一部分——但它换来了最低的启动成本：任何人拿到仓库，不需要安装任何东西就能打开游戏。
+
+\section{交付完整度}
+
+从入口页进入，可以一路玩到五个结局，中间不需要跳过，也不需要打补丁。18 个探索场景、4 个小游戏、5 个结局、11 处转场、7 段过场视频全部接在主线流程里，每一处都能在正常游玩中触发。
+
+\texttt{test/} 下有 41 个测试文件、7{,}295 行。单元测试覆盖存档版本兼容、账户权限、主线与探索的接口契约、小游戏规则与成就判定；浏览器回归测试跑的是真实交互路径，自带本地静态服务器。探索模块的验收用一份按提交哈希冻结的引擎副本，主线怎么演进，这份副本都不变。
+
+仓库里可以查到 229 次提交与 73 个合并请求，其中 68 个合入。四个版本每一代的 PRD、subPR 清单和合并记录都完整保留，谁在哪一代做了技术审查、谁做了需求验收，都能查到。
+
+《借灯》是五个人在十八天里连续滚动推出来的结果，每一代都站在上一代的交付之上，没有哪一代是空转的。作品本身的完整度、技术做法的严谨程度、以及过程中留下的文档与记录，都如实呈现在这份报告里。我们申请对本项目予以评优。

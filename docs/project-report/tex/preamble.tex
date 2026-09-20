@@ -86,6 +86,24 @@
   keepspaces=true,
 }
 
+% JavaScript 语言定义：listings 不自带 JavaScript，按项目用到的语法补一份。
+% 只影响显式写了 language=JavaScript 的代码块，第四章的目录树不受影响。
+% 样式（keywordstyle / commentstyle / stringstyle）沿用上面的 \lstset。
+\lstdefinelanguage{JavaScript}{
+  keywords={async,await,break,case,catch,class,const,continue,default,
+            delete,do,else,export,extends,false,finally,for,function,if,
+            import,in,instanceof,let,new,null,of,return,super,switch,
+            this,throw,true,try,typeof,var,void,while,yield},
+  ndkeywords={Object,Array,Number,String,Boolean,Math,JSON,Set,Map,
+              Promise,Error,TypeError},
+  ndkeywordstyle=\color{nightblue!70}\bfseries,
+  sensitive=true,
+  comment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  morestring=[b]',
+  morestring=[b]"
+}
+
 % ---------- 章节标题格式 ----------
 \ctexset{
   chapter = {

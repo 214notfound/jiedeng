@@ -8,7 +8,7 @@
 %   assets/js/core/storage.js                   存档键格式与版本校验
 %   assets/js/core/audio/audio-coordinator.js   音频失败码
 %   assets/js/core/video-player.js              过场播放的失败兜底
-%   test/ 35 个文件 / 6,122 行，node:test 单测 + Playwright 回归
+%   test/ 41 个测试文件 / 7,295 行，另有 8 个冻结引擎副本
 %
 % 本章只对质量保障作概述，测试结果与分工进度分别见第五、六章。
 % 代码与目录树用 lstlisting 排版（样式见 tex/preamble.tex）。
@@ -153,7 +153,7 @@ achievements &  9 &  579 & 成就定义、判定与展示 \\
 
 \subsection{测试}
 
-测试代码在 test/ 目录下，35 个文件、6122 行，分两层。
+测试代码在 test/ 目录下，41 个测试文件、7295 行，分两层。
 
 逻辑层用 Node 内置的 node:test 运行单元测试，覆盖存档读写与版本兼容、账户与权限、主线与探索之间的接口契约、小游戏规则与成就判定。
 
